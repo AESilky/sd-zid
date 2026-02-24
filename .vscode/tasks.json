@@ -1,0 +1,25 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "cupl",
+            "type": "shell",
+            "command": "cupl.exe -m1nlxj ${fileBasenameNoExtension}.pld",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "cupl&sim",
+            "type": "shell",
+            "command": "cupl.exe -m1jnlxs ${fileBasenameNoExtension}.pld",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        }
+    ]
+}
