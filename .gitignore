@@ -1,3 +1,7 @@
+# Draw, Word, and other lock and temp files
+**/~*
+**/.~*
+
 # Prerequisites
 *.d
 
@@ -80,6 +84,9 @@ _autosave*
 *.sim
 *.jed
 *.pin
+*.io
+*.oed
+*.log
 jtag.log
 syndos.env
 CM*

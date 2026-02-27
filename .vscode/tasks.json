@@ -9,16 +9,29 @@
             "command": "cupl.exe -m1nlxj ${fileBasenameNoExtension}.pld",
             "group": "build",
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${fileDirname}"
             }
         },
         {
-            "label": "cupl&sim",
+            "label": "fit",
             "type": "shell",
-            "command": "cupl.exe -m1jnlxs ${fileBasenameNoExtension}.pld",
+            "command": "fit1508.exe ${fileBasenameNoExtension}.tt2 -CPUL -device TQFP100 -tech ATF1508AS -JTAG ON",
             "group": "build",
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${fileDirname}"
+            }
+        },
+        {
+            "label": "Build PLD",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "cupl",
+                "fit"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         }
     ]

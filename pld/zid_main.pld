@@ -1,0 +1,425 @@
+/* Headers */
+NAME     mmu_dbi_rst38;
+PARTNO   00;
+DATE     2/24/2026;
+REVISION 01;
+DESIGNER AESilky;
+COMPANY  None;
+ASSEMBLY None;
+LOCATION ;
+Device   f1508isptqfp100; /* ATF1504AS 100TQFP ISP/JTAG */
+
+/**
+ * ZID (Z80 In-circuit Debugger) Main Logic
+ *
+ *  - Reset Control including Z80 'Special-Reset' generation
+ *  - Memory Management Unit
+ *  - I/O Decode
+ *  - Double-Byte Instruction
+ *  - RST38 Detect
+ *  - Break #1 Control
+ *  - Break Detect
+ *
+ *
+ * ==========
+ * Reset Control
+ * ----------
+ * (This will evolve into the Z80 'Special-Reset' generation as well)
+ * Generates an internal Init-Reset when the reset input pin is active for
+ * 3 CPU clock cycles. It then keeps the Init-Reset true as long as the CPU
+ * reset remains active. Init-Reset going false can be used as a clock for
+ * synchronous initialization of registers (if needed), as the Z80 CPU takes
+ * 2 T-cycles after reset goes inactive before it starts/resumes operation.
+ *
+ * ==========
+ * MMU
+ * ----------
+ * Treats the 16-bit/64KB memory space as 4 16KB blocks. It treats the ROM
+ * and RAM as 16 16KB regions (8 ROM and 8 RAM, 256KB total, 128KB each). 
+ * Using 4 registers of 4-bits each*, it maps a ROM or RAM region to a memory
+ * block. Regions 0-7 are ROM and regions 8-15 are RAM.
+ *
+ * Using the mapping, it generates a ROM_SEL or RAM_SEL and the RomRam A14..16
+ * address signals (addressing the 128KB space in each device). Additionally,
+ * if there is a write to a block that is mapped to a ROM region, it selects
+ * the corresponding RAM region for the write operation. Thereby allowing the
+ * ROM data to be copied to the RAM simply by reading a ROM location and
+ * writing back to the same location.
+ *
+ * At power-up and hard-reset it initializes the mapping to ROM regions 0, 1,
+ * 2, and 3.
+ *
+ * When the ROM is selected for a read operation a wait-state is generated.
+ *
+ * *NOTE: Register 4 contains a 5th bit that can be written/read, but is not
+ *      used in the mapping. The intended purpose of this bit is to allow the
+ *      debug-monitor code to determine if it has been initialized or not. The
+ *      Master-Reset clears this bit. Therefore, when the debug-monitor is
+ *      running (from address 0000) it can check the bit to see if it has
+ *      already initialized, and this is a RST0 or a Special-Reset, or if this
+ *      is a Boot, and it needs to initialize. Once it is initialized, it can
+ *      set the bit to 1. Other code that writes the mapping needs to retain
+ *      the state of the bit to avoid the debug-monitor from re-initializing,
+ *      but that is better than the debug-monitor not knowing, and trying to
+ *      figure it out some other way.
+ *      Mapping register 3 was used, as it is (probably) the least likely to
+ *      be changed during normal operation of the system.
+ *
+ * ==========
+ * I/O Port Decode
+ * ----------
+ * The board uses a number of I/O devices. Some are internal to this
+ * component, while some are external. There isn't currently a plan to support
+ * added devices, but just in case, half of the I/O space will be reserved
+ * decoded and not used. If pins are available, an 'extern_io' signal might
+ * be provided.
+ *
+ * The defined devices and number of addresses needed are:
+ * 1. Board Control (2). We need 10 (possibly more) control bits.
+ * 2. MMU Select (1). The MMU has 4 registers, but the upper address is used
+ *      to select the register while writing/reading a single port.
+ * 3. Target-Go (1). This only uses an access (any op) to start the countdown
+ *      to transfer to the target system.
+ * 4. PC Read (1 (maybe 2)). This is used to read the Program Counter value
+ *      that is saved. The thought is to use a shift register and read it
+ *      using 16 reads. But, if it ends up being captured in this device it
+ *      could be easier to read it with two 8-bit reads.
+ * 5. RP2040-Module (4). The Module is used for all communication, access to a
+ *      EEPROM for saving configuration, and possibly other functions.
+ * 6. Break Address CLK (1). This is used to clock a data bit to the Break
+ *      Address shift registers.
+ * 7. Break Address Enable CLK (1). This is used to clock a data bit to the
+ *      Break Enable shift registers.
+ * 8. Break Address Enable Read. Same as 7. but to read the Enable bit back.
+ * 9. Break Address Enable Clear (1). Any operation to this port clears the
+ *      Break Enable shift registers to 0.
+ *
+ * To minimize the number of bits used to decode the device ports, 16 ports
+ * are allocated to each device. This still reserves 128 port addresses for
+ * use by external devices..
+ *
+ * Port Allocations:
+ *      00..0F: Board/Break Control (internal)
+ *      10..1F: MMU Select (internal)
+ *      20..2F: PC Read (internal)
+ *      30..3F: Target-Go
+ *      40..4F: RP2040-Module
+ *      50..5F: Break Address CLK
+ *      60..6F: Break Address Enable CLK
+ *      70..7F: Break Address Enable CLR
+ *      80..FF: Reserved for External Devices
+ *
+ *      
+ * ==========
+ * DBI Detect
+ * ----------
+ * Monitors the data bus during instruction fetches for a sequence two
+ * instruction fetches of:
+ * - CB nn (extended logical operations)
+ * - DD nn (IX operations)
+ * - ED nn (extended Z80 operations (16-bit, Interrupt, Memory/IO, etc.))
+ * - FD nn (IY operations)
+ *
+ * When the first instruction fetch is detected the DBI signal is set. It
+ * remains set until the following instruction fetch is completed.
+ *
+ * ==========
+ * RST38 Detect
+ * ----------
+ * Monitors the data bus during instruction fetches for a data of 0xFF. When
+ * this instruction fetch is detected the RST38 signal is set. It remains set
+ * until the instruction fetch is completed.
+ *
+ * ==========
+ * Local NMI generation
+ * ----------
+ * NMI to the local Z80 is gated from the target such that a target NMI is only
+ * passed through when in Target Mode (running the target), not when running
+ * the debugger. The target NMI is also blocked when doing a single bus operation
+ * on the target (memory or I/O read/write).
+ *
+ * Additionally, NMI is used for an attention request from the RP2040 Module
+ * when already in debug mode (not target mode) rather than generating a
+ * special reset.
+ * 
+ */
+
+/* Configure cupl */
+PROPERTY Atmel {security = OFF};
+PROPERTY Atmel {power_reset = ON};
+Property Atmel {preassign = TRY};
+PROPERTY Armel {logic_doubling = OFF};
+
+/* Convenience Names */
+$DEFINE ON 'b'1
+$DEFINE OFF 'b'0
+
+
+/************************************************************************/
+/* Special Inputs                                                       */
+/************************************************************************/
+
+PIN 87 = cpu_clk;           /* Processor CLK (on GCLK1) */
+PIN 89 = !cpu_rst;          /* CPU Reset Input */
+
+
+/************************************************************************/
+/* Inputs                                                               */
+/************************************************************************/
+
+PIN [85..83,81..79,76,75,71,69..67,65..63,61] = [addr15..0];       /* Address inputs */
+PIN  9  = !rd;
+PIN  8  = !wr;
+PIN  6  = !iorq;
+PIN 19  = !m1;
+PIN 20  = !mreq;
+PIN 21  = !rfsh;
+PIN     = !tgt_only;    /* Indicates that the Target System should run immediately */
+PIN     = tgo_now;      /* Target-Go counter has reached terminal count */
+PIN     = attn;         /* Request from RP2040 Module for attention */
+PIN     = !tnmi;        /* Target System NMI request */
+
+
+/************************************************************************/
+/* Input/Output                                                         */
+/************************************************************************/
+
+PIN [100..96,94..92] = [d7..5,d4..0];   /* Data I/O */
+
+
+/************************************************************************/
+/* Outputs                                                              */
+/************************************************************************/
+
+PIN     = !zrst;            /* Reset signal to the Z80 */
+PIN [37..35] = [rra2..0];   /* ROM/RAM Address: Actually RRA16..14 on bus */
+PIN 14  = !ram_sel;
+PIN 13  = !rom_sel;
+PIN 12  = !wait;
+PROPERTY Atmel {open_collector = on wait};
+PIN     = mod_sel;          /* RP2040 Module Select */
+PIN     = brkaddr_clk;      /* Break Address Clock */
+PIN     = brkaden_clk;      /* Break Address Enable Clock (WR) */
+PIN     = brkaden_rd;       /*  (same addr) Enable Read */
+PIN     = brkaden_clr;      /* Break Address Enable Clear */ 
+/*PIN     = extern_io;        /* Signal indicating external I/O operation */
+PIN     = !tbus_en;         /* Target Bus Enable */
+PIN     = !lnmi;            /* Local NMI */
+PIN     = TopOfMem;         /* TEMP: Just so fitter assigns all address to pins */
+
+
+/************************************************************************/
+/* Internal Nodes, Registers and Intermediate Variable Definitions      */
+/************************************************************************/
+
+/** Z80 Special Reset */
+PINNODE = zsr_req;          /* Request to generate a Z80 Special Reset */
+PINNODE = zsprst;
+
+/** I/O Port Decode */
+PINNODE = tgt_go;
+
+
+/** Boot/Reboot Reset */
+PINNODE = iRst;             /* Internal Reset */
+PINNODE = [rstCnt1..0];     /* Reset duration counters */
+
+
+/** MMU */
+PINNODE = [mapA3..0];
+PINNODE = [mapB3..0];
+PINNODE = [mapC3..0];
+PINNODE = [mapD4..0];
+
+
+/** DBI Detect */
+PINNODE = dbi;              /* Double-Byte Instruction Detected */
+
+
+/** Target run and enable state */
+PINNODE = sbcmode;          /* We are running as an SBC */
+PINNODE = tgtmode;          /* Running target (not in debug mode) */
+
+
+/** Breakpoint control and detection */
+PINNODE = rst38det;         /* Used for 'SOFT' breakpoints */
+PINNODE = brkdet;           /* Break condition detected */
+PINNODE = [pc15..0];        /* Storage of the PC at Special Reset */
+
+
+/************************************************************************/
+/* Fields and Convenience/Clarity Definitions                           */
+/*                                                                      */
+/* NOTE: $DEFINE value cannot use a prior $DEFINE                       */
+/*   Learned through lots of time spent tracking down compile errors!   */
+/*   Telltale error is:                                                 */
+/*     [0018ca] intermediate var not assigned an expression: xyz        */
+/************************************************************************/
+
+/** Z80 General */
+$DEFINE ZIF_1       ((m1 & mreq) & !dbi)
+$DEFINE MEM_SEL     ((m1 & !iorq) # (mreq & !rfsh))
+$DEFINE IO_SEL      (!m1 & iorq)
+$DEFINE ZNOP        'h'00
+$DEFINE ZRFSH       (mreq & rfsh)
+FIELD databus       = [d7..0];
+FIELD fulladdr      = [addr15..0];
+
+/** I/O Port Decode */
+FIELD ioaddr        = [addr7..0];
+
+/** Board Control */
+$DEFINE CTRL0_SEL   ((!m1 & iorq) & ioaddr:['b'0000xxx0])
+$DEFINE CTRL1_SEL   ((!m1 & iorq) & ioaddr:['b'0000xxx1])
+
+/** MMU */
+$DEFINE MMU_SEL     ((!m1 & iorq) & ioaddr:[10..1F])
+$DEFINE MMAP_RD     (((!m1 & iorq) & ioaddr:[10..1F]) & rd)
+$DEFINE MMAP_WR     (((!m1 & iorq) & ioaddr:[10..1F]) & wr)
+$DEFINE MAPADDR_A   [addr15..14]:0
+$DEFINE MAPADDR_B   [addr15..14]:1
+$DEFINE MAPADDR_C   [addr15..14]:2
+$DEFINE MAPADDR_D   [addr15..14]:3
+
+FIELD mapAdata  = ['b'0, 'b'0, 'b'0, 'b'0, mapA3..0];   /* MMap A Data */
+FIELD mapBdata  = ['b'0, 'b'0, 'b'0, 'b'0, mapA3..0];   /* MMap B Data */
+FIELD mapCdata  = ['b'0, 'b'0, 'b'0, 'b'0, mapA3..0];   /* MMap C Data */
+FIELD mapDdata  = ['b'0, 'b'0, 'b'0, mapD4..0];         /* MMap D Data */  
+
+/** DBI Detect */
+$DEFINE DBI1_A  'h'CB   /* - CB nn (extended logical operations) */
+$DEFINE DBI1_B  'h'DD   /* - DD nn (IX operations) */
+$DEFINE DBI1_C  'h'ED   /* - ED nn (extended Z80 operations (16-bit, Interrupt, Memory/IO, etc.)) */
+$DEFINE DBI1_D  'h'FD   /* - FD nn (IY operations) */
+
+/** Breakpoint control, detection, and Special Reset */
+$DEFINE PC_RD   (((!m1 & iorq) & ioaddr:[10..1F]) & ioaddr:['b'0010XXXX])    /* Port 2X */
+$DEFINE PC_L_RD (((!m1 & iorq) & ioaddr:[10..1F]) & ioaddr:['b'0010XXX0])    /* Port 20 (plus) */
+$DEFINE PC_H_RD (((!m1 & iorq) & ioaddr:[10..1F]) & ioaddr:['b'0010XXX1])    /* Port 21 (plus) */
+$DEFINE NOP_FORCE   (zsr_req & ((m1 & mreq) & !dbi))
+FIELD pcsaved = [pc15..0];
+FIELD pcsaved_l = [pc7..0];
+FIELD pcsaved_h = [pc15..8];
+
+
+/************************************************************************/
+/* Logic                                                                */
+/************************************************************************/
+
+/** Boot/Reboot Reset */
+[rstCnt1..0].ar = !cpu_rst;
+[rstCnt1..0].ck = cpu_clk;
+[rstCnt1..0].ce = 'b'11;
+rstCnt0.t       = cpu_rst;
+rstCnt1.t       = cpu_rst & rstCnt0;
+
+iRst.ar     =  iRst & !cpu_rst;
+iRst.ap     =  OFF;
+iRst.d      =  ON;
+iRst.ck     =  rstCnt1 & rstCnt0;
+iRst.ce     =  ON;
+
+
+/** Z80 Special-Reset generation and Z80 Reset signal */
+zrst        = cpu_rst # zsprst; /* Reset to the local Z80 is the board reset or the special reset */
+zsr_req.ck  = attn & tgtmode    /* Running the target and the RP2040 Module needs attention */
+            # brkdet;           /* Break condition detected */
+zsr_req.d   = ON;
+zsr_req.ar  = zrst;
+/* Special Reset: must be true on rising edge of M1-T2 only (see patent) */
+zsprst.d    = zsr_req;
+zsprst.ck   = !zsprst & ZIF_1   /* Accept request at beginning of IF1 */
+            # zsprst & cpu_clk; /* Clear Special Reset with rising edge of CLK */
+
+/** Local Z80 NMI request generation */
+
+
+/** MMU Register Set/Write */
+[mapA3..0].ap =  [d3..0] & MAPADDR_A & MMAP_WR;
+[mapA3..0].ar = ![d3..0] & MAPADDR_A & MMAP_WR;
+[mapA3..0].d = ['b'0000];
+[mapA3..0].ck = !iRst;
+[mapB3..0].ap =  [d3..0] & MAPADDR_B & MMAP_WR;
+[mapB3..0].ar = ![d3..0] & MAPADDR_B & MMAP_WR;
+[mapB3..0].d = ['b'0001];
+[mapB3..0].ck = !iRst;
+[mapC3..0].ap =  [d3..0] & MAPADDR_C & MMAP_WR;
+[mapC3..0].ar = ![d3..0] & MAPADDR_C & MMAP_WR;
+[mapC3..0].d = ['b'0010];
+[mapC3..0].ck = !iRst;
+[mapD4..0].ap =  [d4..0] & MAPADDR_D & MMAP_WR;
+[mapD4..0].ar = ![d4..0] & MAPADDR_D & MMAP_WR;
+[mapD4..0].d = ['b'0011];
+[mapD4..0].ck = !iRst;
+
+/** MMU RR-Address and ROM/RAM Select Logic */
+[rra2..0] = [d2..0];
+rom_sel     = MEM_SEL & rd & !d3;
+ram_sel     = MEM_SEL & wr
+            # MEM_SEL & rd & d3;
+
+/** MMU Wait-State Generation - 1 WS for ROM Reads */
+wait.ck = (m1 & !iorq) # (mreq & !rfsh);
+wait.d  = !wait;
+wait.ar = ram_sel;
+
+
+/** I/O Port Decode */
+tgt_go      = IO_SEL & ioaddr:[30..3F];
+mod_sel     = IO_SEL & ioaddr:[40..4F];
+brkaddr_clk = IO_SEL & ioaddr:[50..5F];
+brkaden_clk = IO_SEL & ioaddr:[60..6F] & wr;
+brkaden_rd  = IO_SEL & ioaddr:[60..6F] & rd;
+brkaden_clr = IO_SEL & ioaddr:[70..7F];
+/*extern_io   = IO_SEL & ioaddr:[80..FF]; /* For use by external devices */
+
+
+/** SBC Mode, Target Mode, and Bus Control */
+sbcmode.d   = d3;               /* Bit-3 of Board Control #2 */
+sbcmode.ck  = CTRL1_SEL;
+sbcmode.ar  = iRst;
+tgtmode.ck  = tgo_now;
+tgtmode.d   = ON;
+tgtmode.ar  = zrst;             /* Target Mode is cleared by either a Special or Full Reset */
+
+tbus_en = tgtmode & !sbcmode;   /* Enable the Target Bus in Target Mode unless running as SBC */
+
+
+/** DBI Detect */
+dbi.d   = !dbi & (DBI1_A # DBI1_B # DBI1_C # DBI1_D);
+dbi.ck  = cpu_clk;
+dbi.ce  = (m1 & mreq);
+
+
+/** RST38 Detect */
+rst38det.d  = databus:'h'FF;
+rst38det.ck = cpu_clk;
+rst38det.ce = ZIF_1;
+rst38det.ar = ZRFSH;
+rst38det.ap = OFF;
+
+
+/** Breakpoint Detection, PC Capture, NOP Force */
+brkdet      = rst38det;     /* ZZZ !TEMP: This is only part */
+
+/* */
+pcsaved.d   = fulladdr;
+pcsaved.ck  = cpu_clk;
+pcsaved.ce  = m1 & tgtmode;
+
+
+/** Data Bus takes values from multiple things, so they all need to be here */
+/*  MMU Register Read, PC Read, or Z80 NOP Force */
+databus     = (MMAP_RD & mapAdata & MAPADDR_A)  /* Reading the Memory Map Reg */
+            # (MMAP_RD & mapBdata & MAPADDR_B)
+            # (MMAP_RD & mapCdata & MAPADDR_C)
+            # (MMAP_RD & mapDdata & MAPADDR_D)
+            # (NOP_FORCE & ZNOP)                /* Force NOP during Special Reset */
+            # (PC_L_RD & pcsaved_l)             /* Reading the saved PC */
+            # (PC_H_RD & pcsaved_h);
+databus.oe  = MMAP_RD # NOP_FORCE # PC_RD;      /* Onto the Data Bus for any of those */
+
+
+/* TEMP: Just to get address pins assigned to device by Fitter... */
+/*      This is to see how we are doing on the availability of pins. */
+TopOfMem = [addr15..0]:'h'FFFF;

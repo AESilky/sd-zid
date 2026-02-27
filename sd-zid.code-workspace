@@ -4,5 +4,43 @@
 			"path": "."
 		}
     ],
-    "settings": {}
+    "settings": {
+        "cSpell.words": [
+            "Adata",
+            "Bdata",
+            "brkaddr",
+            "brkaden",
+            "brkdet",
+            "databus",
+            "Ddata",
+            "fulladdr",
+            "GCLK",
+            "GCLR",
+            "h'FFFF",
+            "ioaddr",
+            "iorq",
+            "isptqfp",
+            "lnmi",
+            "mapaddr",
+            "mapdata",
+            "mmap",
+            "mreq",
+            "nclk",
+            "pcsav",
+            "pcsave",
+            "pcsaved",
+            "PINNODE",
+            "rfsh",
+            "sbcdb",
+            "sbcmode",
+            "tbus",
+            "tgtbusen",
+            "tgtmode",
+            "tnmi",
+            "ZNOP",
+            "ZRFSH",
+            "zrst",
+            "zsprst"
+        ]
+    }
 }
