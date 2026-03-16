@@ -1,0 +1,123 @@
+/* Header (must be first) */
+NAME     brkpnt_2n_logic;
+PARTNO   2;
+DATE     3/3/2026;
+REVISION 01;
+DESIGNER AESilky;
+COMPANY  None;
+ASSEMBLY None;
+LOCATION ;
+DEVICE   G16V8MS; /* ATF16V8B Registered DIP-20 */
+
+/**
+ * ZID (Z80 In-circuit Debugger) Address Break Enable and Compare Logic.
+ *
+ * This provides the Address Break Enable shift register bits and the Address
+ * Equal compare logic for 2 Break-Address units (referred to internally as A
+ * and B).
+ *
+ * An enable (or not enable) bit is shifted in from the 'din' input on each
+ * true edge of the 'aben_ck' input. The bit is shifted through from 'bAal_en'
+ * (break A address low enable) to 'bAah_en' (break A address high enable) to
+ * 'bBal_en' to 'bBah_en' and out to the next unit (if one exists).
+ *
+ * The 'aAleq' (address A low equal) is qualified with 'bAal_en' and the
+ * 'aBheq' is also used if 'bAah_en' is true. The same check is performed for
+ * breakpoint B, with the result of either being true going to the 'brk_match'
+ * output.
+ *  
+ *
+ */
+
+
+/* Configure cupl */
+PROPERTY Atmel {security = OFF};
+PROPERTY Atmel {power_reset = ON};
+Property Atmel {preassign = TRY};
+
+/* Convenience Names */
+$DEFINE ON  'b'1
+$DEFINE OFF 'b'0
+
+
+/********************************************************************************/
+/* Special Inputs                                                               */
+/********************************************************************************/
+
+PIN 1   = aben_ck;      /* Clock for the Address Enable SR */
+PIN 11  = oe;           /* Output Enable. Required for 'Registered' mode */
+
+
+/********************************************************************************/
+/* Inputs                                                                       */
+/********************************************************************************/
+
+PIN 2   = din;          /* Data IN (from CPU or output of prior stage)          */
+PIN 3   = enbls_clr;    /* Clear the address enables                            */
+PIN 6   = !aAheq;       /* Address-A High Equal (input from comparator)         */
+PIN 5   = !aAleq;       /* Address-A Low Equal (input from comparator)          */
+PIN 8   = !aBheq;       /* Address-B High Equal (input from comparator)         */
+PIN 7   = !aBleq;       /* Address=B Low Equal (input from comparator)          */
+
+
+/********************************************************************************/
+/* Outputs (used externally)                                                    */
+/********************************************************************************/
+
+PIN 19  = brk_match;    /* Breakpoint Address Match                             */
+PIN 13  = bBah_en;      /* Break-B Use high address (SR bit-4 )                 */
+                        /* Used as enable bit input to next unit                */
+                        /*  Also used to detect the breakpoint hardware         */
+PIN 18  = brkA_match;   /* Breakpoint-A Address Match (can be used externally)  */
+PIN 17  = brkB_match;   /* Breakpoint-B Address Match (can be used externally)  */
+
+
+/********************************************************************************/
+/* Internal Nodes, Registers and Intermediate Variable Definitions              */
+/* (on 16V8 these must be output pins, but they aren't used externally)         */
+/********************************************************************************/
+
+PIN 15  = bAah_en;      /* Break-A Use high address (SR bit-2 ) */
+PIN 16  = bAal_en;      /* Break-A Use low address  (SR bit-1 ) */
+/* */
+PIN 14  = bBal_en;      /* Break-B Use low address  (SR bit-3 ) */
+                        /*  high address is above as an 'offical' output    */
+
+
+/********************************************************************************/
+/* Fields and Convenience/Clarity Definitions                                   */
+/*                                                                              */
+/* NOTE: $DEFINE value cannot use a prior $DEFINE.                              */
+/*   Learned through lots of time spent tracking down compile errors!           */
+/*   Telltale error is:                                                         */
+/*     [0018ca] intermediate var not assigned an expression: xyz                */
+/*                                                                              */
+/*   Of course, that error could also legitimately mean that it                 */
+/*   hasn't been assigned, but if you get it, and you believe you've            */
+/*   assigned it, look for a case of a $DEFINE that contains a $DEFINE          */
+/*   involving that var/term.                                                   */
+/*                                                                              */
+/********************************************************************************/
+
+
+/********************************************************************************/
+/* Logic                                                                        */
+/********************************************************************************/
+
+/** Break Address Enable Registers Shift-In/Out */
+bAal_en.d   = !enbls_clr & din;     /* Data bit shifts into Addr Enable LOW             */
+bAah_en.d   = !enbls_clr & bAal_en; /* Addr Enable LOW shifts into HIGH of this stage   */
+bBal_en.d   = !enbls_clr & bAah_en; /* HIGH from prior stage shifts to LOW of this stage*/
+bBah_en.d   = !enbls_clr & bBal_en; /* Addr Enable LOW shifts into HIGH of this stage   */
+                                    /*  Used as input to next unit                      */
+                                    /*  Also used for unit detection                    */
+
+/** Break Address Match */
+brkA_match  = /* For only Break-A if wanted externally  */
+               (bAal_en & aAleq & (!bAah_en # (bAah_en & aAheq)));
+brkB_match  = /* For only Break-B if wanted externally  */
+               (bBal_en & aBleq & (!bBah_en # (bBah_en & aBheq)));
+
+brk_match   = /* For Address Match, AddrLow must be enabled. AddrHigh is optional */
+               (bAal_en & aAleq & (!bAah_en # (bAah_en & aAheq)))
+             # (bBal_en & aBleq & (!bBah_en # (bBah_en & aBheq)));
