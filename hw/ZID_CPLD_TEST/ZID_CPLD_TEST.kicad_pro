@@ -396,7 +396,7 @@
       "version": 1
     },
     "net_format_name": "",
-    "page_layout_descr_file": "zid_cpld_test",
+    "page_layout_descr_file": "zid_main",
     "plot_directory": "plot/",
     "space_save_all_events": true,
     "spice_current_sheet_as_root": false,

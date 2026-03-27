@@ -91,6 +91,7 @@ jtag.log
 syndos.env
 CM*
 CB*
+**/pld/_*
 
 # Specific 'Adds' to override ignored files
 #
