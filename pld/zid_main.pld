@@ -229,28 +229,29 @@ PIN 88 = !busreq;       /* Gated by target mode for zbusreq (on an in-only pin) 
 /*  making assignments gives the Fitter more flexibility)               */
 /************************************************************************/
 
-PIN [85,84,83,81..75] = [addr15..14,addr7..0]; /* Address inputs */
+PIN [85,84,83,81..75] = [addr15..14,addr7..0]; /* Address inputs        */
 PIN 67  = !rd;
 PIN 68  = !wr;
 PIN 69  = !iorq;
 PIN 70  = !mreq;
 PIN 72  = !rfsh;
-PIN   = !zbusack;
-PIN   = !tnmi;          /* Target System NMI request      */
-PIN   = !tint;          /* Target System INT request      */
-PIN   = !twait;         /* Target System WAIT request     */
-PIN 42 = !sbcmode;      /* We are running as an SBC                        (Board-Jumpers)   */
-PIN 45 = !tgt_only;     /* Target System should run immediately (no Debug init) (Board-SW)  */
-PIN 48 = tgt_now;       /* Target-Go counter has reached terminal count */ /* 48: SW1 on DevKit */
-PIN 49 = sop_now;       /* Single-Op counter has reached terminal count */
-PIN 44  = attn;         /* Request from RP2040 Module for attention */    /* 44: SW3 on DevKit */
+PIN 27  = !zbusack;     /* BusAck from Z80, used to gen +/- signals     */
+PIN 46  = !tnmi;        /* Target System NMI request                    */
+PIN  6  = !tint;        /* Target System INT request                    */
+PIN 37  = !twait;       /* Target System WAIT request                   */
+PIN 42  = !sbcmode;     /* We are running as an SBC   (Board-Jumpers)   */
+PIN 45  = !tgt_only;    /* Target System should run immediately (no Debug init) (Board-SW)  */
+PIN 48  = tgt_now;      /* Target-Go counter has reached terminal count */ /* 48: SW1 on DevKit */
+PIN 49  = sop_now;      /* Single-Op counter has reached terminal count */
+PIN 44  = attn;         /* Request from RP2040 Module for attention     */ /* 44: SW3 on DevKit */
 /* */
-PIN 61 = !brk1_a_eq;    /* Address match for breakpoint 1           */
-PIN  5 = !brkn_a_eq;    /* Breakpoint 2..n Address match                    */
-PIN   = !brkhw_detect;  /* Signal from external breakpoint boards. Provided */
-                        /* as a port read bit to the cpu for its use.       */
+PIN 61  = !brk1_a_eq;   /* Address match for breakpoint 1               */
+PIN  5  = !brkn_a_eq;   /* Breakpoint 2..n Address match                */
+PIN  8  = !brkhw_detect; /* Signal from external breakpoint boards.     */
+                         /* Provided as a port read bit to the cpu for  */
+                         /* its use. (1C-b2: BRK-INFO RD)               */
 /* */
-PIN   = pcrd_b_in;    /* Input bit from the PC Save shift register        */
+PIN  7  = pcrd_b_in;    /* Input bit from the PC Save shift register    */
 /* SBC General Purpose Input Bits (4) */
 PIN [52..55] = [sbc_gp7..4];
 PROPERTY Atmel {pin_keep = on sbc_gp7};
@@ -270,41 +271,39 @@ PIN [24..19,17,16] = [d7..2,d1..0];   /* Data I/O */
 /* Outputs                                                              */
 /************************************************************************/
 
-PIN 25  = !zrst;            /* Reset signal to the Z80 */
+PIN 25  = !zrst;        /* Reset signal to the Z80 */
 PIN [14..12] = [rra2..0]; /* ROM/RAM Address: Actually RRA16..14 on bus */
 PIN 41  = !ram_sel;
 PIN 40  = !rom_sel;
 PIN 64  = !zwait;
 PROPERTY Atmel {open_collector = on zwait};
-PIN   = !zbusreq;       /* To the Z80 */
-PIN   = !busack_l;      /* Buffered BUSACK LOW TRUE (to provide H and L true)  */
-PIN   = busack_h;       /* Buffered BUSACK HIGH TRUE (to provide H and L true) */
-PIN   = mod_sel;        /* RP2040 Module Select */
-PIN   = brkpc_rd;       /* Break PC, Address Enable, and BrkInfo Read (RD) */
+PIN 28  = !zbusreq;     /* To the Z80 */
+PIN  2  = !busack_l;    /* Buffered BUSACK LOW TRUE (to provide H and L true)  */
+PIN  1  = busack_h;     /* Buffered BUSACK HIGH TRUE (to provide H and L true) */
+PIN 35  = mod_sel;      /* RP2040 Module Select */
 /* */
 PIN 100 = ba_clk;       /* Break Address Clock */
-PIN 99 = baen_clk;      /* Break Address Enable Clock (WR) */
-PIN 98 = !baen_clr;     /* Break Address Enable Clear */
-PIN   = d7bo;           /* Data bit 7 buffered for use by break hardware */
+PIN 99  = baen_clk;     /* Break Address Enable Clock (WR) */
+PIN 98  = !baen_clr;    /* Break Address Enable Clear */
+PIN     = d7bo;         /* Data bit 7 buffered for use by break hardware */
 /* */
-PIN 96 = lcl_io;        /* Local I/O Addr Range and Op (ZID or SBC) */
+PIN 96  = lcl_io;       /* Local I/O Addr Range and Op (ZID or SBC) */
 /* */
-PIN  = !tdbus_en;       /* Target Data Bus Enable                     */
-PIN  = !tdbus_in;       /* Target Data Bus Direction                  */
-PIN  = tcbus_fsel;      /* Target Control Bus Fixed Sel               */
+PIN 94  = !tdbus_en;    /* Target Data Bus Enable                     */
+PIN 93  = !tdbus_in;    /* Target Data Bus Direction                  */
+PIN 92  = tcbus_fsel;   /* Target Control Bus Fixed Sel               */
 /* */
-PIN   = !znmi;          /* NMI to Z80 */
-PIN   = !zint;          /* INT to Z80 */
+PIN 29  = !znmi;        /* NMI to Z80 */
+PIN 30  = !zint;        /* INT to Z80 */
 /* */
 PIN 10  = tgt_go;       /* Start the bus operation countdown */ /* 10: LED7 on DevKit */
 PIN  9  = tgtmode;      /* Running target (not debug), used to reset OP counter */ /* 9: LED8 on DevKit */
-PIN   = mem_op;         /* Memory Op (excluding rfsh), used to clock OP counter */
+PIN 33  = mem_op;       /* Memory Op (excluding rfsh), used to clock OP counter */
 /* DBI Detect */
-PIN  = dbi;             /* Double-Byte Instruction Detected */
-PIN  = dbi_if2;         /* Double-Byte IF2 */
+PIN     = dbi_if2;      /* Double-Byte IF2 (not needed on a pin)        */
 /* */
-PIN 94 = pc_latch;      /* Latch enable for the external PC Save register  */
-PIN 31 = brk_dtctd;     /* Break condition detected - SYNC signal on board */
+PIN 97  = pc_latch;     /* Latch enable for the external PC Save register  */
+PIN 31  = brk_dtctd;    /* Break condition detected - SYNC signal on board */
 /* SBC General Purpose Output Bits (4) */
 PIN [56..58,60] = [sbc_gp3..0];
 
@@ -322,6 +321,7 @@ PINNODE = [rstSM2..0];      /* Reset state machine */
 PINNODE = zsr_req;          /* Request to generate a Z80 Special Reset */
 PINNODE = zsprst1;          /* Special reset generator #1 */
 PINNODE = zsprst2;          /* Special reset generator #2 */
+PINNODE = dbi;              /* Double-Byte Instruction Detected */
 
 /** MMU */
 PINNODE = mmu_io;           /* MMU I/O Operation                  */
@@ -369,6 +369,7 @@ PINNODE = [b2op2..0];   /* Breakpoint2..n Operation                     */
 PINNODE = [b1d7..0];    /* Data for BRK1                                */
 PINNODE = [b1dx7..0];   /* Data Don't Care for BRK1                     */
 /*  Breakpoint detection                                                */
+PINNODE = brkpc_rd;     /* PC Saved, BrkHW-Det, ZID, SBC, BrkInfo (RD)  */
 PINNODE = rst38det;     /* Used for 'SOFT' breakpoints                  */
 PINNODE = b1_det;       /* Breakpoint #1 condition detected             */
 PINNODE = b1_d_eq;      /*  Data equal                                  */
@@ -629,10 +630,10 @@ so_done.ar  = !tgtmode;
 tdbus_en    = !NOP_FORCE;   /* Enable the Target Data Bus unless forcing the NOP.           */
 /* */
 tdbus_in    = (!zbusack & (m1 # rd)) /* Data Bus direction is IN for M1 (IF or INTACK) or RD.*/
-             # (zbusack & wr);       /* or WR from Bus Master to on-board devices            */
+             # (zbusack & wr);       /* or WR from Bus Master to on-board devices           */
 /* */
 tcbus_fsel  = !tgtmode      /* Fixed Control signals during Debug Mode                      */
-             # NOP_FORCE;   /* or forcing the NOP.                                          */
+             # NOP_FORCE;   /* or when forcing the NOP.                                     */
 
 
 /** Debug Port Decode */
@@ -641,7 +642,7 @@ baen_clk    = lcl_io & ioaddr:['b'xxx1100x];         /* 18: BRK-ADDREN CLK  */
 baen_clr    = lcl_io & ioaddr:['b'xxx1101x];         /* 1A: BRK-ADDREN CLR  */
 brkpc_rd    = lcl_io & ioaddr:['b'xxx1110x] & rd;    /* 1C: BRK-INFO RD     */
 /** Debug & SBC Port Decode */
-rmod_sel    = lcl_io & ioaddr:['b'xxx1111x];     /* 1E/1F: RP Mod CTRL/DATA */
+mod_sel     = lcl_io & ioaddr:['b'xxx1111x];     /* 1E/1F: RP Mod CTRL/DATA */
 
 
 /** Breakpoint Registers and Control */
