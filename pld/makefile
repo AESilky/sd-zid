@@ -5,9 +5,10 @@
 .PHONY: all clean
 
 PLD_MAIN	:= zid_main
+PLD_BRKADDR	:= zid_ba
 PLD_BRK2X	:= zid_brk2x_ctrl
 
-JEDECS		:= $(PLD_MAIN).jed $(PLD_BRK2X).jed
+JEDECS		:= $(PLD_BRKADDR).jed $(PLD_MAIN).jed $(PLD_BRK2X).jed
 
 CUPL		:= cupl.exe
 FIT1502		:= fit1502.exe
@@ -33,8 +34,11 @@ all:	$(JEDECS)
 $(PLD_MAIN).jed: $(PLD_MAIN).tt2
 	$(FIT1508) -i $< $(FITOPTS_1508) $(FITOPTS_TQFP100) $(FITOPTS_CMN)
 
+$(PLD_BRKADDR).jed: $(PLD_BRKADDR).tt2
+	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
+
 $(PLD_BRK2X).jed: $(PLD_BRK2X).pld
 	$(CUPL) $(CUPLOPTS) $<
 
 clean:
-	rm -f *.abs *.doc *.fit *.io *.jed *.log *.lst *.pin *.pla *.sim *.tt2 *.tt3
+	rm -f *.abs *.doc *.fit *.io *.jed *.log *.lst *.oed *.pin *.pla *.sim *.tt2 *.tt3
