@@ -74,6 +74,7 @@
             "maprd",
             "mmap",
             "mreq",
+            "mwtrq",
             "nclk",
             "PARTNO",
             "pcrd",

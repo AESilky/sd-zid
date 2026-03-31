@@ -244,6 +244,7 @@ PIN 45  = !tgt_only;    /* Target System should run immediately (no Debug init) 
 PIN 48  = tgt_now;      /* Target-Go counter has reached terminal count */ /* 48: SW1 on DevKit */
 PIN 49  = sop_now;      /* Single-Op counter has reached terminal count */
 PIN 44  = attn;         /* Request from RP2040 Module for attention     */ /* 44: SW3 on DevKit */
+PIN 47  = !mwtrq;       /* Wait Request from RP2040 Module              */
 /* */
 PIN 61  = !brk1_a_eq;   /* Address match for breakpoint 1               */
 PIN  5  = !brkn_a_eq;   /* Breakpoint 2..n Address match                */
@@ -280,14 +281,14 @@ PROPERTY Atmel {open_collector = on zwait};
 PIN 28  = !zbusreq;     /* To the Z80 */
 PIN  2  = !busack_l;    /* Buffered BUSACK LOW TRUE (to provide H and L true)  */
 PIN  1  = busack_h;     /* Buffered BUSACK HIGH TRUE (to provide H and L true) */
-PIN 35  = mod_sel;      /* RP2040 Module Select */
+PIN 35  = !mod_sel;     /* RP2040 Module Select */
 /* */
 PIN 100 = ba_clk;       /* Break Address Clock */
 PIN 99  = baen_clk;     /* Break Address Enable Clock (WR) */
 PIN 98  = !baen_clr;    /* Break Address Enable Clear */
 PIN     = d7bo;         /* Data bit 7 buffered for use by break hardware */
 /* */
-PIN 96  = lcl_io;       /* Local I/O Addr Range and Op (ZID or SBC) */
+PIN 96  = !lcl_io;       /* Local I/O Addr Range and Op (ZID or SBC) */
 /* */
 PIN 94  = !tdbus_en;    /* Target Data Bus Enable                     */
 PIN 93  = !tdbus_in;    /* Target Data Bus Direction                  */
@@ -297,12 +298,12 @@ PIN 29  = !znmi;        /* NMI to Z80 */
 PIN 30  = !zint;        /* INT to Z80 */
 /* */
 PIN 10  = tgt_go;       /* Start the bus operation countdown */ /* 10: LED7 on DevKit */
-PIN  9  = tgtmode;      /* Running target (not debug), used to reset OP counter */ /* 9: LED8 on DevKit */
+PIN  9  = !tgtmode;      /* Running target (not debug), used to reset OP counter */ /* 9: LED8 on DevKit */
 PIN 33  = mem_op;       /* Memory Op (excluding rfsh), used to clock OP counter */
 /* DBI Detect */
 PIN     = dbi_if2;      /* Double-Byte IF2 (not needed on a pin)        */
 /* */
-PIN 97  = pc_latch;     /* Latch enable for the external PC Save register  */
+PIN 97  = !pc_latch;     /* Latch enable for the external PC Save register  */
 PIN 31  = brk_dtctd;    /* Break condition detected - SYNC signal on board */
 /* SBC General Purpose Output Bits (4) */
 PIN [56..58,60] = [sbc_gp3..0];
@@ -598,7 +599,8 @@ ram_sel     = mem_op &
 
 /** MMU Wait-State Generation - 1 WS for ROM Access */
 zwait       = (twait & tgtmode)
-             # ((!tgtmode # sbcmode) & wait_req);
+             # ((!tgtmode # sbcmode) & wait_req)
+             # (mod_sel & mwtrq);
 wait_req.ck = cpu_clk;
 wait_req.d  = rom_sel & !wait_ho;
 wait_ho.ck  = cpu_clk;

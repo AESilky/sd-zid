@@ -34,9 +34,9 @@ $DEFINE OFF 'b'0
 
 PIN 37 = ba_clk;            /* Break Address CLK (on GCLK1)         */
 PIN 40 = baen_clk;          /* Address Enable CLK (on GCLK2)        */
-PIN 39 = baen_clr;          /* Address Enable CLR (on GCLR)         */
+PIN 39 = !baen_clr;         /* Address Enable CLR (on GCLR)         */
 PIN 38 = ae_data_in;        /* Address Enable Data Bit (on in-only) */
-PIN 35 = ba_clr;            /* Address CLR (on GCLK3)               */
+PIN 35 = !ba_clr;           /* Address CLR (on GCLK3)               */
 /* JTAG on pins: 1,7,26,32                                          */
 
 
@@ -46,8 +46,10 @@ PIN 35 = ba_clr;            /* Address CLR (on GCLK3)               */
 /* be left unassigned. Not making assignments gives the Fitter more     */
 /* flexibility)                                                         */
 /************************************************************************/
-PIN 6 = ba_data_in;         /* Data bit in for Break Address */
-PIN [31,30,28,27,25,23..20,18,15..10] = [addr15..0]; /* Address Bus */
+PIN 6   = ba_data_in;       /* Data bit in for Break Address            */
+PIN [31,30,28,27,25,23..20,19,18,15..11] = [addr15..0]; /* Address Bus  */
+PIN 8   = in1;              /* General input #1                         */
+PIN 33  = in2;              /* General input #2                         */
 
 /************************************************************************/
 /* Outputs                                                              */
@@ -55,19 +57,22 @@ PIN [31,30,28,27,25,23..20,18,15..10] = [addr15..0]; /* Address Bus */
 /* be left unassigned. Not making assignments gives the Fitter more     */
 /* flexibility)                                                         */
 /************************************************************************/
-PIN  = ba_data_out;         /* Data bit out from Break Address  */
-PIN  = ae_data_out;         /* Data bit out from Address Enable */
+PIN  3 = ba_data_out;       /* Data bit out from Break Address  */
+PIN  2 = ae_data_out;       /* Data bit out from Address Enable */
 
-PIN  = !brk1_detect;        /* Output from BrkAddrEnH_1 to detect BP Unit */
+PIN 44 = !brk1_detect;      /* Output from BrkAddrEnH_1 to detect BP Unit */
 PROPERTY Atmel {open_collector = on brk1_detect};
-PIN  = !brk1_aeq;           /* Break-1 Address Equal                    */
+PIN 43 = !brk1_aeq;         /* Break-1 Address Equal                  */
 PROPERTY Atmel {open_collector = on brk1_aeq};
 
-PIN  = !brk2_detect;        /* Output from BrkAddrEnH_2 to detect BP Unit */
+PIN  5 = !brk2_detect;      /* Output from BrkAddrEnH_2 to detect BP Unit */
 PROPERTY Atmel {open_collector = on brk2_detect};
-PIN  = !brk2_aeq;           /* Break-n Address Equal (other than Break-1) */
+PIN 42 = !brk2_aeq;         /* Break-n Address Equal (other than Break-1) */
 PROPERTY Atmel {open_collector = on brk2_aeq};
 
+PIN 10 = !out1;             /* General output #1 (Inverter/NOT)         */              
+PIN 34 = out2;              /* General output #2                        */
+PROPERTY Atmel {open_collector = on out2};
 
 /************************************************************************/
 /* Internal Nodes, Registers and Intermediate Variable Definitions      */
@@ -113,6 +118,10 @@ ba_data_out = b2_addr_h7;   /* Break(last) Address High Bit-7 is used as BA data
 brk1_detect = b1_ah_en;     /* Each Break Unit is detected by checking the Inv of the H-EN */
 /* */
 brk2_detect = b2_ah_en;     /* Each Break Unit is detected by checking the Inv of the H-EN */
+
+/** General IN => OUT (for use on the board)            */
+out1 = in1;                 /* out1 is Inverted (NOT)   */
+out2 = in2;                 /* out2 is Open Collector   */
 
 /** Break-1 Address Enable Registers Shift-In/Out */
 b1_al_en.d  = ae_data_in;   /* Data bit shifts into Addr Enable LOW             */
