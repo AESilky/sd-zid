@@ -1,0 +1,28 @@
+Breakpoint test (manual)
+
+BRK-1: Test PW with Addr L and Data 0101101x (5A or 5B)
+Clear the address enable
+ O 1A 0 ; Any value (monitor baen_clr)
+Shift enable out to BA1_L
+ O 18 80 ; Bit-7 is used (monitor baen_clk)
+Set Data Don't Care
+ O 02 01
+Set Data Value
+ O 00 5A
+Select PW as Operation
+ O 04 05
+Jumper brk1_a_eq L
+Put CPLD in Target Mode
+Output some values (not 5A or 5B) and then 5B
+>>> CPLD should do ZSR and go to Debug Mode when 5B is output
+
+
+BRK-1: Change to MW with both Addr L and Addr H
+Shift enable to BA1_L (which pushes previous enable to H)
+ O 18 80
+Select MW as Operation
+ 0 04 02
+(keep) Jumper brk1_a_eq L
+Put CPLD in Target Mode
+Write some values (not 5A or 5B) and then 5A
+>>> CPLD should do ZSR and go to Debug Mode when 5A is written

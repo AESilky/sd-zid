@@ -1,0 +1,15 @@
+root=true
+[*.{js,ts,json}]
+indent_size = 2
+
+[*.{asm,inc}]
+indent_style = tab
+indent_size = 8
+
+[*.{fit}]
+indent_style = tab
+indent_size = 8
+
+[*.{pld}]
+indent_style = tab
+indent_size = 4

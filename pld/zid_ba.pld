@@ -1,0 +1,239 @@
+/* Header (must be first) */
+NAME     brkaddr_logic;
+PARTNO   2;
+DATE     3/27/2026;
+REVISION 01;
+DESIGNER AESilky;
+COMPANY  None;
+ASSEMBLY None;
+LOCATION ;
+Device   f1504isptqfp44; /* ATF1504AS 44TQFP ISP/JTAG */
+
+/****************************************************************************
+ *
+ * Z80 In-Circuit Debugger (ZID) Breakpoint Address Compare Logic.
+ *
+ ****************************************************************************
+ */
+
+/* Configure cupl */
+Property Atmel {security = OFF};
+Property Atmel {power_reset = ON};
+Property Atmel {preassign = KEEP};   /* OFF, TRY, KEEP */
+Property Atmel {TDI_pullup = ON};
+Property Atmel {TMS_pullup = ON};
+
+/* Convenience Names */
+$DEFINE ON  'b'1
+$DEFINE OFF 'b'0
+
+
+/************************************************************************/
+/* Special Inputs                                                       */
+/************************************************************************/
+
+PIN 37 = ba_clk;            /* Break Address CLK (on GCLK1)         */
+PIN 40 = baen_clk;          /* Address Enable CLK (on GCLK2)        */
+PIN 39 = !baen_clr;         /* Address Enable CLR (on GCLR)         */
+PIN 38 = ae_data_in;        /* Address Enable Data Bit (on in-only) */
+PIN 35 = !ba_clr;           /* Address CLR (on GCLK3)               */
+/* JTAG on pins: 1,7,26,32                                          */
+
+
+/************************************************************************/
+/* Inputs                                                               */
+/* (pins required externally will be assigned. Pins not required will   */
+/* be left unassigned. Not making assignments gives the Fitter more     */
+/* flexibility)                                                         */
+/************************************************************************/
+PIN 6   = ba_data_in;       /* Data bit in for Break Address            */
+PIN [31,30,28,27,25,23..20,19,18,15..11] = [addr15..0]; /* Address Bus  */
+PIN 8   = in1;              /* General input #1                         */
+PIN 33  = in2;              /* General input #2                         */
+
+/************************************************************************/
+/* Outputs                                                              */
+/* (pins required externally will be assigned. Pins not required will   */
+/* be left unassigned. Not making assignments gives the Fitter more     */
+/* flexibility)                                                         */
+/************************************************************************/
+PIN  3 = ba_data_out;       /* Data bit out from Break Address  */
+PIN  2 = ae_data_out;       /* Data bit out from Address Enable */
+
+PIN 44 = !brk1_detect;      /* Output from BrkAddrEnH_1 to detect BP Unit */
+PROPERTY Atmel {open_collector = on brk1_detect};
+PIN 43 = !brk1_aeq;         /* Break-1 Address Equal                  */
+PROPERTY Atmel {open_collector = on brk1_aeq};
+
+PIN  5 = !brk2_detect;      /* Output from BrkAddrEnH_2 to detect BP Unit */
+PROPERTY Atmel {open_collector = on brk2_detect};
+PIN 42 = !brk2_aeq;         /* Break-n Address Equal (other than Break-1) */
+PROPERTY Atmel {open_collector = on brk2_aeq};
+
+PIN 10 = !out1;             /* General output #1 (Inverter/NOT)         */              
+PIN 34 = out2;              /* General output #2                        */
+PROPERTY Atmel {open_collector = on out2};
+
+/************************************************************************/
+/* Internal Nodes, Registers and Intermediate Variable Definitions      */
+/************************************************************************/
+
+PINNODE = b1_al_en;         /* Breakpoint #1 address low enable SR      */
+PINNODE = b1_ah_en;         /* Breakpoint #1 address high enable SR     */
+PINNODE = [b1_addr_l7..0];  /* Breakpoint #1 address low bits (target)  */
+PINNODE = [b1_addr_h7..0];  /* Breakpoint #1 address high bits (target) */
+PINNODE = b1_ah_eq;
+
+PINNODE = b2_al_en;         /* Breakpoint #2 address low enable SR      */
+PINNODE = b2_ah_en;         /* Breakpoint #2 address high enable SR     */
+PINNODE = [b2_addr_l7..0];  /* Breakpoint #2 address low bits (target)  */
+PINNODE = [b2_addr_h7..0];  /* Breakpoint #2 address high bits (target) */
+PINNODE = b2_ah_eq;
+
+/************************************************************************/
+/* Fields and Convenience/Clarity Definitions                           */
+/*                                                                      */
+/* NOTE: $DEFINE value cannot use a prior $DEFINE.                      */
+/*   Learned through lots of time spent tracking down compile errors!   */
+/*   Telltale error is:                                                 */
+/*     [0018ca] intermediate var not assigned an expression: xyz        */
+/*                                                                      */
+/*   Of course, that error could also, legitimately, mean that it       */
+/*   hasn't been assigned, but if you get it, and you believe you've    */
+/*   assigned it, look for a case of a $DEFINE that contains a $DEFINE. */
+/*                                                                      */
+/************************************************************************/
+
+$DEFINE ADDR_H  [addr15..8]
+$DEFINE ADDR_L  [addr7..0]
+
+
+/************************************************************************/
+/* Logic                                                                */
+/************************************************************************/
+
+ae_data_out = b2_ah_en;     /* Address Enable High is used as AE data bit in of next unit */
+ba_data_out = b2_addr_h7;   /* Break(last) Address High Bit-7 is used as BA data bit in of next unit */
+
+brk1_detect = b1_ah_en;     /* Each Break Unit is detected by checking the Inv of the H-EN */
+/* */
+brk2_detect = b2_ah_en;     /* Each Break Unit is detected by checking the Inv of the H-EN */
+
+/** General IN => OUT (for use on the board)            */
+out1 = in1;                 /* out1 is Inverted (NOT)   */
+out2 = in2;                 /* out2 is Open Collector   */
+
+/** Break-1 Address Enable Registers Shift-In/Out */
+b1_al_en.d  = ae_data_in;   /* Data bit shifts into Addr Enable LOW             */
+b1_al_en.ck = baen_clk;
+b1_al_en.ar = baen_clr;
+b1_ah_en.d  = b1_al_en;     /* Addr Enable LOW shifts into HIGH of this stage   */
+                            /*  Used as input to next unit                      */
+                            /*  Also used for unit detection                    */
+b1_ah_en.ck = baen_clk;
+b1_ah_en.ar = baen_clr;
+
+/** Break-1 Address Registers - Shift-In/Out      */
+[b1_addr_l7..0].ck  = ba_clk;
+[b1_addr_l7..0].ar  = ba_clr;
+b1_addr_l0.d        = ba_data_in;
+b1_addr_l1.d        = b1_addr_l0;
+b1_addr_l2.d        = b1_addr_l1;
+b1_addr_l3.d        = b1_addr_l2;
+b1_addr_l4.d        = b1_addr_l3;
+b1_addr_l5.d        = b1_addr_l4;
+b1_addr_l6.d        = b1_addr_l5;
+b1_addr_l7.d        = b1_addr_l6;
+/* */
+[b1_addr_h7..0].ck  = ba_clk;
+[b1_addr_h7..0].ar  = ba_clr;
+b1_addr_h0.d        = b1_addr_l7;
+b1_addr_h1.d        = b1_addr_h0;
+b1_addr_h2.d        = b1_addr_h1;
+b1_addr_h3.d        = b1_addr_h2;
+b1_addr_h4.d        = b1_addr_h3;
+b1_addr_h5.d        = b1_addr_h4;
+b1_addr_h6.d        = b1_addr_h5;
+b1_addr_h7.d        = b1_addr_h6;
+
+
+/** Break Address Compare */
+b1_ah_eq    = !b1_ah_en
+             # (
+                !(addr15 $ b1_addr_h7)
+              & !(addr14 $ b1_addr_h6)
+              & !(addr13 $ b1_addr_h5)
+              & !(addr12 $ b1_addr_h4)
+              & !(addr11 $ b1_addr_h3)
+              & !(addr10 $ b1_addr_h2)
+              & !(addr9 $ b1_addr_h1)
+              & !(addr8 $ b1_addr_h0)
+             );
+brk1_aeq    = b1_al_en & b1_ah_eq
+                & !(addr7 $ b1_addr_l7)
+                & !(addr6 $ b1_addr_l6)
+                & !(addr5 $ b1_addr_l5)
+                & !(addr4 $ b1_addr_l4)
+                & !(addr3 $ b1_addr_l3)
+                & !(addr2 $ b1_addr_l2)
+                & !(addr1 $ b1_addr_l1)
+                & !(addr0 $ b1_addr_l0)
+            ;
+
+
+/** Break-2 Address Enable Registers Shift-In/Out */
+b2_al_en.d  = ae_data_in;   /* Data bit shifts into Addr Enable LOW             */
+b2_al_en.ck = baen_clk;
+b2_al_en.ar = baen_clr;
+b2_ah_en.d  = b2_al_en;     /* Addr Enable LOW shifts into HIGH of this stage   */
+                            /*  Used as input to next unit                      */
+                            /*  Also used for unit detection                    */
+b2_ah_en.ck = baen_clk;
+b2_ah_en.ar = baen_clr;
+
+/** Break-2 Address Registers - Shift-In/Out      */
+[b2_addr_l7..0].ck  = ba_clk;
+[b2_addr_l7..0].ar  = ba_clr;
+b2_addr_l0.d        = ba_data_in;
+b2_addr_l1.d        = b2_addr_l0;
+b2_addr_l2.d        = b2_addr_l1;
+b2_addr_l3.d        = b2_addr_l2;
+b2_addr_l4.d        = b2_addr_l3;
+b2_addr_l5.d        = b2_addr_l4;
+b2_addr_l6.d        = b2_addr_l5;
+b2_addr_l7.d        = b2_addr_l6;
+/* */
+[b2_addr_h7..0].ck  = ba_clk;
+[b2_addr_h7..0].ar  = ba_clr;
+b2_addr_h0.d        = b2_addr_l7;
+b2_addr_h1.d        = b2_addr_h0;
+b2_addr_h2.d        = b2_addr_h1;
+b2_addr_h3.d        = b2_addr_h2;
+b2_addr_h4.d        = b2_addr_h3;
+b2_addr_h5.d        = b2_addr_h4;
+b2_addr_h6.d        = b2_addr_h5;
+b2_addr_h7.d        = b2_addr_h6;
+
+
+/** Break Address Compare */
+b2_ah_eq    = !b2_ah_en
+             # (
+                !(addr15 $ b2_addr_h7)
+              & !(addr14 $ b2_addr_h6)
+              & !(addr13 $ b2_addr_h5)
+              & !(addr12 $ b2_addr_h4)
+              & !(addr11 $ b2_addr_h3)
+              & !(addr10 $ b2_addr_h2)
+              & !(addr9 $ b2_addr_h1)
+              & !(addr8 $ b2_addr_h0)
+             );
+brk2_aeq    = b2_al_en & b2_ah_eq 
+                & !(addr7 $ b2_addr_l7)
+                & !(addr6 $ b2_addr_l6)
+                & !(addr5 $ b2_addr_l5)
+                & !(addr4 $ b2_addr_l4)
+                & !(addr3 $ b2_addr_l3)
+                & !(addr2 $ b2_addr_l2)
+                & !(addr1 $ b2_addr_l1)
+                & !(addr0 $ b2_addr_l0)
+            ;

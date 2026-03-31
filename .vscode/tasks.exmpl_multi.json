@@ -1,0 +1,38 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "cupl",
+            "type": "shell",
+            "command": "cupl.exe -m1nlxj ${fileBasenameNoExtension}.pld",
+            "group": "build",
+            "options": {
+                "cwd": "${fileDirname}"
+            }
+        },
+        {
+            "label": "fit",
+            "type": "shell",
+            "command": "fit1508.exe ${fileBasenameNoExtension}.tt2 -CPUL -device TQFP100 -tech ATF1508AS -JTAG ON",
+            "group": "build",
+            "options": {
+                "cwd": "${fileDirname}"
+            }
+        },
+        {
+            "label": "Build PLD",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "cupl",
+                "fit"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

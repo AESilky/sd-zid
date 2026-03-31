@@ -1,0 +1,147 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "2be47242-6db6-4d8d-b590-8c682dee013e")
+	(paper "User" 419.1 323.85)
+	(title_block
+		(title "Z80 In-Circuit Debugger (ZID)")
+		(date "2026-03-29")
+		(rev "PR-1.0")
+		(company "SilkyDESIGN")
+		(comment 1 "Copyright 2026 AESilky")
+	)
+	(lib_symbols)
+	(sheet
+		(at 226.06 27.94)
+		(size 83.82 83.82)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board no)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "80e7ef47-cbe1-4e82-931e-1a2076ad38e5")
+		(property "Sheetname" "hold"
+			(at 226.06 27.2284 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "hold.kicad_sch"
+			(at 226.06 112.3446 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 127 27.94)
+		(size 83.82 83.82)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "85d5adae-afa2-47ff-bde7-22bb8340c4cf")
+		(property "Sheetname" "Conn and Expand"
+			(at 127 27.2284 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "conn_exp.kicad_sch"
+			(at 127 112.3446 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 27.94 27.94)
+		(size 83.82 83.82)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "f092485f-e7d4-42be-add8-9bafec004ccb")
+		(property "Sheetname" "Main Logic"
+			(at 27.94 27.2284 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "zid_main_logic.kicad_sch"
+			(at 27.94 112.3446 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)
