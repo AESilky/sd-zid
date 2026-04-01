@@ -284,9 +284,10 @@ PIN  1  = busack_h;     /* Buffered BUSACK HIGH TRUE (to provide H and L true) *
 PIN 35  = !mod_sel;     /* RP2040 Module Select */
 /* */
 PIN 100 = ba_clk;       /* Break Address Clock */
+PIN   = !ba_clr;        /* Break Address Clear */ 
 PIN 99  = baen_clk;     /* Break Address Enable Clock (WR) */
 PIN 98  = !baen_clr;    /* Break Address Enable Clear */
-PIN     = d7bo;         /* Data bit 7 buffered for use by break hardware */
+PIN 36  = d7bo;         /* Data bit 7 buffered for use by break hardware */
 /* */
 PIN 96  = !lcl_io;       /* Local I/O Addr Range and Op (ZID or SBC) */
 /* */
@@ -639,7 +640,8 @@ tcbus_fsel  = !tgtmode      /* Fixed Control signals during Debug Mode          
 
 
 /** Debug Port Decode */
-ba_clk      = lcl_io & ioaddr:['b'xxx1011x];         /* 16: BRK-ADDR CLK    */
+ba_clk      = lcl_io & ioaddr:['b'xxx1010x];         /* 14: BRK-ADDR CLK    */
+ba_clr      = lcl_io & ioaddr:['b'xxx1011x];         /* 16: BRK-ADDR CLR    */
 baen_clk    = lcl_io & ioaddr:['b'xxx1100x];         /* 18: BRK-ADDREN CLK  */
 baen_clr    = lcl_io & ioaddr:['b'xxx1101x];         /* 1A: BRK-ADDREN CLR  */
 brkpc_rd    = lcl_io & ioaddr:['b'xxx1110x] & rd;    /* 1C: BRK-INFO RD     */
