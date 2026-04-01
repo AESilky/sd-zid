@@ -68,12 +68,10 @@ _autosave*
 #  For any that are needed, add an ! include
 *.lst
 *.mx
-*.pdf
 *.pla
 *.so
 *.wo
 *.abs
-*.pdf
 *.tt*
 *.vt
 *.doc
@@ -92,6 +90,7 @@ syndos.env
 CM*
 CB*
 **/pld/_*
+**/pld/*.pdf
 
 # Specific 'Adds' to override ignored files
 #
