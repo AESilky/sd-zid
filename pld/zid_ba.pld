@@ -1,7 +1,7 @@
 /* Header (must be first) */
 NAME     brkaddr_logic;
 PARTNO   2;
-DATE     3/27/2026;
+DATE     4/02/2026;
 REVISION 01;
 DESIGNER AESilky;
 COMPANY  None;
@@ -48,6 +48,8 @@ PIN 35 = !ba_clr;           /* Address CLR (on GCLK3)               */
 /************************************************************************/
 PIN 6   = ba_data_in;       /* Data bit in for Break Address            */
 PIN [31,30,28,27,25,23..20,19,18,15..11] = [addr15..0]; /* Address Bus  */
+PROPERTY Atmel {pin_keep = on addr15,addr14,addr13,addr12,addr11,addr10,addr9,addr8};
+PROPERTY Atmel {pin_keep = on addr7,addr6,addr5,addr4,addr3,addr2,addr1,addr0};
 PIN 8   = in1;              /* General input #1                         */
 PIN 33  = in2;              /* General input #2                         */
 

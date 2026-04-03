@@ -84,6 +84,7 @@
             "PINNODE",
             "pullup",
             "REGS",
+            "rfmr",
             "rfsh",
             "rmod",
             "sbcdb",

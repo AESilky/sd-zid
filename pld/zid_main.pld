@@ -1,7 +1,7 @@
 /* Header (must be first) */
 NAME     main_db_logic;
 PARTNO   1;
-DATE     3/28/2026;
+DATE     4/02/2026;
 REVISION 01;
 DESIGNER AESilky;
 COMPANY  None;
@@ -231,9 +231,13 @@ PIN 88 = !busreq;       /* Gated by target mode for zbusreq (on an in-only pin) 
 
 PIN [85,84,83,81..75] = [addr15..14,addr7..0]; /* Address inputs        */
 PIN 67  = !rd;
+PROPERTY Atmel {pin_keep = on rd};
 PIN 68  = !wr;
+PROPERTY Atmel {pin_keep = on wr};
 PIN 69  = !iorq;
+PROPERTY Atmel {pin_keep = on iorq};
 PIN 70  = !mreq;
+PROPERTY Atmel {pin_keep = on mreq};
 PIN 72  = !rfsh;
 PIN 27  = !zbusack;     /* BusAck from Z80, used to gen +/- signals     */
 PIN 46  = !tnmi;        /* Target System NMI request                    */
@@ -266,6 +270,7 @@ PROPERTY Atmel {pin_keep = on sbc_gp4};
 /************************************************************************/
 
 PIN [24..19,17,16] = [d7..2,d1..0];   /* Data I/O */
+PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
 
 
 /************************************************************************/
@@ -279,24 +284,25 @@ PIN 40  = !rom_sel;
 PIN 64  = !zwait;
 PROPERTY Atmel {open_collector = on zwait};
 PIN 28  = !zbusreq;     /* To the Z80 */
-PIN  2  = !busack_l;    /* Buffered BUSACK LOW TRUE (to provide H and L true)  */
-PIN  1  = busack_h;     /* Buffered BUSACK HIGH TRUE (to provide H and L true) */
-PIN 35  = !mod_sel;     /* RP2040 Module Select */
+PIN  2  = !busack_l;    /* Buffered BUSACK LOW TRUE (to provide H and L true)   */
+PIN  1  = busack_h;     /* Buffered BUSACK HIGH TRUE (to provide H and L true)  */
+PIN 35  = !mod_sel;     /* RP2040 Module Select                                 */
 /* */
-PIN 100 = ba_clk;       /* Break Address Clock */
-PIN   = !ba_clr;        /* Break Address Clear */ 
-PIN 99  = baen_clk;     /* Break Address Enable Clock (WR) */
-PIN 98  = !baen_clr;    /* Break Address Enable Clear */
-PIN 36  = d7bo;         /* Data bit 7 buffered for use by break hardware */
+PIN 100 = ba_clk;       /* Break Address Clock                              */
+PIN 32  = !ba_clr;        /* Break Address Clear                            */ 
+PIN 99  = baen_clk;     /* Break Address Enable Clock (WR)                  */
+PIN 98  = !baen_clr;    /* Break Address Enable Clear                       */
+PIN 36  = d7bo;         /* Data bit 7 buffered for use by break hardware    */
 /* */
-PIN 96  = !lcl_io;       /* Local I/O Addr Range and Op (ZID or SBC) */
+PIN 96  = !lcl_io;       /* Local I/O Addr Range and Op (ZID or SBC)        */
 /* */
-PIN 94  = !tdbus_en;    /* Target Data Bus Enable                     */
-PIN 93  = !tdbus_in;    /* Target Data Bus Direction                  */
-PIN 92  = tcbus_fsel;   /* Target Control Bus Fixed Sel               */
+PIN 94  = !tdbus_en;    /* Target Data Bus Enable                           */
+PIN 93  = !tdbus_in;    /* Target Data Bus Direction                        */
+PIN 92  = tcbus_fsel;   /* Target Control Bus Fixed Sel                     */
 /* */
 PIN 29  = !znmi;        /* NMI to Z80 */
 PIN 30  = !zint;        /* INT to Z80 */
+PIN 71  = !rfmr;        /* RFSH gated MREQ (for the target during debug)    */
 /* */
 PIN 10  = tgt_go;       /* Start the bus operation countdown */ /* 10: LED7 on DevKit */
 PIN  9  = !tgtmode;      /* Running target (not debug), used to reset OP counter */ /* 9: LED8 on DevKit */
@@ -534,6 +540,9 @@ znmi        = (tgtmode & tnmi    /* Target running and it has an NMI (no target 
 
 zint        = tgtmode & !sngl_step & tint;   /* Target INT gated to Z80 only when in Target Mode */
 
+
+/** Refresh Gated Memory Request for the Target MREQ while in Debug Mode */
+rfmr    = mreq & rfsh;
 
 /** Simple gated and/or buffered signals */
 zbusreq     = busreq & tgtmode & !sngl_op & !sngl_step; /* BUSREQ only when in Target mode */
