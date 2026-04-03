@@ -8,7 +8,7 @@ PLD_MAIN	:= zid_main
 PLD_BRKADDR	:= zid_ba
 PLD_BRK2X	:= zid_brk2x_ctrl
 
-JEDECS		:= $(PLD_BRKADDR).jed $(PLD_MAIN).jed $(PLD_BRK2X).jed
+JEDECS		:= $(PLD_BRKADDR).jed $(PLD_MAIN).jed
 
 CUPL		:= cupl.exe
 FIT1502		:= fit1502.exe
