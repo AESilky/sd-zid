@@ -230,6 +230,7 @@ PIN 88 = !busreq;       /* Gated by target mode for zbusreq (on an in-only pin) 
 /************************************************************************/
 
 PIN [85,84,83,81..75] = [addr15..14,addr7..0]; /* Address inputs        */
+PROPERTY Atmel {pin_keep = on addr7,addr6,addr5,addr4,addr3,addr2,addr1,addr0};
 PIN 67  = !rd;
 PROPERTY Atmel {pin_keep = on rd};
 PIN 68  = !wr;
