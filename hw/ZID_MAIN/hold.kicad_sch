@@ -6,10 +6,10 @@
 	(paper "User" 419.1 323.85)
 	(title_block
 		(title "hold & scratch (not on board)")
-		(date "2026-04-04")
+		(date "2026-04-05")
 		(rev "PR-1.0")
-		(company "SilkyDESIGN")
-		(comment 1 "Copyright 2026 AESilky")
+		(company "SilkyDESIGN / CMOS1")
+		(comment 1 "Copyright 2026 AESilky & SmM")
 	)
 	(lib_symbols)
 )

@@ -6,10 +6,10 @@
 	(paper "User" 419.1 323.85)
 	(title_block
 		(title "Target Pod and Break Expand")
-		(date "2026-04-04")
+		(date "2026-04-05")
 		(rev "PR-1.0")
-		(company "SilkyDESIGN")
-		(comment 1 "Copyright 2026 AESilky")
+		(company "SilkyDESIGN / CMOS1")
+		(comment 1 "Copyright 2026 AESilky & SmM")
 	)
 	(lib_symbols
 		(symbol "74xx:74LVC125"
@@ -3115,6 +3115,155 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Diode:ESD5Zxx"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "ESD5Zxx"
+				(at 0 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Diode_SMD:D_SOD-523"
+				(at 0 -4.445 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.onsemi.com/pdf/datasheet/esd5z2.5t1-d.pdf"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "ESD Protection Diode, SOD-523"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "esd tvs unidirectional diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "D?SOD?523*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "ESD5Zxx_0_1"
+				(polyline
+					(pts
+						(xy -1.27 -1.27) (xy -1.27 1.27) (xy -0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy -1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "ESD5Zxx_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Jumper:Jumper_2_Small_Bridged"
 			(pin_numbers
 				(hide yes)
@@ -3415,6 +3564,340 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Mechanical:MountingHole"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(property "Reference" "H"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "MountingHole"
+				(at 0 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Mounting Hole without connection"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "mounting hole"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "MountingHole*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "MountingHole_0_1"
+				(circle
+					(center 0 0)
+					(radius 1.27)
+					(stroke
+						(width 1.27)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Power_Protection:ESDA5V3L"
+			(pin_names
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 5.715 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "ESDA5V3L"
+				(at 5.715 0.635 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "Package_TO_SOT_SMD:SOT-23-3"
+				(at -15.24 -10.16 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.st.com/resource/en/datasheet/esdal.pdf"
+				(at 0 -15.24 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "TVS Diode Array, 5.5V Standoff, 2 Channels, SOT23"
+				(at 0 -12.7 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "usb esd protection suppression transient"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "SOT?23*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "ESDA5V3L_0_0"
+				(pin passive line
+					(at 0 -5.08 90)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "ESDA5V3L_0_1"
+				(rectangle
+					(start -4.445 2.54)
+					(end 4.445 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(polyline
+					(pts
+						(xy -3.302 1.016) (xy -3.302 1.27) (xy -1.905 1.27) (xy -1.778 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 2.54) (xy -2.54 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 1.27) (xy -2.54 -1.27) (xy 2.54 -1.27) (xy 2.54 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 1.27) (xy -1.905 0) (xy -3.175 0) (xy -2.54 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 -1.27) (xy 0 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 0 -1.27)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.778 1.016) (xy 1.778 1.27) (xy 3.175 1.27) (xy 3.302 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 2.54) (xy 2.54 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 1.27) (xy 1.905 0) (xy 3.175 0) (xy 2.54 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "ESDA5V3L_1_1"
+				(pin passive line
+					(at -2.54 5.08 270)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 5.08 270)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "power:+5V"
 			(power)
 			(pin_numbers
@@ -3643,10 +4126,10 @@
 		)
 	)
 	(junction
-		(at 227.33 288.29)
+		(at 222.25 280.67)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "1af98e4b-1649-4300-b31d-8ac1dba9642a")
+		(uuid "04453766-5225-4ddc-80e5-422b13c40188")
 	)
 	(junction
 		(at 231.14 50.8)
@@ -3691,16 +4174,22 @@
 		(uuid "51ade5e5-3991-4ee4-8b2d-a14de97ff52b")
 	)
 	(junction
-		(at 227.33 290.83)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "58ac96ab-607a-46b9-9575-b737317549d3")
-	)
-	(junction
 		(at 290.83 288.29)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "5ae61d88-3af0-4db2-ab6f-5ac7fae2ad4f")
+	)
+	(junction
+		(at 222.25 288.29)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "6108f8d1-7798-444f-b92c-0141e7bccfac")
+	)
+	(junction
+		(at 222.25 290.83)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "6e1f4e35-8904-4691-b881-b09e76d9fc6d")
 	)
 	(junction
 		(at 53.34 214.63)
@@ -3727,6 +4216,12 @@
 		(uuid "a06ce202-332b-4618-a61f-c8d6d011fa88")
 	)
 	(junction
+		(at 290.83 264.16)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "bb4d11e7-0ada-4b00-ae67-98a76a62ddbc")
+	)
+	(junction
 		(at 151.13 76.2)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3737,6 +4232,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d0956ac3-0e14-4bee-a4e6-67769d885ff4")
+	)
+	(junction
+		(at 128.27 121.92)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d510a606-3125-4a4b-acfa-48908a63ab02")
 	)
 	(junction
 		(at 74.93 76.2)
@@ -4602,6 +5103,26 @@
 	)
 	(wire
 		(pts
+			(xy 125.73 106.68) (xy 128.27 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2ad6bdaa-9753-45d9-9778-1c60851d8fe2")
+	)
+	(wire
+		(pts
+			(xy 290.83 264.16) (xy 290.83 271.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2bb51169-c293-4f55-bc80-a22b5de62f24")
+	)
+	(wire
+		(pts
 			(xy 100.33 66.04) (xy 109.22 66.04)
 		)
 		(stroke
@@ -4609,6 +5130,16 @@
 			(type default)
 		)
 		(uuid "2cfa977c-44f0-435b-956e-a37a9c5fa59c")
+	)
+	(wire
+		(pts
+			(xy 222.25 264.16) (xy 222.25 280.67)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2d7da897-b16b-4b4d-baf9-72d9914a41a5")
 	)
 	(wire
 		(pts
@@ -4642,6 +5173,16 @@
 	)
 	(wire
 		(pts
+			(xy 104.14 124.46) (xy 115.57 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "30e960d7-43cb-4ac6-a722-6bcf6429d322")
+	)
+	(wire
+		(pts
 			(xy 107.95 152.4) (xy 107.95 223.52)
 		)
 		(stroke
@@ -4669,6 +5210,16 @@
 			(type default)
 		)
 		(uuid "331de9f6-45da-4dfb-a158-32ab01721523")
+	)
+	(wire
+		(pts
+			(xy 252.73 264.16) (xy 222.25 264.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "332afc88-7c8c-49e9-98c4-36abc719f325")
 	)
 	(wire
 		(pts
@@ -5012,16 +5563,6 @@
 	)
 	(wire
 		(pts
-			(xy 227.33 290.83) (xy 232.41 290.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "560d6ea2-b2e0-47e6-b325-14f314fd77bf")
-	)
-	(wire
-		(pts
 			(xy 132.08 53.34) (xy 143.51 53.34)
 		)
 		(stroke
@@ -5362,13 +5903,13 @@
 	)
 	(wire
 		(pts
-			(xy 232.41 288.29) (xy 227.33 288.29)
+			(xy 128.27 106.68) (xy 128.27 121.92)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "82ee6ead-f438-4336-bde6-4fe0d27f004a")
+		(uuid "7fed4b45-e8a7-42a9-8919-fbbbc417a26a")
 	)
 	(wire
 		(pts
@@ -5632,6 +6173,16 @@
 	)
 	(wire
 		(pts
+			(xy 222.25 288.29) (xy 232.41 288.29)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9818d42d-5448-4f1b-a078-80527aff9d61")
+	)
+	(wire
+		(pts
 			(xy 100.33 60.96) (xy 109.22 60.96)
 		)
 		(stroke
@@ -5639,6 +6190,16 @@
 			(type default)
 		)
 		(uuid "99e1ab81-f04d-4002-9698-6756724e9298")
+	)
+	(wire
+		(pts
+			(xy 105.41 109.22) (xy 115.57 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9b118606-c254-48d8-8d8c-6f353a220eff")
 	)
 	(wire
 		(pts
@@ -5740,6 +6301,16 @@
 		)
 		(uuid "a5401b7c-6e1a-4ec8-90db-eb3df97534f8")
 	)
+	(wire
+		(pts
+			(xy 125.73 121.92) (xy 128.27 121.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a7732fc9-62fa-4ff3-8a52-6a6c611c3aee")
+	)
 	(bus
 		(pts
 			(xy 45.72 158.75) (xy 45.72 160.02)
@@ -5762,7 +6333,7 @@
 	)
 	(wire
 		(pts
-			(xy 290.83 270.51) (xy 290.83 271.78)
+			(xy 290.83 262.89) (xy 290.83 264.16)
 		)
 		(stroke
 			(width 0)
@@ -5792,7 +6363,7 @@
 	)
 	(wire
 		(pts
-			(xy 227.33 288.29) (xy 227.33 290.83)
+			(xy 222.25 288.29) (xy 222.25 290.83)
 		)
 		(stroke
 			(width 0)
@@ -6222,6 +6793,16 @@
 	)
 	(wire
 		(pts
+			(xy 260.35 264.16) (xy 290.83 264.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cb5933e2-b6a5-4a4d-b9cf-92cd9419eb63")
+	)
+	(wire
+		(pts
 			(xy 220.98 78.74) (xy 222.25 78.74)
 		)
 		(stroke
@@ -6242,7 +6823,17 @@
 	)
 	(wire
 		(pts
-			(xy 227.33 290.83) (xy 227.33 294.64)
+			(xy 105.41 104.14) (xy 115.57 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cc7a6286-6a25-4619-bc69-ea43b270cbaa")
+	)
+	(wire
+		(pts
+			(xy 222.25 290.83) (xy 222.25 294.64)
 		)
 		(stroke
 			(width 0)
@@ -6269,6 +6860,16 @@
 			(type default)
 		)
 		(uuid "d297eb64-2794-4736-884c-e07cf7be7698")
+	)
+	(wire
+		(pts
+			(xy 104.14 119.38) (xy 115.57 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d2ea2025-5ecd-4fa8-a7d6-cee757378817")
 	)
 	(wire
 		(pts
@@ -6319,6 +6920,16 @@
 			(type default)
 		)
 		(uuid "d570ee62-6c2f-4904-8431-0418a422ca61")
+	)
+	(wire
+		(pts
+			(xy 222.25 290.83) (xy 232.41 290.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d87fd8f5-7be4-4cd8-980e-c0c922d08f21")
 	)
 	(bus
 		(pts
@@ -6412,13 +7023,13 @@
 	)
 	(wire
 		(pts
-			(xy 222.25 288.29) (xy 227.33 288.29)
+			(xy 128.27 121.92) (xy 128.27 130.81)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "e430cde5-baf3-4e97-8181-0ead82f92839")
+		(uuid "e4c2d64a-88f5-4be5-9614-b4129b2dc9d9")
 	)
 	(wire
 		(pts
@@ -6689,6 +7300,26 @@
 			(type default)
 		)
 		(uuid "ffa8556d-0529-4d07-a795-2ecd2924d0c5")
+	)
+	(label "ZRFSH-"
+		(at 104.14 119.38 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "019c91e0-31e8-4f33-a276-221f6d68a295")
+	)
+	(label "ZBACK-"
+		(at 104.14 124.46 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "04f72aa9-2709-477f-b587-c579d7498df9")
 	)
 	(label "TWAIT-"
 		(at 44.45 116.84 180)
@@ -7513,6 +8144,16 @@
 		)
 		(uuid "9487c708-16d0-4f3c-8c6b-c0979bb7ffa9")
 	)
+	(label "TRST-"
+		(at 105.41 109.22 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "997b62fe-1cf0-4154-8ffa-0a940119f12d")
+	)
 	(label "BA_CLK"
 		(at 49.53 224.79 180)
 		(effects
@@ -7682,6 +8323,16 @@
 			(justify right bottom)
 		)
 		(uuid "b303dfa0-2386-4a3c-b092-783b5da55602")
+	)
+	(label "CLK"
+		(at 105.41 104.14 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b319de6a-5485-46d4-95bd-807eb3525d9c")
 	)
 	(label "TA5"
 		(at 143.51 50.8 180)
@@ -9638,6 +10289,71 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 391.16 275.59 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "22ee9857-4e66-416a-82e3-8b87e8ca9617")
+		(property "Reference" "H3"
+			(at 393.7 274.3199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole"
+			(at 393.7 276.8599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 391.16 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 391.16 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 391.16 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "H3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+5V")
 		(at 107.95 25.4 0)
 		(unit 1)
@@ -9697,6 +10413,74 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
 					(reference "#PWR083")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Diode:ESD5Zxx")
+		(at 256.54 264.16 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2be14e55-94db-47a1-9141-6620034f6845")
+		(property "Reference" "D12"
+			(at 256.54 261.366 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SMCJ5.0A"
+			(at 254 266.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SOD-523"
+			(at 256.54 268.605 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.onsemi.com/pdf/datasheet/esd5z2.5t1-d.pdf"
+			(at 256.54 264.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "ESD Protection Diode, SOD-523"
+			(at 256.54 264.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1ecd1fdc-6ac3-4452-a685-09a4d56fb6b3")
+		)
+		(pin "2"
+			(uuid "8ce6bb68-78c4-4ebe-b626-3a3bb05c1794")
+		)
+		(instances
+			(project ""
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "D12")
 					(unit 1)
 				)
 			)
@@ -9894,6 +10678,71 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 398.78 275.59 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "30823f77-9f56-469e-96ad-0363d03161c5")
+		(property "Reference" "H4"
+			(at 401.32 274.3199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole"
+			(at 401.32 276.8599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 398.78 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 398.78 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 398.78 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "H4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Jumper:Jumper_2_Small_Open")
 		(at 107.95 27.94 90)
 		(unit 1)
@@ -10037,6 +10886,143 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
 					(reference "JP7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 383.54 275.59 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "34558f46-41b5-492e-887f-7dc1e820a727")
+		(property "Reference" "H2"
+			(at 386.08 274.3199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole"
+			(at 386.08 276.8599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 383.54 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 383.54 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 383.54 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "H2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Power_Protection:ESDA5V3L")
+		(at 120.65 106.68 90)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "36512a87-61bc-4bca-a313-7b32af00b898")
+		(property "Reference" "D10"
+			(at 120.65 100.838 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PESD5V0L2U"
+			(at 120.65 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-3"
+			(at 130.81 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.st.com/resource/en/datasheet/esdal.pdf"
+			(at 135.89 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "TVS Diode Array, 5.5V Standoff, 2 Channels, SOT23"
+			(at 133.35 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "a670553e-7f92-40fb-9ad2-5608d9080d7b")
+		)
+		(pin "3"
+			(uuid "993dee03-e774-4e61-81a5-092170499953")
+		)
+		(pin "1"
+			(uuid "8d824db8-0811-4676-aa55-2faa17d4deff")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "D10")
 					(unit 1)
 				)
 			)
@@ -11214,6 +12200,78 @@
 		)
 	)
 	(symbol
+		(lib_id "Power_Protection:ESDA5V3L")
+		(at 120.65 121.92 90)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "77fdaf6b-5c41-419a-bcdd-d138f383b1c7")
+		(property "Reference" "D11"
+			(at 120.65 116.332 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PESD5V0L2U"
+			(at 120.65 128.27 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-3"
+			(at 130.81 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.st.com/resource/en/datasheet/esdal.pdf"
+			(at 135.89 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "TVS Diode Array, 5.5V Standoff, 2 Channels, SOT23"
+			(at 133.35 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "082ceecc-c05a-483b-ba7f-295d6bfc87b2")
+		)
+		(pin "3"
+			(uuid "c04f4dd7-20fa-470f-8812-c7cc84932fc3")
+		)
+		(pin "1"
+			(uuid "bbf94ea1-c362-4c19-b503-be7b63ea5dde")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "D11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+5V")
 		(at 185.42 46.99 0)
 		(mirror y)
@@ -11490,6 +12548,71 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
 					(reference "D1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 375.92 275.59 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8e139521-dfd1-476a-ae2b-9978eaf927f1")
+		(property "Reference" "H1"
+			(at 378.46 274.3199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole"
+			(at 378.46 276.8599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 375.92 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 375.92 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 375.92 275.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "H1")
 					(unit 1)
 				)
 			)
@@ -12028,15 +13151,15 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 227.33 294.64 0)
+		(at 128.27 130.81 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "bd7a0638-4845-45e5-81e3-9a841b7c772f")
-		(property "Reference" "#PWR093"
-			(at 227.33 300.99 0)
+		(uuid "b9f119ad-fd51-41f3-a213-3cc75f58d653")
+		(property "Reference" "#PWR054"
+			(at 128.27 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12045,7 +13168,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 229.87 297.434 0)
+			(at 131.572 133.096 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12054,7 +13177,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 227.33 294.64 0)
+			(at 128.27 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12063,7 +13186,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 227.33 294.64 0)
+			(at 128.27 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12072,7 +13195,73 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 227.33 294.64 0)
+			(at 128.27 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "57da53dc-3040-4566-95bc-717e4b3e2059")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "#PWR054")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 222.25 294.64 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "bd7a0638-4845-45e5-81e3-9a841b7c772f")
+		(property "Reference" "#PWR093"
+			(at 222.25 300.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 224.79 297.434 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 222.25 294.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 222.25 294.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 222.25 294.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12636,7 +13825,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 290.83 270.51 0)
+		(at 290.83 262.89 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12644,7 +13833,7 @@
 		(dnp no)
 		(uuid "df5025d0-b5a1-42e9-bf99-ec23d0efea19")
 		(property "Reference" "#PWR095"
-			(at 290.83 274.32 0)
+			(at 290.83 266.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12653,7 +13842,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 293.878 268.986 0)
+			(at 293.878 261.366 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12661,7 +13850,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 290.83 270.51 0)
+			(at 290.83 262.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12670,7 +13859,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 290.83 270.51 0)
+			(at 290.83 262.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12679,7 +13868,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 290.83 270.51 0)
+			(at 290.83 262.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
