@@ -10497,12 +10497,12 @@
 		(dnp no)
 		(uuid "2f003f40-9da4-4c3f-a1d2-edc580eb7ba2")
 		(property "Reference" "R26"
-			(at 189.23 60.198 90)
+			(at 186.69 60.198 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+				(justify left)
 			)
 		)
 		(property "Value" "20k"
@@ -11241,7 +11241,7 @@
 				)
 			)
 		)
-		(property "Value" "74LVC125"
+		(property "Value" "74AHCT125"
 			(at 205.994 67.818 0)
 			(effects
 				(font
@@ -11338,12 +11338,12 @@
 		(dnp no)
 		(uuid "4a213b6e-996c-4395-8bd5-4e5d7ed70dc9")
 		(property "Reference" "R25"
-			(at 189.23 46.228 90)
+			(at 186.69 46.228 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+				(justify left)
 			)
 		)
 		(property "Value" "20k"
@@ -12700,7 +12700,7 @@
 				)
 			)
 		)
-		(property "Value" "74LVC125"
+		(property "Value" "74AHCT125"
 			(at 205.74 40.132 0)
 			(effects
 				(font
@@ -12927,7 +12927,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "74LVC125"
+		(property "Value" "74AHCT125"
 			(at 35.56 292.0999 0)
 			(effects
 				(font
@@ -13737,7 +13737,7 @@
 				)
 			)
 		)
-		(property "Value" "74LVC125"
+		(property "Value" "74AHCT125"
 			(at 205.994 82.296 0)
 			(effects
 				(font
@@ -13905,7 +13905,7 @@
 				)
 			)
 		)
-		(property "Value" "74LVC125"
+		(property "Value" "74AHCT125"
 			(at 205.994 54.102 0)
 			(effects
 				(font
