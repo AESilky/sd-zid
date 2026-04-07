@@ -285,8 +285,6 @@ PIN 40  = !rom_sel;
 PIN 64  = !zwait;
 PROPERTY Atmel {open_collector = on zwait};
 PIN 28  = !zbusreq;     /* To the Z80 */
-PIN  2  = !busack_l;    /* Buffered BUSACK LOW TRUE (to provide H and L true)   */
-PIN  1  = busack_h;     /* Buffered BUSACK HIGH TRUE (to provide H and L true)  */
 PIN 35  = !mod_sel;     /* RP2040 Module Select                                 */
 /* */
 PIN 100 = ba_clk;       /* Break Address Clock                              */
@@ -548,9 +546,6 @@ rfmr    = mreq & rfsh;
 /** Simple gated and/or buffered signals */
 zbusreq     = busreq & tgtmode & !sngl_op & !sngl_step; /* BUSREQ only when in Target mode */
 d7bo        = d7;           /* Data Bit 7 buffered for use by external breakpoint hardware */
-/** High and Low TRUE BusAck signals to control the buffers */
-busack_l    = zbusack;
-busack_h    = zbusack;
 
 
 /** Memory Operation, excluding Refresh */
