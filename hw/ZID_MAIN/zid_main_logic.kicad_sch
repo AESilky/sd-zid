@@ -6,7 +6,7 @@
 	(paper "User" 419.1 323.85)
 	(title_block
 		(title "ZID Main Logic")
-		(date "2026-04-05")
+		(date "2026-04-07")
 		(rev "PR-1.0")
 		(company "SilkyDESIGN / CMOS1")
 		(comment 1 "Copyright 2026 AESilky & SmM")
@@ -40836,22 +40836,22 @@
 			)
 		)
 		(pin "6"
-			(uuid "3664965f-8d9f-4447-8a10-5a24edd7e9e0")
+			(uuid "3664965f-8d9f-4447-8a10-5a24edd7e9e1")
 		)
 		(pin "4"
-			(uuid "04985f47-6d55-4466-8d4c-5e8df642312c")
+			(uuid "04985f47-6d55-4466-8d4c-5e8df642312d")
 		)
 		(pin "1"
-			(uuid "1deaa921-823d-4205-80b4-3e8c45605a97")
+			(uuid "1deaa921-823d-4205-80b4-3e8c45605a98")
 		)
 		(pin "3"
-			(uuid "93e8c0dc-31f9-4f72-8d28-330e1e51ee50")
+			(uuid "93e8c0dc-31f9-4f72-8d28-330e1e51ee51")
 		)
 		(pin "2"
-			(uuid "d04012ed-273d-47e5-a366-d144c7adb6a0")
+			(uuid "d04012ed-273d-47e5-a366-d144c7adb6a1")
 		)
 		(pin "5"
-			(uuid "5e644d4c-def1-4064-9bdb-58f625e96bfe")
+			(uuid "5e644d4c-def1-4064-9bdb-58f625e96bff")
 		)
 		(instances
 			(project ""
@@ -47485,22 +47485,22 @@
 			)
 		)
 		(pin "6"
-			(uuid "3664965f-8d9f-4447-8a10-5a24edd7e9e0")
+			(uuid "3664965f-8d9f-4447-8a10-5a24edd7e9e2")
 		)
 		(pin "4"
-			(uuid "04985f47-6d55-4466-8d4c-5e8df642312c")
+			(uuid "04985f47-6d55-4466-8d4c-5e8df642312e")
 		)
 		(pin "1"
-			(uuid "1deaa921-823d-4205-80b4-3e8c45605a97")
+			(uuid "1deaa921-823d-4205-80b4-3e8c45605a99")
 		)
 		(pin "3"
-			(uuid "93e8c0dc-31f9-4f72-8d28-330e1e51ee50")
+			(uuid "93e8c0dc-31f9-4f72-8d28-330e1e51ee52")
 		)
 		(pin "2"
-			(uuid "d04012ed-273d-47e5-a366-d144c7adb6a0")
+			(uuid "d04012ed-273d-47e5-a366-d144c7adb6a2")
 		)
 		(pin "5"
-			(uuid "5e644d4c-def1-4064-9bdb-58f625e96bfe")
+			(uuid "5e644d4c-def1-4064-9bdb-58f625e96c00")
 		)
 		(instances
 			(project ""
