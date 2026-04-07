@@ -3663,7 +3663,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "AES_Library:74LVC2G04-AES"
+		(symbol "AES_Library:74LVC3G04-AES"
 			(pin_names
 				(offset 1.016)
 			)
@@ -3678,7 +3678,7 @@
 					)
 				)
 			)
-			(property "Value" "74LVC2G04"
+			(property "Value" "74LVC3G04"
 				(at 3.81 -3.81 0)
 				(effects
 					(font
@@ -3686,7 +3686,7 @@
 					)
 				)
 			)
-			(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
+			(property "Footprint" "Package_SO:SSOP-8_2.95x2.8mm_P0.65mm"
 				(at 0 0 0)
 				(effects
 					(font
@@ -3704,7 +3704,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Dual Inverter w/5V tolerent input"
+			(property "Description" "Triple Inverter w/5V tolerent input"
 				(at 0 0 0)
 				(effects
 					(font
@@ -3721,7 +3721,7 @@
 					)
 				)
 			)
-			(property "ki_keywords" "INVERTER NOT 5V3V DUAL"
+			(property "ki_keywords" "INVERTER NOT 5V3V 3x"
 				(at 0 0 0)
 				(effects
 					(font
@@ -3739,7 +3739,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "74LVC2G04-AES_1_0"
+			(symbol "74LVC3G04-AES_1_0"
 				(polyline
 					(pts
 						(xy -3.81 3.81) (xy -3.81 -3.81) (xy 3.81 0) (xy -3.81 3.81)
@@ -3780,7 +3780,7 @@
 							)
 						)
 					)
-					(number "6"
+					(number "7"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3789,7 +3789,7 @@
 					)
 				)
 			)
-			(symbol "74LVC2G04-AES_1_1"
+			(symbol "74LVC3G04-AES_1_1"
 				(circle
 					(center 3.81 0)
 					(radius 0.5923)
@@ -3803,7 +3803,7 @@
 					)
 				)
 			)
-			(symbol "74LVC2G04-AES_2_0"
+			(symbol "74LVC3G04-AES_2_0"
 				(polyline
 					(pts
 						(xy -3.81 3.81) (xy -3.81 -3.81) (xy 3.81 0) (xy -3.81 3.81)
@@ -3844,7 +3844,7 @@
 							)
 						)
 					)
-					(number "4"
+					(number "5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3853,7 +3853,7 @@
 					)
 				)
 			)
-			(symbol "74LVC2G04-AES_2_1"
+			(symbol "74LVC3G04-AES_2_1"
 				(circle
 					(center 3.81 0)
 					(radius 0.5923)
@@ -3867,7 +3867,71 @@
 					)
 				)
 			)
-			(symbol "74LVC2G04-AES_3_1"
+			(symbol "74LVC3G04-AES_3_0"
+				(polyline
+					(pts
+						(xy -3.81 3.81) (xy -3.81 -3.81) (xy 3.81 0) (xy -3.81 3.81)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin input line
+					(at -7.62 0 0)
+					(length 3.81)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 3.81)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "74LVC3G04-AES_3_1"
+				(circle
+					(center 3.81 0)
+					(radius 0.5923)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type color)
+						(color 255 255 255 1)
+					)
+				)
+			)
+			(symbol "74LVC3G04-AES_4_1"
 				(rectangle
 					(start -6.35 2.54)
 					(end 6.35 -2.54)
@@ -3889,7 +3953,7 @@
 							)
 						)
 					)
-					(number "5"
+					(number "8"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3907,7 +3971,7 @@
 							)
 						)
 					)
-					(number "2"
+					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -18755,6 +18819,16 @@
 	)
 	(wire
 		(pts
+			(xy 166.37 205.74) (xy 173.99 205.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1a2983f5-3aa6-43ed-bad1-b5f8d6394701")
+	)
+	(wire
+		(pts
 			(xy 35.56 166.37) (xy 27.94 166.37)
 		)
 		(stroke
@@ -24556,7 +24630,7 @@
 	)
 	(wire
 		(pts
-			(xy 187.96 203.2) (xy 198.12 203.2)
+			(xy 190.5 203.2) (xy 198.12 203.2)
 		)
 		(stroke
 			(width 0)
@@ -28786,6 +28860,16 @@
 	)
 	(wire
 		(pts
+			(xy 190.5 203.2) (xy 190.5 205.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f4cd2c1b-e7e3-4b6b-80a5-ed46d6a279a0")
+	)
+	(wire
+		(pts
 			(xy 217.17 273.05) (xy 231.14 273.05)
 		)
 		(stroke
@@ -29234,6 +29318,16 @@
 		)
 		(uuid "feaf8400-d503-4787-99cc-c4b2d5653d0b")
 	)
+	(wire
+		(pts
+			(xy 189.23 205.74) (xy 190.5 205.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fee2b8e2-5e4a-444b-ba26-b43e8ccc6efe")
+	)
 	(bus
 		(pts
 			(xy 25.4 124.46) (xy 25.4 127)
@@ -29394,7 +29488,7 @@
 		)
 		(uuid "0505c7d1-5205-4552-b517-a0c3800b2473")
 	)
-	(label "BUSACK_L-"
+	(label "IO2"
 		(at 107.95 53.34 0)
 		(effects
 			(font
@@ -30614,8 +30708,8 @@
 		)
 		(uuid "47c899a6-b826-42de-823b-f2e0fccd2f54")
 	)
-	(label "BUSACK_H"
-		(at 187.96 203.2 0)
+	(label "BUSACK"
+		(at 190.5 203.2 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -30624,7 +30718,7 @@
 		)
 		(uuid "48b3d669-52e9-4f7d-997e-1997290c1704")
 	)
-	(label "BUSACK_L-"
+	(label "ZBACK-"
 		(at 186.69 250.19 0)
 		(effects
 			(font
@@ -30654,7 +30748,7 @@
 		)
 		(uuid "49e3a6a7-9ae6-441c-9f34-9783410ad0bb")
 	)
-	(label "BUSACK_H"
+	(label "IO1"
 		(at 166.37 40.64 180)
 		(effects
 			(font
@@ -31154,7 +31248,7 @@
 		)
 		(uuid "5d07cff1-24a3-41f5-9ddb-d9f4c3b4542b")
 	)
-	(label "BUSACK_L-"
+	(label "ZBACK-"
 		(at 120.65 212.09 0)
 		(effects
 			(font
@@ -32384,7 +32478,7 @@
 		)
 		(uuid "8fd3b3c2-0321-4902-92e4-ddb89f7a4b12")
 	)
-	(label "BUSACK_L-"
+	(label "ZBACK-"
 		(at 120.65 254 0)
 		(effects
 			(font
@@ -33215,6 +33309,16 @@
 			(justify right bottom)
 		)
 		(uuid "b7f2d76c-549f-44d5-ac15-c4d3e9ddab4b")
+	)
+	(label "ZBACK-"
+		(at 166.37 205.74 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b8cfb331-21e4-4ae5-8fa5-a50d828f6dcd")
 	)
 	(label "TGTMODE-"
 		(at 250.19 232.41 0)
@@ -36535,7 +36639,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Value" "ATF1504AS-44T"
@@ -37527,85 +37630,6 @@
 		)
 	)
 	(symbol
-		(lib_id "AES_Library:74LVC2G04-AES")
-		(at 381 88.9 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "1482b211-cda5-452d-9170-ac6d5c2eb1cc")
-		(property "Reference" "U25"
-			(at 379.73 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "74LVC2G04"
-			(at 384.81 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
-			(at 381 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 381 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Dual Inverter w/5V tolerent input"
-			(at 381 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "6"
-			(uuid "3664965f-8d9f-4447-8a10-5a24edd7e9e0")
-		)
-		(pin "4"
-			(uuid "04985f47-6d55-4466-8d4c-5e8df642312c")
-		)
-		(pin "1"
-			(uuid "1deaa921-823d-4205-80b4-3e8c45605a97")
-		)
-		(pin "3"
-			(uuid "93e8c0dc-31f9-4f72-8d28-330e1e51ee50")
-		)
-		(pin "2"
-			(uuid "d04012ed-273d-47e5-a366-d144c7adb6a0")
-		)
-		(pin "5"
-			(uuid "5e644d4c-def1-4064-9bdb-58f625e96bfe")
-		)
-		(instances
-			(project ""
-				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
-					(reference "U25")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Connector_Generic:Conn_01x03")
 		(at 364.49 73.66 270)
 		(unit 1)
@@ -38380,6 +38404,91 @@
 		)
 	)
 	(symbol
+		(lib_id "AES_Library:74LVC3G04-AES")
+		(at 381 88.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "1eb5517f-21d0-4115-8249-7c0f9f5bd70e")
+		(property "Reference" "U25"
+			(at 380.238 89.154 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "74LVC3G04"
+			(at 386.08 85.344 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_SO:SSOP-8_2.95x2.8mm_P0.65mm"
+			(at 381 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 381 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Triple Inverter w/5V tolerent input"
+			(at 381 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "5"
+			(uuid "8cf835de-922a-4cc3-bcf2-647d95932729")
+		)
+		(pin "3"
+			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46ca")
+		)
+		(pin "8"
+			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5900")
+		)
+		(pin "1"
+			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab81")
+		)
+		(pin "6"
+			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65171")
+		)
+		(pin "2"
+			(uuid "677e2894-2f77-45c4-924e-2ce6789de1f9")
+		)
+		(pin "7"
+			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7a")
+		)
+		(pin "4"
+			(uuid "7ad1016b-db52-451d-9022-c465adf1f243")
+		)
+		(instances
+			(project ""
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
+					(reference "U25")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 303.53 17.78 270)
 		(unit 1)
@@ -38443,6 +38552,92 @@
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
 					(reference "C2")
 					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "AES_Library:74LVC3G04-AES")
+		(at 389.89 93.98 0)
+		(unit 2)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "20755b36-6051-4d47-8fd4-1bb4a5d3e928")
+		(property "Reference" "U25"
+			(at 389.128 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "74LVC3G04"
+			(at 390.1226 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "Package_SO:SSOP-8_2.95x2.8mm_P0.65mm"
+			(at 389.89 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 389.89 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Triple Inverter w/5V tolerent input"
+			(at 389.89 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "5"
+			(uuid "8cf835de-922a-4cc3-bcf2-647d95932729")
+		)
+		(pin "3"
+			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46ca")
+		)
+		(pin "8"
+			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5900")
+		)
+		(pin "1"
+			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab81")
+		)
+		(pin "6"
+			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65171")
+		)
+		(pin "2"
+			(uuid "677e2894-2f77-45c4-924e-2ce6789de1f9")
+		)
+		(pin "7"
+			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7a")
+		)
+		(pin "4"
+			(uuid "7ad1016b-db52-451d-9022-c465adf1f243")
+		)
+		(instances
+			(project ""
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
+					(reference "U25")
+					(unit 2)
 				)
 			)
 		)
@@ -39789,7 +39984,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x05_P2.54mm_Vertical"
+		(property "Footprint" "AES_Library:PinHeader_2x05_AB-AES"
 			(at 171.45 285.75 0)
 			(effects
 				(font
@@ -40183,6 +40378,80 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
 					(reference "#PWR014")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 107.95 53.34 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "376cf330-e7ab-43a2-a27d-9ced19121878")
+		(property "Reference" "TP?"
+			(at 104.648 51.308 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 104.648 50.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
+			(at 107.95 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 107.95 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 107.95 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Function" "CPLD Pin Available"
+			(at 107.95 53.34 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c384c45c-013c-43d3-8b81-c51d0a47cc80")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
+					(reference "TP?")
 					(unit 1)
 				)
 			)
@@ -40778,86 +41047,6 @@
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
 					(reference "#PWR028")
 					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "AES_Library:74LVC2G04-AES")
-		(at 389.89 93.98 0)
-		(unit 2)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "4646f1c1-debc-41b7-a873-d13e2596ebac")
-		(property "Reference" "U25"
-			(at 388.62 94.234 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "74LVC2G04"
-			(at 388.62 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
-			(at 389.89 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 389.89 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Dual Inverter w/5V tolerent input"
-			(at 389.89 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "6"
-			(uuid "3664965f-8d9f-4447-8a10-5a24edd7e9e1")
-		)
-		(pin "4"
-			(uuid "04985f47-6d55-4466-8d4c-5e8df642312d")
-		)
-		(pin "1"
-			(uuid "1deaa921-823d-4205-80b4-3e8c45605a98")
-		)
-		(pin "3"
-			(uuid "93e8c0dc-31f9-4f72-8d28-330e1e51ee51")
-		)
-		(pin "2"
-			(uuid "d04012ed-273d-47e5-a366-d144c7adb6a1")
-		)
-		(pin "5"
-			(uuid "5e644d4c-def1-4064-9bdb-58f625e96bff")
-		)
-		(instances
-			(project ""
-				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
-					(reference "U25")
-					(unit 2)
 				)
 			)
 		)
@@ -42025,6 +42214,91 @@
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
 					(reference "#PWR042")
 					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "AES_Library:74LVC3G04-AES")
+		(at 313.69 111.76 0)
+		(unit 4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "548ce297-ca6d-4440-9953-16d729e945d1")
+		(property "Reference" "U25"
+			(at 313.944 110.236 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "74LVC3G04"
+			(at 313.69 113.538 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_SO:SSOP-8_2.95x2.8mm_P0.65mm"
+			(at 313.69 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 313.69 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Triple Inverter w/5V tolerent input"
+			(at 313.69 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "5"
+			(uuid "8cf835de-922a-4cc3-bcf2-647d95932729")
+		)
+		(pin "3"
+			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46ca")
+		)
+		(pin "8"
+			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5900")
+		)
+		(pin "1"
+			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab81")
+		)
+		(pin "6"
+			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65171")
+		)
+		(pin "2"
+			(uuid "677e2894-2f77-45c4-924e-2ce6789de1f9")
+		)
+		(pin "7"
+			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7a")
+		)
+		(pin "4"
+			(uuid "7ad1016b-db52-451d-9022-c465adf1f243")
+		)
+		(instances
+			(project ""
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
+					(reference "U25")
+					(unit 4)
 				)
 			)
 		)
@@ -44780,6 +45054,91 @@
 		)
 	)
 	(symbol
+		(lib_id "AES_Library:74LVC3G04-AES")
+		(at 181.61 205.74 0)
+		(unit 3)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8e06c4f3-fda3-4314-89c5-54e8f9879d94")
+		(property "Reference" "U25"
+			(at 180.848 205.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "74LVC3G04"
+			(at 185.674 209.804 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_SO:SSOP-8_2.95x2.8mm_P0.65mm"
+			(at 181.61 205.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 181.61 205.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Triple Inverter w/5V tolerent input"
+			(at 181.61 205.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "5"
+			(uuid "8cf835de-922a-4cc3-bcf2-647d95932729")
+		)
+		(pin "3"
+			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46ca")
+		)
+		(pin "8"
+			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5900")
+		)
+		(pin "1"
+			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab81")
+		)
+		(pin "6"
+			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65171")
+		)
+		(pin "2"
+			(uuid "677e2894-2f77-45c4-924e-2ce6789de1f9")
+		)
+		(pin "7"
+			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7a")
+		)
+		(pin "4"
+			(uuid "7ad1016b-db52-451d-9022-c465adf1f243")
+		)
+		(instances
+			(project ""
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
+					(reference "U25")
+					(unit 3)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R_Small_US")
 		(at 339.09 41.91 180)
 		(unit 1)
@@ -45367,7 +45726,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x05_P2.54mm_Vertical"
+		(property "Footprint" "AES_Library:PinHeader_2x05_AB-AES"
 			(at 238.76 275.59 0)
 			(effects
 				(font
@@ -47433,85 +47792,6 @@
 		)
 	)
 	(symbol
-		(lib_id "AES_Library:74LVC2G04-AES")
-		(at 313.69 111.76 0)
-		(unit 3)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "ce9d0678-f28e-4548-828e-6ff9cf2528eb")
-		(property "Reference" "U25"
-			(at 313.69 110.236 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "74LVC2G04"
-			(at 313.69 113.538 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
-			(at 313.69 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 313.69 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Dual Inverter w/5V tolerent input"
-			(at 313.69 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "6"
-			(uuid "3664965f-8d9f-4447-8a10-5a24edd7e9e2")
-		)
-		(pin "4"
-			(uuid "04985f47-6d55-4466-8d4c-5e8df642312e")
-		)
-		(pin "1"
-			(uuid "1deaa921-823d-4205-80b4-3e8c45605a99")
-		)
-		(pin "3"
-			(uuid "93e8c0dc-31f9-4f72-8d28-330e1e51ee52")
-		)
-		(pin "2"
-			(uuid "d04012ed-273d-47e5-a366-d144c7adb6a2")
-		)
-		(pin "5"
-			(uuid "5e644d4c-def1-4064-9bdb-58f625e96c00")
-		)
-		(instances
-			(project ""
-				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
-					(reference "U25")
-					(unit 3)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R_Small_US")
 		(at 346.71 38.1 180)
 		(unit 1)
@@ -47865,6 +48145,81 @@
 			(project ""
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
 					(reference "U23")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 166.37 40.64 270)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d70fca8f-2854-4b32-879c-7bc09b8f376d")
+		(property "Reference" "TP?"
+			(at 169.672 38.608 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 169.672 38.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
+			(at 166.37 35.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 166.37 35.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 166.37 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Function" "CPLD Pin Available"
+			(at 166.37 40.64 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "87b9f0d5-e105-448a-873d-d11a2d659e4b")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
+					(reference "TP?")
 					(unit 1)
 				)
 			)
