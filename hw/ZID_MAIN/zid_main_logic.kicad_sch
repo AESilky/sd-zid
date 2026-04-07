@@ -36278,7 +36278,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 			(at 106.68 152.4 0)
 			(effects
 				(font
@@ -36750,7 +36750,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 30.48 78.74 0)
 			(effects
 				(font
@@ -37155,7 +37155,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
 			(at 142.24 201.93 0)
 			(effects
 				(font
@@ -37633,7 +37633,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 			(at 364.49 73.66 0)
 			(effects
 				(font
@@ -37870,7 +37870,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_LCC:PLCC-44"
+		(property "Footprint" "Package_LCC:PLCC-44_THT-Socket"
 			(at 71.12 282.448 0)
 			(effects
 				(font
@@ -38074,7 +38074,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
 			(at 45.72 179.07 0)
 			(effects
 				(font
@@ -39221,7 +39221,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
 			(at 31.75 52.07 0)
 			(effects
 				(font
@@ -39288,7 +39288,7 @@
 				)
 			)
 		)
-		(property "Value" "LED RED"
+		(property "Value" "LED GREEN"
 			(at 380.746 105.664 0)
 			(effects
 				(font
@@ -39297,7 +39297,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_THT:LED_D3.0mm"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
 			(at 381 107.95 0)
 			(effects
 				(font
@@ -39418,7 +39418,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Button_Switch_THT:SW_DIP_SPSTx02_Piano_CTS_Series194-2MSTN_W7.62mm_P2.54mm"
 			(at 30.48 300.99 0)
 			(effects
 				(font
@@ -39659,7 +39659,7 @@
 				)
 			)
 		)
-		(property "Value" "LED RED"
+		(property "Value" "LED YELLOW"
 			(at 385.826 112.014 0)
 			(effects
 				(font
@@ -39668,7 +39668,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_THT:LED_D3.0mm"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
 			(at 386.08 114.3 0)
 			(effects
 				(font
@@ -39789,7 +39789,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x05_P2.54mm_Vertical"
 			(at 171.45 285.75 0)
 			(effects
 				(font
@@ -40214,7 +40214,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_IDC:IDC-Header_2x03_P2.54mm_Vertical"
 			(at 363.22 45.72 0)
 			(effects
 				(font
@@ -40378,7 +40378,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-16W_7.5x10.3mm_P1.27mm"
 			(at 210.82 185.42 0)
 			(effects
 				(font
@@ -40613,7 +40613,7 @@
 				)
 			)
 		)
-		(property "Value" "LED RED"
+		(property "Value" "LED GREEN"
 			(at 385.826 99.314 0)
 			(effects
 				(font
@@ -40622,7 +40622,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_THT:LED_D3.0mm"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
 			(at 386.08 101.6 0)
 			(effects
 				(font
@@ -40791,7 +40791,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4646f1c1-debc-41b7-a873-d13e2596ebac")
-		(property "Reference" "U26"
+		(property "Reference" "U25"
 			(at 388.62 94.234 0)
 			(effects
 				(font
@@ -40799,7 +40799,7 @@
 				)
 			)
 		)
-		(property "Value" "74LVC2G04-AES"
+		(property "Value" "74LVC2G04"
 			(at 388.62 95.25 0)
 			(effects
 				(font
@@ -40856,7 +40856,7 @@
 		(instances
 			(project ""
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
-					(reference "U26")
+					(reference "U25")
 					(unit 2)
 				)
 			)
@@ -40983,7 +40983,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_IDC:IDC-Header_2x05_P2.54mm_Vertical"
 			(at 259.08 170.18 0)
 			(effects
 				(font
@@ -41084,7 +41084,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 317.754 21.844 90)
 			(effects
 				(font
@@ -41451,7 +41451,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_DIP:DIP-32_W15.24mm_Socket_LongPads"
 			(at 207.01 48.26 0)
 			(effects
 				(font
@@ -41804,8 +41804,8 @@
 				)
 			)
 		)
-		(property "Value" "~"
-			(at 54.61 31.496 0)
+		(property "Value" "OSC-20MHz"
+			(at 54.864 39.624 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -42056,7 +42056,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 			(at 171.45 111.76 0)
 			(effects
 				(font
@@ -42269,7 +42269,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.00mm:PinHeader_1x03_P2.00mm_Vertical"
 			(at 72.39 45.72 0)
 			(effects
 				(font
@@ -42887,7 +42887,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
 			(at 209.55 240.03 0)
 			(effects
 				(font
@@ -43213,7 +43213,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
 			(at 328.93 163.83 0)
 			(effects
 				(font
@@ -43426,7 +43426,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.00mm:PinHeader_1x02_P2.00mm_Vertical"
 			(at 325.12 46.99 0)
 			(effects
 				(font
@@ -43568,7 +43568,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 			(at 355.6 163.83 0)
 			(effects
 				(font
@@ -43763,7 +43763,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm"
 			(at 271.78 224.79 0)
 			(effects
 				(font
@@ -44459,7 +44459,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
 			(at 207.01 285.75 0)
 			(effects
 				(font
@@ -44582,7 +44582,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "~"
+		(property "Value" "SD-CARD Socket"
 			(at 389.89 62.23 0)
 			(effects
 				(font
@@ -44591,7 +44591,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "AES_Library:AES-SDCard-GCT_MEM2075-00-140-01-A"
 			(at 389.89 62.23 0)
 			(effects
 				(font
@@ -44684,7 +44684,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_THT:LED_D3.0mm"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
 			(at 386.08 127 0)
 			(effects
 				(font
@@ -45367,7 +45367,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x05_P2.54mm_Vertical"
 			(at 238.76 275.59 0)
 			(effects
 				(font
@@ -45467,7 +45467,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 			(at 290.83 215.9 0)
 			(effects
 				(font
@@ -45607,7 +45607,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm"
 			(at 45.72 91.44 0)
 			(effects
 				(font
@@ -45784,7 +45784,7 @@
 				)
 			)
 		)
-		(property "Value" "LED RED"
+		(property "Value" "LED YELLOW"
 			(at 380.746 118.364 0)
 			(effects
 				(font
@@ -45793,7 +45793,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_THT:LED_D3.0mm"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
 			(at 381 120.65 0)
 			(effects
 				(font
@@ -46303,7 +46303,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
 			(at 274.32 67.31 0)
 			(effects
 				(font
@@ -46566,7 +46566,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
 			(at 45.72 137.16 0)
 			(effects
 				(font
@@ -46832,7 +46832,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 93.98 135.89 0)
 			(effects
 				(font
@@ -47765,7 +47765,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
 			(at 353.06 99.06 0)
 			(effects
 				(font
@@ -48055,7 +48055,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "AES_Library:AES-SW_PUSH_SMD_1P1T_NO_6x6mm"
 			(at 22.86 53.34 0)
 			(effects
 				(font
@@ -48318,7 +48318,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 			(at 290.83 218.44 0)
 			(effects
 				(font
@@ -48393,7 +48393,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
 			(at 142.24 285.75 0)
 			(effects
 				(font
@@ -48526,7 +48526,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
 			(at 327.66 27.94 0)
 			(effects
 				(font
@@ -48691,7 +48691,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 			(at 171.45 116.84 0)
 			(effects
 				(font
@@ -48963,7 +48963,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm"
 			(at 271.78 281.94 0)
 			(effects
 				(font
@@ -49679,7 +49679,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.00mm:PinHeader_1x02_P2.00mm_Vertical"
 			(at 73.66 21.59 0)
 			(effects
 				(font
@@ -49878,7 +49878,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
 			(at 142.24 243.84 0)
 			(effects
 				(font

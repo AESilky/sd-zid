@@ -10317,7 +10317,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
 			(at 391.16 275.59 0)
 			(effects
 				(font
@@ -10444,7 +10444,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD:D_SOD-523"
+		(property "Footprint" "AES_Library:DO-214AB-AES"
 			(at 256.54 268.605 0)
 			(effects
 				(font
@@ -10513,7 +10513,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 187.96 62.23 0)
 			(effects
 				(font
@@ -10573,7 +10573,7 @@
 				)
 			)
 		)
-		(property "Value" "LED RED"
+		(property "Value" "LED ORANGE"
 			(at 217.424 76.454 0)
 			(effects
 				(font
@@ -10706,7 +10706,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
 			(at 398.78 275.59 0)
 			(effects
 				(font
@@ -10770,7 +10770,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.00mm:PinHeader_1x02_P2.00mm_Vertical"
 			(at 107.95 27.94 0)
 			(effects
 				(font
@@ -10840,7 +10840,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.00mm:PinHeader_1x02_P2.00mm_Vertical"
 			(at 290.83 274.32 0)
 			(effects
 				(font
@@ -10920,7 +10920,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
 			(at 383.54 275.59 0)
 			(effects
 				(font
@@ -10982,7 +10982,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-3"
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
 			(at 130.81 91.44 0)
 			(effects
 				(font
@@ -11249,7 +11249,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm"
 			(at 199.39 64.77 0)
 			(effects
 				(font
@@ -11354,7 +11354,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 187.96 48.26 0)
 			(effects
 				(font
@@ -11489,7 +11489,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 78.74 68.58 0)
 			(effects
 				(font
@@ -11819,7 +11819,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x28_P2.54mm_Vertical"
 			(at 114.3 193.04 0)
 			(effects
 				(font
@@ -11966,7 +11966,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 53.34 210.82 0)
 			(effects
 				(font
@@ -12018,23 +12018,22 @@
 		(dnp no)
 		(uuid "7680c38f-bb49-4dcb-b4a5-cd2891b705dc")
 		(property "Reference" "J9"
-			(at 120.65 60.96 0)
+			(at 120.65 32.512 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(property "Value" "Z80-TARGET"
-			(at 120.396 32.258 0)
+			(at 120.904 91.694 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.00mm:PinHeader_2x20_P2.00mm_Vertical"
+		(property "Footprint" "AES_Library:CviLux_CF25401D0-05-NH_FFC-FPC-AES"
 			(at 120.65 60.96 0)
 			(effects
 				(font
@@ -12225,7 +12224,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-3"
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
 			(at 130.81 106.68 0)
 			(effects
 				(font
@@ -12449,7 +12448,7 @@
 				)
 			)
 		)
-		(property "Value" "LED RED"
+		(property "Value" "LED BLUE"
 			(at 217.424 34.544 0)
 			(effects
 				(font
@@ -12582,7 +12581,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
 			(at 375.92 275.59 0)
 			(effects
 				(font
@@ -12708,7 +12707,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm"
 			(at 199.39 36.83 0)
 			(effects
 				(font
@@ -12936,7 +12935,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm"
 			(at 29.21 290.83 0)
 			(effects
 				(font
@@ -13107,7 +13106,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.00mm:PinHeader_1x02_P2.00mm_Vertical"
 			(at 74.93 87.63 0)
 			(effects
 				(font
@@ -13548,7 +13547,7 @@
 				)
 			)
 		)
-		(property "Value" "LED RED"
+		(property "Value" "LED YELLOW"
 			(at 217.424 48.514 0)
 			(effects
 				(font
@@ -13745,7 +13744,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm"
 			(at 199.39 78.74 0)
 			(effects
 				(font
@@ -13913,7 +13912,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm"
 			(at 199.39 50.8 0)
 			(effects
 				(font
@@ -14018,7 +14017,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 87.63 68.58 0)
 			(effects
 				(font
@@ -14087,7 +14086,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 151.13 69.85 0)
 			(effects
 				(font
@@ -14250,7 +14249,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 60.96 210.82 0)
 			(effects
 				(font
@@ -14319,7 +14318,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 160.02 69.85 0)
 			(effects
 				(font
