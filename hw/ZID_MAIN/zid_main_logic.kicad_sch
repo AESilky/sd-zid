@@ -29458,6 +29458,16 @@
 		)
 		(uuid "02bcec78-5bc4-4808-b3b2-dbb30f41dc9b")
 	)
+	(label "ZA15"
+		(at 100.33 245.11 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "03af374c-0d4c-490c-8eca-c247782ba9f8")
+	)
 	(label "MWTRQ-"
 		(at 325.12 72.39 0)
 		(effects
@@ -30338,16 +30348,6 @@
 		)
 		(uuid "38cb615f-08dd-41b5-bc5f-8f0e9a2dfd76")
 	)
-	(label "ZA10"
-		(at 100.33 234.95 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "393e8fcf-c5b5-4e88-9d53-58f905139590")
-	)
 	(label "ZD1"
 		(at 86.36 255.27 0)
 		(effects
@@ -30567,16 +30567,6 @@
 			(justify left bottom)
 		)
 		(uuid "440456eb-6013-42c0-befd-4a8befbf3e10")
-	)
-	(label "ZA9"
-		(at 100.33 232.41 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "44525a16-4821-498c-9389-2bd3d9025c60")
 	)
 	(label "ZA6"
 		(at 189.23 40.64 180)
@@ -30977,6 +30967,16 @@
 			(justify right bottom)
 		)
 		(uuid "507e0ae5-6548-450b-aa3a-0ada14bec494")
+	)
+	(label "ZA10"
+		(at 100.33 232.41 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "50d6d2cf-5d9a-40e6-9d6f-9d8e2c411411")
 	)
 	(label "ZWAIT-"
 		(at 166.37 119.38 180)
@@ -31938,16 +31938,6 @@
 		)
 		(uuid "7d9422c1-2c6c-4cea-8cc4-d03eaeb1e24a")
 	)
-	(label "ZA13"
-		(at 100.33 242.57 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "7da0ef5a-0adb-4f64-811e-33fc42e7a301")
-	)
 	(label "LA3"
 		(at 393.7 175.26 180)
 		(effects
@@ -31977,6 +31967,16 @@
 			(justify right bottom)
 		)
 		(uuid "7e7bb50a-2f1e-43ad-a8f0-a3935d6a60ad")
+	)
+	(label "ZA13"
+		(at 100.33 240.03 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "7ed84776-30e4-4478-b77f-5d1f0de85de8")
 	)
 	(label "JTDO_CI"
 		(at 288.29 167.64 180)
@@ -32968,6 +32968,16 @@
 		)
 		(uuid "abac3832-4939-4ca7-9569-215479fa9f26")
 	)
+	(label "ZA9"
+		(at 100.33 234.95 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ac1b1a05-3417-4b0a-99a6-eb5e9de0f0e3")
+	)
 	(label "TIORQ-"
 		(at 383.54 262.89 0)
 		(effects
@@ -33500,6 +33510,16 @@
 		)
 		(uuid "c2586308-6b1c-4b97-bbeb-f3d8c2604e7c")
 	)
+	(label "ZA12"
+		(at 100.33 242.57 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c32491a0-d88d-4ece-ab16-5221e2fa3246")
+	)
 	(label "TA5"
 		(at 393.7 236.22 180)
 		(effects
@@ -33729,16 +33749,6 @@
 			(justify left bottom)
 		)
 		(uuid "cd08fdd4-6709-4225-a1d4-4078c7076b2c")
-	)
-	(label "ZA14"
-		(at 100.33 245.11 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "cebc24ac-c759-4abb-a162-b578b4e53839")
 	)
 	(label "ZA15"
 		(at 166.37 45.72 180)
@@ -34170,16 +34180,6 @@
 		)
 		(uuid "e0c6212f-7d3b-43f2-abf3-7a810aa00684")
 	)
-	(label "ZA12"
-		(at 100.33 240.03 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e131a9e5-30c9-46ca-8569-c09fb8ece07c")
-	)
 	(label "ZA15"
 		(at 257.81 209.55 180)
 		(effects
@@ -34219,16 +34219,6 @@
 			(justify left bottom)
 		)
 		(uuid "e3c9e216-0415-4625-946f-bed17542c875")
-	)
-	(label "ZA15"
-		(at 100.33 247.65 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e487e5a7-1c1b-4d9b-81d6-69302f13bba3")
 	)
 	(label "TA1"
 		(at 393.7 246.38 180)
@@ -34339,6 +34329,16 @@
 			(justify right bottom)
 		)
 		(uuid "e815a9f4-1c67-4424-a28c-4c978aae0774")
+	)
+	(label "ZA14"
+		(at 100.33 247.65 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e9d4c977-3f9c-4b3b-9389-92af6aa1a557")
 	)
 	(label "RAM_SEL-"
 		(at 166.37 43.18 180)
@@ -37684,7 +37684,7 @@
 				(hide yes)
 			)
 		)
-		(property "Function" "SERIAL"
+		(property "Function" "DBCOM"
 			(at 364.49 77.724 90)
 			(effects
 				(font
@@ -38610,28 +38610,28 @@
 			)
 		)
 		(pin "5"
-			(uuid "8cf835de-922a-4cc3-bcf2-647d95932729")
+			(uuid "8cf835de-922a-4cc3-bcf2-647d9593272a")
 		)
 		(pin "3"
-			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46ca")
+			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46cb")
 		)
 		(pin "8"
-			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5900")
+			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5901")
 		)
 		(pin "1"
-			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab81")
+			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab82")
 		)
 		(pin "6"
-			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65171")
+			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65172")
 		)
 		(pin "2"
-			(uuid "677e2894-2f77-45c4-924e-2ce6789de1f9")
+			(uuid "677e2894-2f77-45c4-924e-2ce6789de1fa")
 		)
 		(pin "7"
-			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7a")
+			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7b")
 		)
 		(pin "4"
-			(uuid "7ad1016b-db52-451d-9022-c465adf1f243")
+			(uuid "7ad1016b-db52-451d-9022-c465adf1f244")
 		)
 		(instances
 			(project ""
@@ -39362,6 +39362,33 @@
 			)
 		)
 		(property "Description" "A-B Option Header"
+			(at 184.15 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "OP-A" "NOMR"
+			(at 184.15 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "OP-B" "RFMR"
+			(at 184.15 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Function" "TGT-MREQ"
 			(at 184.15 190.5 0)
 			(effects
 				(font
@@ -40392,7 +40419,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "376cf330-e7ab-43a2-a27d-9ced19121878")
-		(property "Reference" "TP?"
+		(property "Reference" "TP7"
 			(at 104.648 51.308 90)
 			(effects
 				(font
@@ -40451,7 +40478,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
-					(reference "TP?")
+					(reference "TP7")
 					(unit 1)
 				)
 			)
@@ -42271,28 +42298,28 @@
 			)
 		)
 		(pin "5"
-			(uuid "8cf835de-922a-4cc3-bcf2-647d95932729")
+			(uuid "8cf835de-922a-4cc3-bcf2-647d9593272b")
 		)
 		(pin "3"
-			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46ca")
+			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46cc")
 		)
 		(pin "8"
-			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5900")
+			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5902")
 		)
 		(pin "1"
-			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab81")
+			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab83")
 		)
 		(pin "6"
-			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65171")
+			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65173")
 		)
 		(pin "2"
-			(uuid "677e2894-2f77-45c4-924e-2ce6789de1f9")
+			(uuid "677e2894-2f77-45c4-924e-2ce6789de1fb")
 		)
 		(pin "7"
-			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7a")
+			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7c")
 		)
 		(pin "4"
-			(uuid "7ad1016b-db52-451d-9022-c465adf1f243")
+			(uuid "7ad1016b-db52-451d-9022-c465adf1f245")
 		)
 		(instances
 			(project ""
@@ -45106,28 +45133,28 @@
 			)
 		)
 		(pin "5"
-			(uuid "8cf835de-922a-4cc3-bcf2-647d95932729")
+			(uuid "8cf835de-922a-4cc3-bcf2-647d9593272c")
 		)
 		(pin "3"
-			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46ca")
+			(uuid "df4fe7af-e2e3-47e8-bf8b-ad1c884e46cd")
 		)
 		(pin "8"
-			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5900")
+			(uuid "eae2e032-ba4d-416d-9da9-d0c881ec5903")
 		)
 		(pin "1"
-			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab81")
+			(uuid "2c168d02-3772-4a3e-87cc-4db13449ab84")
 		)
 		(pin "6"
-			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65171")
+			(uuid "433c7cc7-e30d-4826-9a35-e5e36ed65174")
 		)
 		(pin "2"
-			(uuid "677e2894-2f77-45c4-924e-2ce6789de1f9")
+			(uuid "677e2894-2f77-45c4-924e-2ce6789de1fc")
 		)
 		(pin "7"
-			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7a")
+			(uuid "6e5a0270-7f76-4c7f-89f8-3caae038ec7d")
 		)
 		(pin "4"
-			(uuid "7ad1016b-db52-451d-9022-c465adf1f243")
+			(uuid "7ad1016b-db52-451d-9022-c465adf1f246")
 		)
 		(instances
 			(project ""
@@ -47551,7 +47578,7 @@
 				(hide yes)
 			)
 		)
-		(property "Function" "USB SERIAL"
+		(property "Function" "TERMINAL"
 			(at 312.42 45.72 0)
 			(effects
 				(font
@@ -48160,7 +48187,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d70fca8f-2854-4b32-879c-7bc09b8f376d")
-		(property "Reference" "TP?"
+		(property "Reference" "TP8"
 			(at 169.672 38.608 90)
 			(effects
 				(font
@@ -48219,7 +48246,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
-					(reference "TP?")
+					(reference "TP8")
 					(unit 1)
 				)
 			)
