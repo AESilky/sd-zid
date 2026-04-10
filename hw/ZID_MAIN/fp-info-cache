@@ -1,4 +1,4 @@
-27390899276516013
+27392675428649297
 AES_Library
 AES-Amphenol_F51L_1x20_P1.00mm_Horizontal-FFC
 Molex Molex 1.00mm Pitch Easy-On BackFlip, Right-Angle, Bottom Contact FFC/FPC, 200528-0200, 20 Circuits (https://www.molex.com/pdm_docs/sd/2005280200_sd.pdf), generated with kicad-footprint-generator
@@ -231,8 +231,15 @@ RP2040 RaspberryPi module
 52
 26
 AES_Library
+CviLux-V-FFC_05mm_40-AES
+Molex 0.50mm Pitch Easy-On Type FFC/FPC, 52559-3652, 36 Circuits (https://www.molex.com/pdm_docs/sd/525593652_sd.pdf)
+connector Molex top entry
+0
+40
+37
+AES_Library
 CviLux_CF25401D0-05-NH_FFC-FPC-AES
-Hirose FH12, FFC/FPC connector, FH12-40S-0.5SH, 40 Pins per row (https://www.hirose.com/product/en/products/FH12/FH12-24S-0.5SH(55)/), generated with kicad-footprint-generator
+CviLux FFC/FPC, Horz 40 Pins Bottom Conn
 connector CviLux 0.5mm
 0
 42

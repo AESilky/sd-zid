@@ -6,7 +6,7 @@
 	(paper "User" 419.1 323.85)
 	(title_block
 		(title "ZID Main Logic")
-		(date "2026-04-09")
+		(date "2026-04-10")
 		(rev "PR-1.0")
 		(company "SilkyDESIGN / CMOS1")
 		(comment 1 "Copyright 2026 AESilky & SmM")
@@ -38924,7 +38924,7 @@
 				(hide yes)
 			)
 		)
-		(property "OP1-2" "NOR"
+		(property "OP1-2" "TGT"
 			(at 85.09 134.62 0)
 			(effects
 				(font
@@ -41626,7 +41626,7 @@
 				(hide yes)
 			)
 		)
-		(property "OP1-2" "NOR"
+		(property "OP1-2" "TGT"
 			(at 80.01 16.51 0)
 			(effects
 				(font
@@ -44531,7 +44531,7 @@
 				(hide yes)
 			)
 		)
-		(property "OP1-2" "NOR"
+		(property "OP1-2" "TGT"
 			(at 80.01 40.64 0)
 			(effects
 				(font
