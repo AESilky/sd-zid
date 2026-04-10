@@ -6,7 +6,7 @@
 	(paper "User" 419.1 323.85)
 	(title_block
 		(title "Target Pod and Break Expand")
-		(date "2026-04-07")
+		(date "2026-04-09")
 		(rev "PR-1.0")
 		(company "SilkyDESIGN / CMOS1")
 		(comment 1 "Copyright 2026 AESilky & SmM")
@@ -5250,6 +5250,12 @@
 		(uuid "49e4de90-8d69-4229-a0ed-8266c1a147c8")
 	)
 	(junction
+		(at 231.14 78.74)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4c16a15b-b2fe-4fc7-9794-45086bdb325e")
+	)
+	(junction
 		(at 190.5 50.8)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6867,6 +6873,16 @@
 		)
 		(uuid "370beca6-a59e-4497-b45f-a0e30d362753")
 	)
+	(wire
+		(pts
+			(xy 227.33 91.44) (xy 231.14 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "37b26b38-a6eb-4785-8d33-c54643a54041")
+	)
 	(bus
 		(pts
 			(xy 45.72 20.32) (xy 57.15 20.32)
@@ -7446,6 +7462,16 @@
 			(type default)
 		)
 		(uuid "59cb7941-8bb1-4d59-a7f0-34abfcfa052a")
+	)
+	(wire
+		(pts
+			(xy 220.98 91.44) (xy 222.25 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "59ec6f80-7c44-4839-90d1-4bf8fa6aa8f8")
 	)
 	(wire
 		(pts
@@ -8939,6 +8965,16 @@
 	)
 	(wire
 		(pts
+			(xy 213.36 91.44) (xy 212.09 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b54994c6-f0e3-418d-b848-9e62a6c4f0ff")
+	)
+	(wire
+		(pts
 			(xy 190.5 64.77) (xy 191.77 64.77)
 		)
 		(stroke
@@ -8976,6 +9012,16 @@
 			(type default)
 		)
 		(uuid "b7161ca8-5dbb-4f3f-a431-7b25f9c353a2")
+	)
+	(wire
+		(pts
+			(xy 231.14 78.74) (xy 231.14 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b74091df-82a6-46de-9d4e-6399c4658fcd")
 	)
 	(wire
 		(pts
@@ -10036,6 +10082,16 @@
 			(type default)
 		)
 		(uuid "f7cdddb6-3732-4911-b390-455b17ef6074")
+	)
+	(wire
+		(pts
+			(xy 212.09 91.44) (xy 212.09 95.25)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f928f341-447b-4440-8a2b-107e531364b9")
 	)
 	(wire
 		(pts
@@ -13491,6 +13547,100 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small_US")
+		(at 224.79 91.44 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "129406d6-c26b-412f-aa15-851e6908ccb0")
+		(property "Reference" "R37"
+			(at 227.584 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1.2k"
+			(at 228.092 92.71 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 224.79 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 224.79 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, small US symbol"
+			(at 224.79 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CPU" ""
+			(at 224.79 91.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "OPT-A" ""
+			(at 224.79 91.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "OPT-B" ""
+			(at 224.79 91.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "20f8e618-d739-49ac-ac6d-b6188ea602cd")
+		)
+		(pin "1"
+			(uuid "cfd6c911-db6f-4e48-a1a1-f92ecfb82780")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "R37")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C_Small")
 		(at 81.28 260.35 180)
 		(unit 1)
@@ -14462,8 +14612,8 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2f896b9a-d0b9-4e63-adcf-b50229760dee")
-		(property "Reference" "D4"
-			(at 219.964 77.47 0)
+		(property "Reference" "LED4"
+			(at 220.98 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14541,7 +14691,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
-					(reference "D4")
+					(reference "LED4")
 					(unit 1)
 				)
 			)
@@ -16925,8 +17075,8 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "827fbc10-bf58-46d1-8d0f-0a3a1033a342")
-		(property "Reference" "D1"
-			(at 219.964 35.56 0)
+		(property "Reference" "LED1"
+			(at 220.98 35.306 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17004,7 +17154,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
-					(reference "D1")
+					(reference "LED1")
 					(unit 1)
 				)
 			)
@@ -17592,8 +17742,8 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "92a3f9b5-e0db-4cdd-ac36-0b3c78d4cb2d")
-		(property "Reference" "D3"
-			(at 219.964 63.5 0)
+		(property "Reference" "LED3"
+			(at 220.98 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17671,7 +17821,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
-					(reference "D3")
+					(reference "LED3")
 					(unit 1)
 				)
 			)
@@ -18314,7 +18464,7 @@
 	)
 	(symbol
 		(lib_id "AES_Library:SPARE-16-AES")
-		(at 60.96 292.1 0)
+		(at 62.23 292.1 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18322,7 +18472,7 @@
 		(dnp no)
 		(uuid "b82ccbeb-ba4e-45d1-bf24-2ed2d1247c35")
 		(property "Reference" "SPARE1"
-			(at 61.214 303.276 0)
+			(at 62.484 303.276 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18330,7 +18480,7 @@
 			)
 		)
 		(property "Value" "~"
-			(at 61.214 292.1 0)
+			(at 62.484 292.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18339,7 +18489,7 @@
 			)
 		)
 		(property "Footprint" "AES_Library:SPARE-and-SOIC-16-AES"
-			(at 60.96 292.1 0)
+			(at 62.23 292.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18348,7 +18498,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 60.96 292.1 0)
+			(at 62.23 292.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18357,7 +18507,7 @@
 			)
 		)
 		(property "Description" "Symbol to use when placing spares on a PCB. Match with one of the 16 pin footprints."
-			(at 60.96 292.1 0)
+			(at 62.23 292.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18366,7 +18516,7 @@
 			)
 		)
 		(property "Function" ""
-			(at 60.96 292.1 0)
+			(at 62.23 292.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18558,6 +18708,72 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
 					(reference "#PWR093")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 212.09 95.25 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c07d085c-73e7-4bc9-a6d4-2b57edc2d524")
+		(property "Reference" "#PWR0102"
+			(at 212.09 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 215.392 97.536 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 212.09 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 212.09 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 212.09 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1227faa3-befe-4e70-b6fe-c4470cbbe226")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "#PWR0102")
 					(unit 1)
 				)
 			)
@@ -19010,8 +19226,8 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d3da9008-7ac0-4f88-a783-09bd9f2fb5c2")
-		(property "Reference" "D2"
-			(at 219.964 49.53 0)
+		(property "Reference" "LED2"
+			(at 220.98 49.276 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19089,7 +19305,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
-					(reference "D2")
+					(reference "LED2")
 					(unit 1)
 				)
 			)
@@ -20561,6 +20777,101 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
 					(reference "R27")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:LED")
+		(at 217.17 91.44 0)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "fa58042c-7e9f-43e8-adec-fd223cbe3b1f")
+		(property "Reference" "LED10"
+			(at 220.98 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "LED ORANGE"
+			(at 217.424 89.154 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "LED_THT:LED_D3.0mm"
+			(at 217.17 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 217.17 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Light emitting diode"
+			(at 217.17 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" "1=K 2=A"
+			(at 217.17 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Function" "PWR"
+			(at 215.646 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Ind" "GREEN"
+			(at 218.948 88.392 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "27166af4-ccbf-4eff-b1e6-9589ba691adc")
+		)
+		(pin "2"
+			(uuid "724a536d-3226-4e2d-b840-8b76d7123662")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/85d5adae-afa2-47ff-bde7-22bb8340c4cf"
+					(reference "LED10")
 					(unit 1)
 				)
 			)
