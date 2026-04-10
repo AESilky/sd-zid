@@ -9,7 +9,7 @@
 	(paper "A")
 	(title_block
 		(title "Z80 In-Circuit Debugger (ZID)")
-		(date "2026-04-09")
+		(date "2026-04-10")
 		(rev "PR1.0")
 		(company "SilkyDESIGN & CMOS1")
 		(comment 1 "Copyright 2026 AESilky, SmM")
@@ -927,6 +927,7 @@
 		(property "Value" "Conn_02x03_Odd_Even"
 			(at 4.572 2.794 90)
 			(layer "F.Fab")
+			(hide yes)
 			(uuid "dd5569a0-2951-422a-bca1-e26d41186ee6")
 			(effects
 				(font
@@ -1358,7 +1359,7 @@
 		(descr "Through hole straight pin header, 1x01, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x01 2.54mm single row")
 		(property "Reference" "TP6"
-			(at -3.175 -0.635 0)
+			(at 0 -2.54 0)
 			(layer "F.SilkS")
 			(uuid "d0cfcfe2-a6cc-4fc5-91f5-deeac95bc42c")
 			(effects
@@ -1807,7 +1808,7 @@
 			(uuid "15206eeb-ff68-4b83-a985-bc3435b8229a")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.3 90)
+			(at -2.729 -1.3 90)
 			(layer "F.Fab")
 			(uuid "20490633-601f-4582-a980-c9037c20fae4")
 			(effects
@@ -3753,11 +3754,11 @@
 	(footprint "Resistor_SMD:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "15d091f7-5ae1-43d3-9baa-a6584a19b13b")
-		(at 216.21612 57.658 180)
+		(at 216.21612 60.96 180)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R21"
-			(at 2.4365 0.254 90)
+			(at -3.048 0 180)
 			(layer "F.SilkS")
 			(uuid "d5c2878f-3627-4900-9fe0-afb8b73d1d09")
 			(effects
@@ -3768,8 +3769,8 @@
 			)
 		)
 		(property "Value" "20k"
-			(at 0 0 0)
-			(layer "F.Fab")
+			(at 3.048 0 0)
+			(layer "F.SilkS")
 			(uuid "4e9514c0-8a7b-4263-b99a-690e10c13f22")
 			(effects
 				(font
@@ -3896,11 +3897,11 @@
 	(footprint "Resistor_SMD:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "1780de77-e072-4851-b7e9-507b25f2c19f")
-		(at 216.21612 64.008 180)
+		(at 216.21612 66.04 180)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R22"
-			(at 2.457943 0.97 90)
+			(at -3.048 0 180)
 			(layer "F.SilkS")
 			(uuid "17dfa21a-1741-4d6b-b60b-54388131e817")
 			(effects
@@ -3911,7 +3912,7 @@
 			)
 		)
 		(property "Value" "20k"
-			(at 0.1035 1.524 0)
+			(at 3.048 0 0)
 			(layer "F.SilkS")
 			(uuid "9c9953e4-fee5-41a4-9581-02a9075108df")
 			(effects
@@ -4557,11 +4558,11 @@
 	(footprint "Resistor_SMD:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "19d142d2-ba6a-4abc-ba8e-24bf681a7e83")
-		(at 216.21612 61.891333 180)
+		(at 216.21612 63.5 180)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R23"
-			(at 2.49328 -0.465269 90)
+			(at -3.048 -0.084667 180)
 			(layer "F.SilkS")
 			(uuid "cfa031e8-6637-46a5-8221-0aa9e94222ac")
 			(effects
@@ -4572,7 +4573,7 @@
 			)
 		)
 		(property "Value" "20k"
-			(at 0 -1.524 0)
+			(at 3.048 -0.084667 0)
 			(layer "F.SilkS")
 			(uuid "6482c525-89a8-4ee1-892f-8e515691301e")
 			(effects
@@ -5207,11 +5208,11 @@
 	(footprint "Resistor_SMD:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "1d2ec254-ca80-42fa-ba17-e26d851a3db0")
-		(at 216.21612 59.774667 180)
+		(at 216.21612 58.166 180)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R24"
-			(at 2.434064 0 90)
+			(at -3.048 0 180)
 			(layer "F.SilkS")
 			(uuid "9770636f-f365-443d-952d-0440a9e600d1")
 			(effects
@@ -5222,8 +5223,8 @@
 			)
 		)
 		(property "Value" "20k"
-			(at 0 0 0)
-			(layer "F.Fab")
+			(at 3.048 0 0)
+			(layer "F.SilkS")
 			(uuid "377683fe-c5fb-40a7-8caf-dfd80fca09a0")
 			(effects
 				(font
@@ -5808,7 +5809,7 @@
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R11"
-			(at -2.54 0 180)
+			(at -0.762 -2.54 180)
 			(layer "F.SilkS")
 			(uuid "a87bf99f-3da9-4245-bc58-603c86dadabb")
 			(effects
@@ -6840,7 +6841,7 @@
 				)
 			)
 		)
-		(property "OP1-2" "NOR"
+		(property "OP1-2" "TGT"
 			(at 2.286 0.254 90)
 			(unlocked yes)
 			(layer "F.SilkS")
@@ -7728,7 +7729,7 @@
 	(footprint "AES_Library:CviLux_CF25401D0-05-NH_FFC-FPC-AES"
 		(layer "F.Cu")
 		(uuid "337eaf28-26fc-46d0-8e04-bd7f5a6f2746")
-		(at 231.69992 76.2 90)
+		(at 231.69992 72.736 90)
 		(descr "Hirose FH12, FFC/FPC connector, FH12-40S-0.5SH, 40 Pins per row (https://www.hirose.com/product/en/products/FH12/FH12-24S-0.5SH(55)/), generated with kicad-footprint-generator")
 		(tags "connector CviLux 0.5mm")
 		(property "Reference" "J9"
@@ -9240,7 +9241,7 @@
 			)
 		)
 		(property "Value" "PESD5V0L2U"
-			(at 2.6185 1.27 90)
+			(at -2.794 1.524 90)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "7dc665a4-0664-4387-996a-fa4708d63024")
@@ -12213,7 +12214,7 @@
 		(descr "Through hole straight pin header, 1x01, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x01 2.54mm single row")
 		(property "Reference" "TP5"
-			(at -3.175 -1.27 0)
+			(at 0 4.064 0)
 			(layer "F.SilkS")
 			(uuid "c84a661d-59ab-42aa-a84c-0599cfcfc733")
 			(effects
@@ -13125,7 +13126,7 @@
 				)
 			)
 		)
-		(property "OP1-2" "NOR"
+		(property "OP1-2" "TGT"
 			(at 2.286 0.254 90)
 			(unlocked yes)
 			(layer "F.SilkS")
@@ -14265,7 +14266,7 @@
 			)
 		)
 		(property "Value" "ATF1504AS-44T"
-			(at 0 7.35 0)
+			(at -0.1795 -7.658 0)
 			(layer "F.SilkS")
 			(uuid "c375b7b6-460f-4f64-99c0-7cdbcc2cc52a")
 			(effects
@@ -14300,7 +14301,7 @@
 			)
 		)
 		(property "Function" "BRK1&2n Addr Cmp"
-			(at 0.0745 -7.658 0)
+			(at 0.0745 -9.182 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "51fd6b6d-5343-441d-8563-c768dde8c5ba")
@@ -16092,7 +16093,7 @@
 	(footprint "LED_THT:LED_D3.0mm"
 		(layer "F.Cu")
 		(uuid "67e76de9-3f24-4267-8421-782498de5c31")
-		(at 233.74212 100.058969 90)
+		(at 233.74212 96.594969 90)
 		(descr "LED, diameter 3.0mm, 2 pins, generated by kicad-footprint-generator")
 		(tags "LED")
 		(property "Reference" "LED3"
@@ -16568,7 +16569,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "6c9eb967-48c3-4618-b5e1-1ac9292c0cea")
-		(at 232.98012 119.38 90)
+		(at 233.74212 116.932 90)
 		(descr "Through hole straight pin header, 1x01, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x01 2.54mm single row")
 		(property "Reference" "TP1"
@@ -16800,7 +16801,7 @@
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R12"
-			(at -1.397001 -2.348 0)
+			(at -0.127001 1.716 90)
 			(layer "F.SilkS")
 			(uuid "05fdee25-bf51-4f70-987d-17262f88e197")
 			(effects
@@ -17670,7 +17671,7 @@
 			)
 		)
 		(property "Freq" "20MHz(max)"
-			(at 4.826 -2.794 90)
+			(at 10.924834 3.712689 180)
 			(layer "F.SilkS")
 			(uuid "8d20173b-ab8b-4422-a6a7-bbc7044813bf")
 			(effects
@@ -18580,7 +18581,7 @@
 	(footprint "AES_Library:PinHeader_2x05_AB-AES"
 		(layer "F.Cu")
 		(uuid "7e51eadc-1a68-41de-a7f2-632e8fb296b6")
-		(at 231.69857 34.854366)
+		(at 231.69857 31.390366)
 		(descr "Through hole straight pin header, 2x05, 2.54mm pitch, double rows")
 		(tags "Through hole pin header THT 2x05 2.54mm double row")
 		(property "Reference" "J3"
@@ -18954,11 +18955,11 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "7f158eb5-a838-47c1-96ee-dbf515cf68d0")
-		(at 149.92212 46.482)
+		(at 157.54212 61.722)
 		(descr "Through hole straight pin header, 1x01, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x01 2.54mm single row")
 		(property "Reference" "TP8"
-			(at 2.54 -0.127 0)
+			(at 0 -2.54 0)
 			(layer "F.SilkS")
 			(uuid "734a7766-9b09-45b8-90da-c277ae344105")
 			(effects
@@ -27986,7 +27987,7 @@
 	(footprint "LED_THT:LED_D3.0mm"
 		(layer "F.Cu")
 		(uuid "b65ba23f-991a-4df7-812f-7feeed2f62b3")
-		(at 233.74212 110.184907 90)
+		(at 233.74212 106.720907 90)
 		(descr "LED, diameter 3.0mm, 2 pins, generated by kicad-footprint-generator")
 		(tags "LED")
 		(property "Reference" "LED1"
@@ -28236,7 +28237,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_2x20_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "b8c5cfc6-ebc7-4cf3-a4cc-f8ae91bbe040")
-		(at 208.021 26.820499 -90)
+		(at 211.13612 26.67 -90)
 		(descr "Through hole straight pin header, 2x20, 2.54mm pitch, double rows")
 		(tags "Through hole pin header THT 2x20 2.54mm double row")
 		(property "Reference" "J8"
@@ -29142,21 +29143,22 @@
 			)
 		)
 		(property "P1" "G"
-			(at 0 0 0)
+			(at 1.84012 -0.127001 0)
 			(unlocked yes)
-			(layer "F.Fab")
+			(layer "F.SilkS")
 			(uuid "e4d8daa4-5822-4157-98fa-c67ef44364ba")
 			(effects
 				(font
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify left)
 			)
 		)
 		(property "P2" "R"
-			(at 0 0 0)
+			(at 2.34812 2.666999 0)
 			(unlocked yes)
-			(layer "F.Fab")
+			(layer "F.SilkS")
 			(uuid "7ad58b27-831d-4dce-b8a6-77c3cc1865a0")
 			(effects
 				(font
@@ -29166,15 +29168,16 @@
 			)
 		)
 		(property "P3" "T"
-			(at 0 0 0)
+			(at 1.84012 5.206999 0)
 			(unlocked yes)
-			(layer "F.Fab")
+			(layer "F.SilkS")
 			(uuid "0e5d5559-1fb9-4928-befd-44e9e8f2ce69")
 			(effects
 				(font
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify left)
 			)
 		)
 		(property ki_fp_filters "Connector*:*_1x??_*")
@@ -29305,7 +29308,7 @@
 			(uuid "46992b82-f0fa-41db-a911-03fcbfb2d201")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 2.54 90)
+			(at 0.57012 3.936999 90)
 			(layer "F.Fab")
 			(uuid "a498961a-9a33-40e0-acda-1ab63e2708bd")
 			(effects
@@ -30678,7 +30681,7 @@
 	(footprint "LED_THT:LED_D3.0mm"
 		(layer "F.Cu")
 		(uuid "c301acaa-0ef6-45f0-a2ad-5f407dbfb84e")
-		(at 233.74212 94.996 90)
+		(at 233.74212 91.532 90)
 		(descr "LED, diameter 3.0mm, 2 pins, generated by kicad-footprint-generator")
 		(tags "LED")
 		(property "Reference" "LED4"
@@ -31110,7 +31113,7 @@
 	(footprint "AES_Library:PinHeader_2x05_AB-AES"
 		(layer "F.Cu")
 		(uuid "c99562d8-1ab0-43c3-8c3d-c5ff0a5b29c1")
-		(at 231.69857 47.589366)
+		(at 231.69857 44.125366)
 		(descr "Through hole straight pin header, 2x05, 2.54mm pitch, double rows")
 		(tags "Through hole pin header THT 2x05 2.54mm double row")
 		(property "Reference" "J2"
@@ -31627,7 +31630,7 @@
 	(footprint "Resistor_SMD:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "d4e7c0f8-b3fc-4004-889b-1a068e3781b9")
-		(at 173.731 34.694499 90)
+		(at 176.84612 34.544 90)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R20"
@@ -32275,11 +32278,11 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "d828e603-c55e-4e85-bf6a-f50683c5beaf")
-		(at 149.92212 53.848)
+		(at 157.54212 69.088)
 		(descr "Through hole straight pin header, 1x01, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x01 2.54mm single row")
 		(property "Reference" "TP7"
-			(at 3.175 -0.635 0)
+			(at 0 -2.54 0)
 			(layer "F.SilkS")
 			(uuid "f50752d5-b466-4c64-8d1c-75bd3db550bb")
 			(effects
@@ -34553,7 +34556,7 @@
 			)
 		)
 		(property "Value" "Z80 C20MHz-PLCC"
-			(at -1.27 19.1 90)
+			(at -14.732 6.096 180)
 			(layer "F.SilkS")
 			(uuid "88b78ab3-c652-45e2-ada7-c81d38ff09be")
 			(effects
@@ -35510,7 +35513,7 @@
 	(footprint "Resistor_SMD:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "e5f4c022-263c-4517-929a-51916b9877fa")
-		(at 176.271001 34.6945 90)
+		(at 179.386121 34.544001 90)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R19"
@@ -35976,7 +35979,7 @@
 			)
 		)
 		(property "Addr" "10000-2FFFF"
-			(at 0 12.7 0)
+			(at 0 12.954 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "7af91a85-715b-4ef1-b455-1fecdcdd4d3b")
@@ -35988,7 +35991,7 @@
 			)
 		)
 		(property "Region" "RGN:8-15"
-			(at 0 13.97 0)
+			(at 0 14.478 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "9b27e8a9-88ae-4eb4-b30a-1c2b5aefebda")
@@ -36890,7 +36893,7 @@
 				)
 			)
 		)
-		(property "OP1-2" "NOR"
+		(property "OP1-2" "TGT"
 			(at 2.286 0.254 90)
 			(unlocked yes)
 			(layer "F.SilkS")
@@ -37374,7 +37377,7 @@
 	(footprint "LED_THT:LED_D3.0mm"
 		(layer "F.Cu")
 		(uuid "ec4ec4da-a88c-4fe3-aee9-a7a47b72e637")
-		(at 233.74212 105.121938 90)
+		(at 233.74212 101.657938 90)
 		(descr "LED, diameter 3.0mm, 2 pins, generated by kicad-footprint-generator")
 		(tags "LED")
 		(property "Reference" "LED2"
@@ -37951,7 +37954,7 @@
 		(descr "SMD Solder Jumper, 1x1.5mm, rounded Pads, 0.3mm gap, open")
 		(tags "solder jumper open")
 		(property "Reference" "JP4"
-			(at -2.921 0.062001 90)
+			(at 0.127 -1.969999 90)
 			(layer "F.SilkS")
 			(uuid "1c90b2e2-d6d8-4711-a679-6158f455a7a5")
 			(effects
@@ -37964,6 +37967,7 @@
 		(property "Value" "SolderJumper_2_Open"
 			(at 0 1.9 90)
 			(layer "F.Fab")
+			(hide yes)
 			(uuid "6ca76c69-1ae7-45ed-ae56-e64f73abd6cd")
 			(effects
 				(font
@@ -38012,10 +38016,9 @@
 			)
 		)
 		(property "Addr1" "O:0x50"
-			(at 0 0 270)
+			(at 6.223 4.126001 0)
 			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
+			(layer "F.SilkS")
 			(uuid "3715c096-86b4-4f98-be6c-651e2e789913")
 			(effects
 				(font
@@ -38025,10 +38028,9 @@
 			)
 		)
 		(property "Addr2" "S:0x51"
-			(at 0 0 270)
+			(at 7.493 4.126001 0)
 			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
+			(layer "F.SilkS")
 			(uuid "33c6b762-24be-4099-b761-3c55f0fefda3")
 			(effects
 				(font
@@ -39317,7 +39319,7 @@
 	(footprint "LED_THT:LED_D3.0mm"
 		(layer "F.Cu")
 		(uuid "ef441a9f-162b-43dd-b6d5-8c3e5f7e53fc")
-		(at 233.74212 115.316 90)
+		(at 233.74212 111.852 90)
 		(descr "LED, diameter 3.0mm, 2 pins, generated by kicad-footprint-generator")
 		(tags "LED")
 		(property "Reference" "LED10"
@@ -41176,7 +41178,7 @@
 			)
 		)
 		(property "Function" "RESET"
-			(at 3.473058 4.064 270)
+			(at 1.524 4.318 270)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "04d96152-b151-4586-beb0-6aae18f2217c")
@@ -42080,6 +42082,90 @@
 		(fill no)
 		(layer "Dwgs.User")
 		(uuid "f0e9f9e9-14d0-432c-8fb4-42e17e04e3e6")
+	)
+	(gr_line
+		(start 71.43612 123.698)
+		(end 71.43612 23.622)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "186bca9f-a77f-4e09-8dc9-d153ae95c635")
+	)
+	(gr_line
+		(start 235.77412 124.46)
+		(end 72.19812 124.46)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "1940b662-2d7f-4268-af7e-7436930d5f27")
+	)
+	(gr_line
+		(start 236.53612 23.622)
+		(end 236.53612 123.698)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "201a7939-a7d0-4131-a8c5-ce937e79fcbc")
+	)
+	(gr_arc
+		(start 235.77412 22.86)
+		(mid 236.312935 23.083185)
+		(end 236.53612 23.622)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "7a511d24-54f4-4d95-99ca-345df25d4cbf")
+	)
+	(gr_line
+		(start 72.19812 22.86)
+		(end 235.77412 22.86)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "9551d5ef-6406-4724-8a37-2601f083620f")
+	)
+	(gr_arc
+		(start 72.19812 124.46)
+		(mid 71.659305 124.236815)
+		(end 71.43612 123.698)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "a0573aab-0cd4-4d73-a58c-ff0cba8b2a33")
+	)
+	(gr_arc
+		(start 71.43612 23.622)
+		(mid 71.659305 23.083185)
+		(end 72.19812 22.86)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "aeb61692-c9ea-452a-a740-58d79780a349")
+	)
+	(gr_arc
+		(start 236.53612 120.234)
+		(mid 236.312935 120.772815)
+		(end 235.77412 120.996)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "b3e9bb2f-efef-4ae9-af68-d108c1755062")
 	)
 	(dimension
 		(type orthogonal)
