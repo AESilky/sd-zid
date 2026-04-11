@@ -18464,7 +18464,7 @@
 	)
 	(symbol
 		(lib_id "AES_Library:SPARE-16-AES")
-		(at 62.23 292.1 0)
+		(at 81.28 290.83 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18472,7 +18472,7 @@
 		(dnp no)
 		(uuid "b82ccbeb-ba4e-45d1-bf24-2ed2d1247c35")
 		(property "Reference" "SPARE1"
-			(at 62.484 303.276 0)
+			(at 81.534 302.006 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18480,7 +18480,7 @@
 			)
 		)
 		(property "Value" "~"
-			(at 62.484 292.1 0)
+			(at 81.534 290.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18489,7 +18489,7 @@
 			)
 		)
 		(property "Footprint" "AES_Library:SPARE-and-SOIC-16-AES"
-			(at 62.23 292.1 0)
+			(at 81.28 290.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18498,7 +18498,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 62.23 292.1 0)
+			(at 81.28 290.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18507,7 +18507,7 @@
 			)
 		)
 		(property "Description" "Symbol to use when placing spares on a PCB. Match with one of the 16 pin footprints."
-			(at 62.23 292.1 0)
+			(at 81.28 290.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18516,7 +18516,7 @@
 			)
 		)
 		(property "Function" ""
-			(at 62.23 292.1 0)
+			(at 81.28 290.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
