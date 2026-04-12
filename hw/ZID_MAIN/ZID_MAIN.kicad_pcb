@@ -6794,7 +6794,7 @@
 	(footprint "Connector_PinHeader_2.00mm:PinHeader_1x03_P2.00mm_Vertical"
 		(layer "F.Cu")
 		(uuid "2e7ebafe-8e3c-453a-9125-8bf081568fa9")
-		(at 152.146 114.586)
+		(at 157.226 115.57)
 		(descr "Through hole straight pin header, 1x03, 2.00mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.00mm single row")
 		(property "Reference" "SBC3"
@@ -8642,11 +8642,11 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "37f27eda-0895-4583-b948-4c42480422a0")
-		(at 218.75112 34.29 90)
+		(at 221.29612 34.925 90)
 		(descr "Through hole straight pin header, 1x02, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J1"
-			(at -0.889 5.085 90)
+			(at 2.54 -0.635 180)
 			(layer "F.SilkS")
 			(uuid "072eedfa-9667-4f4c-bec6-7888919fbdd1")
 			(effects
@@ -10942,7 +10942,7 @@
 	(footprint "Connector_PinHeader_2.00mm:PinHeader_1x03_P2.00mm_Vertical"
 		(layer "F.Cu")
 		(uuid "4cec0116-7381-4d4b-abfd-003014e59cd4")
-		(at 131.826 114.586)
+		(at 162.87612 115.57)
 		(descr "Through hole straight pin header, 1x03, 2.00mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.00mm single row")
 		(property "Reference" "JP2"
@@ -13097,7 +13097,7 @@
 	(footprint "Connector_PinHeader_2.00mm:PinHeader_1x03_P2.00mm_Vertical"
 		(layer "F.Cu")
 		(uuid "5697bbb5-d88a-4c21-bf39-9dbf3c37088b")
-		(at 141.986 114.586)
+		(at 147.066 115.57)
 		(descr "Through hole straight pin header, 1x03, 2.00mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.00mm single row")
 		(property "Reference" "SBC1"
@@ -15984,7 +15984,7 @@
 	(footprint "Resistor_SMD:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "67cac2a0-b9ea-4ad6-bbbe-71447d28360b")
-		(at 156.718 114.808 90)
+		(at 157.16112 111.474 90)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R4"
@@ -36041,7 +36041,7 @@
 	(footprint "Connector_PinHeader_2.00mm:PinHeader_1x03_P2.00mm_Vertical"
 		(layer "F.Cu")
 		(uuid "e85e160d-319d-4a3c-a423-ecd5cc67a371")
-		(at 136.906 114.586)
+		(at 167.95612 115.57)
 		(descr "Through hole straight pin header, 1x03, 2.00mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.00mm single row")
 		(property "Reference" "JP1"
@@ -37233,7 +37233,7 @@
 	(footprint "Connector_PinHeader_2.00mm:PinHeader_1x03_P2.00mm_Vertical"
 		(layer "F.Cu")
 		(uuid "eaaaa4ef-de8f-4322-95ad-23facbbabc83")
-		(at 147.066 114.586)
+		(at 152.146 115.57)
 		(descr "Through hole straight pin header, 1x03, 2.00mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.00mm single row")
 		(property "Reference" "SBC2"
@@ -41534,7 +41534,7 @@
 		(descr "Surface Mount Tactile Switch for High-Density Mounting, 3.1mm height, https://omronfs.omron.com/en_US/ecb/products/pdf/en-b3fs.pdf")
 		(tags "Tactile Switch")
 		(property "Reference" "SW1"
-			(at 5.08 5.08 0)
+			(at 4.445 4.445 90)
 			(layer "F.SilkS")
 			(uuid "c552244b-73c0-40bb-ba67-6f41750430ed")
 			(effects
