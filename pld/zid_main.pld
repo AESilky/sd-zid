@@ -330,6 +330,7 @@ PINNODE = zsprst1;          /* Special reset generator #1 */
 PINNODE = zsprst2;          /* Special reset generator #2 */
 PINNODE = dbi;              /* Double-Byte Instruction Detected */
 
+
 /** MMU */
 PINNODE = mmu_io;           /* MMU I/O Operation                  */
 /*  MMU Registers                                                 */
@@ -354,6 +355,10 @@ PINNODE = so_done;          /* Single-Op done, used to clear target mode at end 
 PINNODE = brk_req;          /* Programmable Break request (d5 CTRL)                             */
 PINNODE = rst_req;          /* Programmable Reset request (d6 CTRL)                             */
 PINNODE = zid_init;         /* Bit indicating the ZID functionality is initialized (d7 CTRL)    */
+
+
+/** Target Mode Control */
+PINNODE = to_target;
 
 
 /**
@@ -543,6 +548,7 @@ zint        = tgtmode & !sngl_step & tint;   /* Target INT gated to Z80 only whe
 /** Refresh Gated Memory Request for the Target MREQ while in Debug Mode */
 rfmr    = mreq & rfsh;
 
+
 /** Simple gated and/or buffered signals */
 zbusreq     = busreq & tgtmode & !sngl_op & !sngl_step; /* BUSREQ only when in Target mode */
 d7bo        = d7;           /* Data Bit 7 buffered for use by external breakpoint hardware */
@@ -554,7 +560,7 @@ mem_op.oe   = ON;
 
 /** MMU Register Init/Write */
 mmu_io          = (lcl_io & ioaddr:['b'xxx0100x]);  /* n008: Top 2 bits select register */
-
+/* */
 [mapA3..0].ap   =  [d3..0] & [addr15..14]:0000 & mmu_io & wr;
 [mapA3..0].ar   = ![d3..0] & [addr15..14]:0000 & mmu_io & wr;
 [mapA3..0].d    = ['b'0000];  /* ROM-0 */
@@ -621,10 +627,11 @@ lcl_io      = (!tgtmode # sbcmode) & !m1 & iorq & ioaddr:['b'000xxxxx]; /* Local
 lcl_io.oe   = ON;
 
 /** Target Mode and Single Operation (Mem or I/O RD/WR), and Bus Control */
+to_target   = tgt_now # (sop_now & sngl_op);
 tgt_go.ck   = lcl_io & ioaddr:['b'xxx1000x];         /* 10: TARGET-GO        */
 tgt_go.d    = ON;
 tgt_go.ar   = tgtmode;
-tgtmode.ck  = tgt_now # sop_now;    /* The Operation Counter is done, enter Target Mode */
+tgtmode.ck  = to_target;            /* The Operation Counter is done, enter Target Mode */
 tgtmode.d   = ON;
 tgtmode.ap  = tgt_only;             /* If Target Only, ALWAYS in Target Mode                    */
 tgtmode.ar  = !tgt_only 
@@ -765,7 +772,7 @@ brk_dtctd.ar    = zrst  /* Clear the detected flag when Special Reset is generat
 /* Special Reset due to Breakpoint detected. Status for the Debugger */
 sr_frombrk.ck   = brk_dtctd;
 sr_frombrk.d    = ON;
-sr_frombrk.ar   = tgt_now # sop_now;
+sr_frombrk.ar   = to_target;
 /* */
 pc_latch   = m1
             & (

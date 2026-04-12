@@ -6,7 +6,7 @@
 	(paper "User" 419.1 323.85)
 	(title_block
 		(title "ZID Main Logic")
-		(date "2026-04-10")
+		(date "2026-04-11")
 		(rev "PR-1.0")
 		(company "SilkyDESIGN / CMOS1")
 		(comment 1 "Copyright 2026 AESilky & SmM")
@@ -39374,7 +39374,8 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 31.75 52.07 90)
+		(at 34.29 52.07 270)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -39382,7 +39383,7 @@
 		(dnp no)
 		(uuid "2c50cea6-747b-4113-b22b-a50af8041db2")
 		(property "Reference" "J1"
-			(at 36.322 52.07 90)
+			(at 29.718 52.07 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -39391,7 +39392,7 @@
 			)
 		)
 		(property "Value" "Conn_01x02_Pin_2.54mm"
-			(at 36.83 53.3399 90)
+			(at 29.21 53.3399 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -39401,7 +39402,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
-			(at 31.75 52.07 0)
+			(at 34.29 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -39410,7 +39411,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 31.75 52.07 0)
+			(at 34.29 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -39419,7 +39420,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 31.75 52.07 0)
+			(at 34.29 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -39428,7 +39429,7 @@
 			)
 		)
 		(property "Function" "RST PB"
-			(at 32.766 49.53 90)
+			(at 33.274 49.53 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -39442,7 +39443,7 @@
 			(uuid "b49563b1-d24f-4987-b664-e41737434c78")
 		)
 		(instances
-			(project ""
+			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
 					(reference "J1")
 					(unit 1)
@@ -39476,7 +39477,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
+		(property "Footprint" "LED_THT:LED_D3.0mm"
 			(at 381 107.95 0)
 			(effects
 				(font
@@ -39847,7 +39848,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
+		(property "Footprint" "LED_THT:LED_D3.0mm"
 			(at 386.08 114.3 0)
 			(effects
 				(font
@@ -40875,7 +40876,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
+		(property "Footprint" "LED_THT:LED_D3.0mm"
 			(at 386.08 101.6 0)
 			(effects
 				(font
@@ -45174,7 +45175,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
+		(property "Footprint" "LED_THT:LED_D3.0mm"
 			(at 386.08 127 0)
 			(effects
 				(font
@@ -46370,7 +46371,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
+		(property "Footprint" "LED_THT:LED_D3.0mm"
 			(at 381 120.65 0)
 			(effects
 				(font
