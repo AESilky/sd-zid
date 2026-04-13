@@ -6,10 +6,12 @@
 	(paper "A")
 	(title_block
 		(title "ZID POD (1)")
-		(date "2026-04-10")
+		(date "2026-04-13")
 		(rev "PR1.0")
 		(company "SilkyDESIGN")
 		(comment 1 "Copyright 2026 AESilky")
+		(comment 3 "Z80 positions/orientations.")
+		(comment 4 "Layout 1 of 4 to accommodate different")
 	)
 	(lib_symbols
 		(symbol "AES_Library:Z80-Pod-AES"
@@ -635,7 +637,7 @@
 				(pin power_in line
 					(at 11.43 -2.54 180)
 					(length 2.54)
-					(name "5V"
+					(name "GND/NC"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1078,7 +1080,7 @@
 				(pin power_in line
 					(at -11.43 -2.54 0)
 					(length 2.54)
-					(name "5V"
+					(name "GND/NC"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1639,6 +1641,10 @@
 		)
 		(uuid "52bc6aa6-2b16-44ed-8fde-9bbe2c64cb0d")
 	)
+	(no_connect
+		(at 166.37 107.95)
+		(uuid "f086aa66-6e6b-4bfe-8ede-cf4f0af3cd20")
+	)
 	(wire
 		(pts
 			(xy 158.75 85.09) (xy 166.37 85.09)
@@ -1818,16 +1824,6 @@
 			(type default)
 		)
 		(uuid "3102f0ee-4db2-415c-85d8-c95354941e92")
-	)
-	(wire
-		(pts
-			(xy 158.75 107.95) (xy 166.37 107.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3141021a-5350-42c4-b0cc-2d72b4b7972e")
 	)
 	(wire
 		(pts
@@ -2689,7 +2685,7 @@
 		)
 		(uuid "3b048730-9d87-4406-8be6-7aa3e778d9ee")
 	)
-	(label "PWR"
+	(label "GND"
 		(at 123.19 107.95 180)
 		(effects
 			(font
@@ -2818,16 +2814,6 @@
 			(justify right bottom)
 		)
 		(uuid "66d44776-5849-499b-a72c-31448c22bc63")
-	)
-	(label "PWR"
-		(at 158.75 107.95 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "66d99b7a-c1e0-4a9f-8d53-1b1d4da5d678")
 	)
 	(label "A6"
 		(at 196.85 92.71 180)
@@ -3248,7 +3234,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e00d75f1-52fe-4c6e-af1e-9d633530bc4f")
-		(property "Reference" "SKT1"
+		(property "Reference" "Z80-SKT1"
 			(at 177.8 105.41 0)
 			(effects
 				(font
@@ -3264,7 +3250,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_DIP:DIP-40_W15.24mm"
+		(property "Footprint" "Package_DIP:DIP-40_W15.24mm_Socket"
 			(at 177.8 105.41 0)
 			(effects
 				(font
@@ -3282,7 +3268,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Plugs into the Z80 socket on target"
+		(property "Description" "Connect Z80 to Target via Cable"
 			(at 177.8 105.41 0)
 			(effects
 				(font
@@ -3291,7 +3277,7 @@
 				(hide yes)
 			)
 		)
-		(property "PIN_NOTE" "BIDIRECTIONAL pins are OUT on Z80, IN on DEBUGGER"
+		(property "PIN_NOTE" "BIDIRECTIONAL pins are OUT on Z80, IN on TARGET"
 			(at 177.8 105.41 0)
 			(effects
 				(font
@@ -3423,7 +3409,7 @@
 		(instances
 			(project ""
 				(path "/5064845c-49f8-454d-ae5f-d06818afd8fe"
-					(reference "SKT1")
+					(reference "Z80-SKT1")
 					(unit 1)
 				)
 			)
