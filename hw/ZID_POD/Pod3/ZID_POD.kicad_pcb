@@ -43,6 +43,45 @@
 		(45 "User.4" user)
 	)
 	(setup
+		(stackup
+			(layer "F.SilkS"
+				(type "Top Silk Screen")
+			)
+			(layer "F.Paste"
+				(type "Top Solder Paste")
+			)
+			(layer "F.Mask"
+				(type "Top Solder Mask")
+				(thickness 0.01)
+			)
+			(layer "F.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "dielectric 1"
+				(type "core")
+				(thickness 1.51)
+				(material "FR4")
+				(epsilon_r 4.5)
+				(loss_tangent 0.02)
+			)
+			(layer "B.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "B.Mask"
+				(type "Bottom Solder Mask")
+				(thickness 0.01)
+			)
+			(layer "B.Paste"
+				(type "Bottom Solder Paste")
+			)
+			(layer "B.SilkS"
+				(type "Bottom Silk Screen")
+			)
+			(copper_finish "None")
+			(dielectric_constraints no)
+		)
 		(pad_to_mask_clearance 0)
 		(allow_soldermask_bridges_in_footprints no)
 		(tenting front back)
@@ -803,15 +842,17 @@
 				)
 			)
 		)
-		(property "Value" "Z80-POD"
-			(at 0 14 90)
-			(layer "F.Fab")
+		(property "Value" "Z80-POD (3)"
+			(at 0 14 0)
+			(unlocked yes)
+			(layer "B.SilkS")
 			(uuid "1c353283-3469-49b9-8955-54592c080174")
 			(effects
 				(font
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Datasheet" ""
@@ -1838,7 +1879,7 @@
 	(segment
 		(start 112.286 97.5771)
 		(end 114.5281 95.335)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "26a73c92-c0ba-4396-a89d-22a9cfd94538")
@@ -1846,7 +1887,7 @@
 	(segment
 		(start 141.563 93.77795)
 		(end 140.91805 93.133)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "3ec2fcdf-0ccf-41d9-9afe-aee263d9cf3f")
@@ -1854,7 +1895,7 @@
 	(segment
 		(start 139.319 99.1108)
 		(end 141.563 96.8668)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "519129de-5ac3-44b1-9a27-8b34ea602746")
@@ -1862,7 +1903,7 @@
 	(segment
 		(start 119.041 95.335)
 		(end 120.142 94.234)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "545ae079-d372-4c4e-815c-bbd1d06a4a70")
@@ -1870,7 +1911,7 @@
 	(segment
 		(start 121.286 100.954)
 		(end 121.286 99.5162)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "6b73207c-88cf-44e9-a45f-f37aadd2d8dc")
@@ -1878,7 +1919,7 @@
 	(segment
 		(start 140.91805 93.133)
 		(end 121.243 93.133)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "8ad1de7e-2a8a-4fa6-9c78-e264ac1f8afd")
@@ -1886,7 +1927,7 @@
 	(segment
 		(start 121.286 99.5162)
 		(end 121.6914 99.1108)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "9703e13d-7305-490c-b038-a4a609775b7e")
@@ -1894,7 +1935,7 @@
 	(segment
 		(start 114.5281 95.335)
 		(end 119.041 95.335)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "9a441e7b-1499-4a23-873c-f78d6f6926c9")
@@ -1902,7 +1943,7 @@
 	(segment
 		(start 121.243 93.133)
 		(end 120.142 94.234)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "a22017f8-a7e8-49a6-9533-e356fb916a6c")
@@ -1910,7 +1951,7 @@
 	(segment
 		(start 112.286 100.954)
 		(end 112.286 97.5771)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "f5b01827-4fff-467b-a2b0-00eeecba5af9")
@@ -1918,7 +1959,7 @@
 	(segment
 		(start 141.563 96.8668)
 		(end 141.563 93.77795)
-		(width 0.2)
+		(width 0.254)
 		(layer "F.Cu")
 		(net 3)
 		(uuid "f992cc4b-ff8a-44bc-9dbf-9adafa441883")
@@ -1942,7 +1983,7 @@
 	(segment
 		(start 121.6914 99.1108)
 		(end 139.319 99.1108)
-		(width 0.2)
+		(width 0.254)
 		(layer "B.Cu")
 		(net 3)
 		(uuid "bb4604b4-6868-47aa-96c8-c1cd0615ea41")
