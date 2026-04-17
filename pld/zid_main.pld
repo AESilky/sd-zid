@@ -225,8 +225,6 @@ PIN 88 = !busreq;       /* Gated by target mode for zbusreq (on an in-only pin) 
 
 /************************************************************************/
 /* Inputs                                                               */
-/* (pins will be assigned when design is more complete, for now, not    */
-/*  making assignments gives the Fitter more flexibility)               */
 /************************************************************************/
 
 PIN [85,84,83,81..75] = [addr15..14,addr7..0]; /* Address inputs        */
@@ -278,7 +276,10 @@ PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
 /* Outputs                                                              */
 /************************************************************************/
 
-PIN 25  = !zrst;        /* Reset signal to the Z80 */
+PIN 25  = !zrst;    /* Reset signal to the Z80 */
+PIN 50  = !lrst;    /* Local reset */
+                    /*  triggered by rst_req */
+                    /*  or when brd_rst is true for 3+ clocks */
 PIN [14..12] = [rra2..0]; /* ROM/RAM Address: Actually RRA16..14 on bus */
 PIN 41  = !ram_sel;
 PIN 40  = !rom_sel;
@@ -320,7 +321,7 @@ PIN [56..58,60] = [sbc_gp3..0];
 /************************************************************************/
 
 /** Boot/Reboot and Requested Reset  */
-PINNODE = irst;             /* Internal Reset */
+PINNODE = mrst_req;         /* Master reset: brd_rst # rst_req */
 PINNODE = [rstSM2..0];      /* Reset state machine */
 
 
@@ -498,24 +499,25 @@ $DEFINE SBCGP_WR    (lcl_io & ioaddr:['b'xxx0101x] & wr) /* 0A: SBC Gen-Purpose 
 /************************************************************************/
 
 /** Boot/Reboot Reset or Reset Request */
-rstSM0.ar       = brd_rst;
+mrst_req        = brd_rst # rst_req;
+rstSM0.ar       = !mrst_req;
 rstSM0.ck       = cpu_clk;
-rstSM0.d        = rst_req;
+rstSM0.d        = !rstSM0;
 /* */
-rstSM1.ar       = brd_rst;
+rstSM1.ar       = lrst;
 rstSM1.ck       = cpu_clk;
-rstSM1.d        = rstSM0 # (rstSM1 & !irst);
-rstSM2.ar       = brd_rst;
+rstSM1.d        = rstSM0 # (rstSM1 & !lrst);
+rstSM2.ar       = lrst;
 rstSM2.ck       = cpu_clk;
 rstSM2.d        = rstSM1;
 /* Generated Internal Reset (used to reset *most* of the internal logic) */
-irst.ap         =  brd_rst;
-irst.ck         =  cpu_clk;
-irst.d          =  rstSM2 & rstSM1;
+lrst.ck         =  cpu_clk;
+lrst.d          =  (rstSM2 & rstSM1)
+                 # (lrst & mrst_req);    /* Once on, stay on as long as main reset is requested */
 
 
 /** Z80 Reset signal -and- Z80 Special-Reset generation */
-zrst        = (brd_rst # irst)      /* Reset to local Z80 is the full reset */
+zrst        = lrst                  /* Reset to local Z80 is the full reset */
             # (zsprst1 & !zsprst2); /*  or special reset                    */
 /* Special Reset Request        */
 zsr_req.ck  = tgtmode & !tgt_only   /* Running the target and not Target Only, and...   */
@@ -531,7 +533,7 @@ zsr_req.ar  = zrst;
 zsprst1.d    = zsr_req;
 zsprst1.ck   = m1;         /* Accept request at beginning of IF1 */
 zsprst1.ce   = !dbi_if2;
-zsprst1.ar   = irst;
+zsprst1.ar   = lrst;
 /* */
 zsprst2.d   = zsprst1;
 zsprst2.ck  = cpu_clk;
@@ -564,19 +566,19 @@ mmu_io          = (lcl_io & ioaddr:['b'xxx0100x]);  /* n008: Top 2 bits select r
 [mapA3..0].ap   =  [d3..0] & [addr15..14]:0000 & mmu_io & wr;
 [mapA3..0].ar   = ![d3..0] & [addr15..14]:0000 & mmu_io & wr;
 [mapA3..0].d    = ['b'0000];  /* ROM-0 */
-[mapA3..0].ck   = !irst;
+[mapA3..0].ck   = !lrst;
 [mapB3..0].ap   =  [d3..0] & [addr15..14]:4000 & mmu_io & wr;
 [mapB3..0].ar   = ![d3..0] & [addr15..14]:4000 & mmu_io & wr;
 [mapB3..0].d    = ['b'0001];  /* ROM-1 */
-[mapB3..0].ck   = !irst;
+[mapB3..0].ck   = !lrst;
 [mapC3..0].ap   =  [d3..0] & [addr15..14]:8000 & mmu_io & wr;
 [mapC3..0].ar   = ![d3..0] & [addr15..14]:8000 & mmu_io & wr;
 [mapC3..0].d    = ['b'1000];  /* RAM-0 */
-[mapC3..0].ck   = !irst;
+[mapC3..0].ck   = !lrst;
 [mapD3..0].ap   =  [d3..0] & [addr15..14]:C000 & mmu_io & wr;
 [mapD3..0].ar   = ![d3..0] & [addr15..14]:C000 & mmu_io & wr;
 [mapD3..0].d    = ['b'1001]; /* RAM-1 */
-[mapD3..0].ck   = !irst;
+[mapD3..0].ck   = !lrst;
 
 /** MMU RR-Address and ROM/RAM Select Logic */
 /*   Note fixed mapping for block 0 and 1 when in Debug Mode */
@@ -664,63 +666,63 @@ mod_sel     = lcl_io & ioaddr:['b'xxx1111x];     /* 1E/1F: RP Mod CTRL/DATA */
 /** Breakpoint Registers and Control */
 [b1op2..0].d    = B1_OP_DATA;   /* Breakpoint1 Operation                    */
 [b1op2..0].ck   = BRKOP_SEL;
-[b1op2..0].ar   = irst;
+[b1op2..0].ar   = lrst;
 [b2op2..0].d    = B2_OP_DATA;   /* Breakpoint2 Operation                    */
 [b2op2..0].ck   = BRKOP_SEL;
-[b2op2..0].ar   = irst;
+[b2op2..0].ar   = lrst;
 [b1d7..0].d     = databus;      /* Breakpoint1 Data                         */
 [b1d7..0].ck    = B1DV_SEL;
-[b1d7..0].ar    = irst;
+[b1d7..0].ar    = lrst;
 [b1dx7..0].d    = databus;      /* Breakpoint1 Data 'X' (don't care)        */
 [b1dx7..0].ck   = B1DX_SEL;
-[b1dx7..0].ar   = irst;
+[b1dx7..0].ar   = lrst;
 
 
 /** Board Control (06)
 /* SBC Bit - used for anything SBC code wants (b0) */
 sbc_use.d       = SBC_USE_B;
 sbc_use.ck      = CTRL1_WR;
-sbc_use.ar      = irst;
+sbc_use.ar      = lrst;
 /* Enable breaking when RST38 is detected (b1) */
 softbrk_en.d    = SOFTBRKEN_B;
 softbrk_en.ck   = CTRL1_WR;
-softbrk_en.ar   = irst;
+softbrk_en.ar   = lrst;
 /* Sync-Only on Break Detected (b2) */
 sync_only.d     = SYNCONLY_B;
 sync_only.ck    = CTRL1_WR;
-sync_only.ar    = irst;
+sync_only.ar    = lrst;
 /* Single-Step for Target Go (b3) */
 sngl_step.d     = SNGL_STEP_B;
 sngl_step.ck    = CTRL1_WR;
-sngl_step.ar    = irst;
+sngl_step.ar    = lrst;
 /* Single Operation (MW/MR/PW/PR) on Bus (b4) */
 sngl_op.d       = SNGL_OP_B;
 sngl_op.ck      = CTRL1_WR;
-sngl_op.ar      = irst;
+sngl_op.ar      = lrst;
 /* Break request (b5) */
 brk_req.d	= BREAK_REQ_B & tgtmode;    /* Only valid when in Target Mode */
 brk_req.ck	= CTRL1_WR;
-brk_req.ar	= zrst # brd_rst # irst;
+brk_req.ar	= zrst # lrst;
 /* RESET request (b6) */
 rst_req.d	= RESET_REQ_B;
 rst_req.ck	= CTRL1_WR;
-rst_req.ar	= brd_rst # irst;
+rst_req.ar	= lrst;
 /* ZID Initialized (b7) */
 zid_init.d      = ZIDINIT_B;
 zid_init.ck     = CTRL1_WR;
-zid_init.ar     = irst;
+zid_init.ar     = lrst;
 
 
 /** DBI Detect */
 dbi.ck      = cpu_clk;
 dbi.ce      = ON;
 dbi.d       = !dbi_if2 & m1 & mreq & (DBI1_A # DBI1_B # DBI1_C # DBI1_D);
-dbi.ar      = irst;
+dbi.ar      = lrst;
 /* */
 dbi_if2.ck  = !m1;
 dbi_if2.ce  = ON;
 dbi_if2.d   = dbi;
-dbi_if2.ar  = irst;
+dbi_if2.ar  = lrst;
 
 
 /** RST38 Detect */
@@ -784,7 +786,7 @@ pc_latch   = m1
 /** SBC General Purpose Output Bits */
 [sbc_gp3..0].d     = SBCOUT_DATA;
 [sbc_gp3..0].ck    = SBCGP_WR;
-[sbc_gp3..0].ar    = irst;
+[sbc_gp3..0].ar    = lrst;
 
 
 /** Data Bus takes values from multiple things, so they all need to be here */
