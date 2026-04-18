@@ -9,7 +9,7 @@
 	(paper "A")
 	(title_block
 		(title "Z80 In-Circuit Debugger (ZID)")
-		(date "2026-04-11")
+		(date "2026-04-17")
 		(rev "PR1.0")
 		(company "SilkyDESIGN & CMOS1")
 		(comment 1 "Copyright 2026 AESilky, SmM")
