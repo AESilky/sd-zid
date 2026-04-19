@@ -6,11 +6,11 @@
 	(paper "A")
 	(title_block
 		(title "ZID Breakpoint Expansion")
-		(date "2026-04-17")
+		(date "2026-04-18")
 		(rev "PR1.0")
 		(company "SilkyDESIGN")
 		(comment 1 "Copyright 2026, AESilky")
-		(comment 4 "Adds 2 or 4 Address Compare Units")
+		(comment 4 "Adds 2, 4 or 6 Address Compare Units")
 	)
 	(lib_symbols
 		(symbol "AES_Library:ATF1504AS-44T-AES"
