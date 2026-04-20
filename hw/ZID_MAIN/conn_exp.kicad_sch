@@ -6,7 +6,7 @@
 	(paper "User" 419.1 323.85)
 	(title_block
 		(title "Target Pod and Break Expand")
-		(date "2026-04-18")
+		(date "2026-04-19")
 		(rev "PR-1.0")
 		(company "SilkyDESIGN / CMOS1")
 		(comment 1 "Copyright 2026 AESilky & SmM")
@@ -16878,7 +16878,7 @@
 				)
 			)
 		)
-		(property "Value" "SMCJ5.0A"
+		(property "Value" "SMAJ6.0A"
 			(at 254 266.7 0)
 			(effects
 				(font
@@ -16886,7 +16886,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD:D_SOD-523"
+		(property "Footprint" "Diode_SMD:D_SMA"
 			(at 256.54 268.605 0)
 			(effects
 				(font
@@ -16904,7 +16904,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "ESD Protection Diode, SOD-523"
+		(property "Description" "ESD Protection Diode, DO-214AC package"
 			(at 256.54 264.16 0)
 			(effects
 				(font
