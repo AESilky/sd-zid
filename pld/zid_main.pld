@@ -629,7 +629,7 @@ lcl_io      = (!tgtmode # sbcmode) & !m1 & iorq & ioaddr:['b'000xxxxx]; /* Local
 lcl_io.oe   = ON;
 
 /** Target Mode and Single Operation (Mem or I/O RD/WR), and Bus Control */
-to_target   = tgt_now # (sop_now & sngl_op);
+to_target   = (tgt_now # (sop_now & sngl_op)) & !mreq;
 tgt_go.ck   = lcl_io & ioaddr:['b'xxx1000x];         /* 10: TARGET-GO        */
 tgt_go.d    = ON;
 tgt_go.ar   = tgtmode;
