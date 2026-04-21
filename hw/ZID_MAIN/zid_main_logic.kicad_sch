@@ -6,7 +6,7 @@
 	(paper "User" 419.1 323.85)
 	(title_block
 		(title "ZID Main Logic")
-		(date "2026-04-19")
+		(date "2026-04-21")
 		(rev "PR-1.0")
 		(company "SilkyDESIGN / CMOS1")
 		(comment 1 "Copyright 2026 AESilky & SmM")
@@ -2897,6 +2897,484 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "AES_Library:74245_BA-AES"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 1.524 16.51 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "74245_BA-AES"
+				(at 8.636 -16.51 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "http://www.ti.com/lit/gpn/sn74LS245"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Octal BUS Transceivers, 3-State outputs"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Function" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "TTL BUS 3State OCTAL BIDIRECTIONAL 74245"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "DIP?20*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "74245_BA-AES_1_0"
+				(polyline
+					(pts
+						(xy -1.27 -1.27) (xy 0.635 -1.27) (xy 0.635 1.27) (xy 1.27 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -0.635 -1.27) (xy -0.635 1.27) (xy 0.635 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin tri_state line
+					(at -10.16 12.7 0)
+					(length 2.54)
+					(name "B0"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "18"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at -10.16 10.16 0)
+					(length 2.54)
+					(name "B1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "17"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at -10.16 7.62 0)
+					(length 2.54)
+					(name "B2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "16"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at -10.16 5.08 0)
+					(length 2.54)
+					(name "B3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "15"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at -10.16 2.54 0)
+					(length 2.54)
+					(name "B4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "14"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at -10.16 0 0)
+					(length 2.54)
+					(name "B5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "13"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at -10.16 -2.54 0)
+					(length 2.54)
+					(name "B6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "12"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at -10.16 -5.08 0)
+					(length 2.54)
+					(name "B7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "11"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 -10.16 0)
+					(length 2.54)
+					(name "A>B"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 -12.7 0)
+					(length 2.54)
+					(name "~{OE}"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "19"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 17.78 270)
+					(length 2.54)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "20"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -17.78 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "10"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at 10.16 12.7 180)
+					(length 2.54)
+					(name "A0"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at 10.16 10.16 180)
+					(length 2.54)
+					(name "A1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at 10.16 7.62 180)
+					(length 2.54)
+					(name "A2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at 10.16 5.08 180)
+					(length 2.54)
+					(name "A3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at 10.16 2.54 180)
+					(length 2.54)
+					(name "A4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at 10.16 0 180)
+					(length 2.54)
+					(name "A5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at 10.16 -2.54 180)
+					(length 2.54)
+					(name "A6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin tri_state line
+					(at 10.16 -5.08 180)
+					(length 2.54)
+					(name "A7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "74245_BA-AES_1_1"
+				(rectangle
+					(start -7.62 15.24)
+					(end 7.62 -15.24)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "AES_Library:74273-AES"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -3345,520 +3823,6 @@
 					)
 					(fill
 						(type background)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "AES_Library:74541-AES"
-			(pin_names
-				(offset 1.016)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "U"
-				(at 1.016 16.51 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "74541"
-				(at 0.762 -16.51 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "http://www.ti.com/lit/gpn/sn74LS541"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "8-bit Buffer/Line Driver 3-state outputs, 2-AND enables, in/out across"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Function" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "TTL BUFFER 3State BUS 74541"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "DIP?20*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "74541-AES_0_1"
-				(polyline
-					(pts
-						(xy -2.54 -8.89) (xy -1.27 -8.89) (xy -1.27 -13.97) (xy -2.54 -13.97)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "74541-AES_1_0"
-				(polyline
-					(pts
-						(xy -1.27 -1.6002) (xy 0.635 -1.6002) (xy 0.635 0.9398) (xy 1.27 0.9398)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.635 -1.6002) (xy -0.635 0.9398) (xy 0.635 0.9398)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 3.4798) (xy -1.27 4.7498) (xy -1.27 2.2098) (xy 1.27 3.4798)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin input line
-					(at -10.16 12.7 0)
-					(length 2.54)
-					(name "A0"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -10.16 10.16 0)
-					(length 2.54)
-					(name "A1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -10.16 7.62 0)
-					(length 2.54)
-					(name "A2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -10.16 5.08 0)
-					(length 2.54)
-					(name "A3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -10.16 2.54 0)
-					(length 2.54)
-					(name "A4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -10.16 0 0)
-					(length 2.54)
-					(name "A5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -10.16 -2.54 0)
-					(length 2.54)
-					(name "A6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -10.16 -5.08 0)
-					(length 2.54)
-					(name "A7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "9"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -10.16 -10.16 0)
-					(length 2.54)
-					(name "~{G1}"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -10.16 -12.7 0)
-					(length 2.54)
-					(name "~{G2}"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "19"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 17.78 270)
-					(length 2.54)
-					(name "VCC"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "20"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -17.78 90)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin tri_state line
-					(at 10.16 12.7 180)
-					(length 2.54)
-					(name "Y0"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "18"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin tri_state line
-					(at 10.16 10.16 180)
-					(length 2.54)
-					(name "Y1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "17"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin tri_state line
-					(at 10.16 7.62 180)
-					(length 2.54)
-					(name "Y2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "16"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin tri_state line
-					(at 10.16 5.08 180)
-					(length 2.54)
-					(name "Y3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "15"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin tri_state line
-					(at 10.16 2.54 180)
-					(length 2.54)
-					(name "Y4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "14"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin tri_state line
-					(at 10.16 0 180)
-					(length 2.54)
-					(name "Y5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "13"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin tri_state line
-					(at 10.16 -2.54 180)
-					(length 2.54)
-					(name "Y6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "12"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin tri_state line
-					(at 10.16 -5.08 180)
-					(length 2.54)
-					(name "Y7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "11"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "74541-AES_1_1"
-				(rectangle
-					(start -7.62 15.24)
-					(end 7.62 -15.24)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(text "&"
-					(at -2.286 -11.43 0)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
 					)
 				)
 			)
@@ -38499,138 +38463,6 @@
 		)
 	)
 	(symbol
-		(lib_id "AES_Library:74541-AES")
-		(at 45.72 179.07 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "1d698a7e-1f01-4de4-af1d-f0326a240a1b")
-		(property "Reference" "U3"
-			(at 46.99 162.306 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "74FCT541C"
-			(at 46.736 196.088 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
-			(at 45.72 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.ti.com/lit/gpn/sn74LS541"
-			(at 45.72 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "8-bit Buffer/Line Driver 3-state outputs, 2-AND enables, in/out across"
-			(at 45.72 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Function" ""
-			(at 45.72 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "19"
-			(uuid "58c17865-30f7-42f0-8a0a-87b001a4fea8")
-		)
-		(pin "16"
-			(uuid "7c1a45ff-ef7c-4d7f-a23c-5281334c6a98")
-		)
-		(pin "4"
-			(uuid "85f74424-ee19-4463-826e-534e8fedc3f6")
-		)
-		(pin "7"
-			(uuid "d86c0925-dcf7-47e6-92b6-1c7971c4fd34")
-		)
-		(pin "8"
-			(uuid "ff4a7ccc-26ea-41f4-ac87-f92db2b755ae")
-		)
-		(pin "5"
-			(uuid "cc5e45bb-e2e1-41d0-9d88-d821c4fa1503")
-		)
-		(pin "6"
-			(uuid "c707b8ac-cd87-4bc2-8141-dfbc65516942")
-		)
-		(pin "1"
-			(uuid "a1e2fe05-4453-48b9-ad3a-31552efea3c5")
-		)
-		(pin "9"
-			(uuid "5c1c31f3-9308-48e2-bf0d-4fa3a20ec358")
-		)
-		(pin "20"
-			(uuid "a40929c0-19c8-4f71-bb02-dba48343eb4f")
-		)
-		(pin "2"
-			(uuid "d2bb5828-f237-4ee0-9cc8-0962df0e567c")
-		)
-		(pin "10"
-			(uuid "f123f30f-6132-456d-b32f-6db576567518")
-		)
-		(pin "18"
-			(uuid "b58c5666-14a2-4f47-b47d-43d3ac44818b")
-		)
-		(pin "3"
-			(uuid "f7a4e49f-7fd4-49d0-a871-08fe28b50602")
-		)
-		(pin "17"
-			(uuid "a3c7a21c-bc65-46b1-aced-b0d09a6f87a3")
-		)
-		(pin "13"
-			(uuid "75f17dd6-6601-45cf-9152-ffcb507ab6b7")
-		)
-		(pin "11"
-			(uuid "3b218b95-d8d9-4ea8-b9a0-f72e6f0c37ed")
-		)
-		(pin "14"
-			(uuid "9f3ae47c-2ee8-445d-a648-e79d1cf11c31")
-		)
-		(pin "15"
-			(uuid "e524fb52-ba91-4258-87da-06e061252dd1")
-		)
-		(pin "12"
-			(uuid "5103f8e0-8ee1-4be8-a051-4c4c82d7783b")
-		)
-		(instances
-			(project "ZID_MAIN"
-				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
-					(reference "U3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 217.17 207.01 0)
 		(unit 1)
@@ -44396,6 +44228,402 @@
 		)
 	)
 	(symbol
+		(lib_id "AES_Library:74245_BA-AES")
+		(at 207.01 285.75 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7a47efd1-7d23-4a50-a8d8-acd2705e8bff")
+		(property "Reference" "U13"
+			(at 208.28 268.986 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "74FCT2245"
+			(at 207.772 302.514 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
+			(at 207.01 285.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/gpn/sn74LS245"
+			(at 207.01 285.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Octal BUS Transceivers, 3-State outputs"
+			(at 207.01 285.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Function" ""
+			(at 207.01 285.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "14"
+			(uuid "3947eda0-de1b-4942-ab86-27bf531c4a71")
+		)
+		(pin "5"
+			(uuid "0b7630d0-be0c-4c1a-a955-86cc5cc2445c")
+		)
+		(pin "1"
+			(uuid "3a992f3a-5be9-484e-b6a4-8ee54cdaba9d")
+		)
+		(pin "2"
+			(uuid "babaccaf-e471-4eb3-b60e-d875f37986a2")
+		)
+		(pin "18"
+			(uuid "e54df448-f19f-4092-91d4-c5d5f7b3aab8")
+		)
+		(pin "15"
+			(uuid "42b894ab-1a67-4f76-a25a-9c1aa06101da")
+		)
+		(pin "6"
+			(uuid "4df12f8a-d7a0-4adb-a925-328382501ef0")
+		)
+		(pin "8"
+			(uuid "caef9982-f21c-40ed-8c98-1a672ac19493")
+		)
+		(pin "9"
+			(uuid "8cd17e9a-40aa-41c0-a38c-6c183e930fc1")
+		)
+		(pin "4"
+			(uuid "e016bd1e-dcc2-4dac-afa4-371f656ce19d")
+		)
+		(pin "3"
+			(uuid "09300621-0491-467a-93b9-00de90bebd12")
+		)
+		(pin "17"
+			(uuid "7f8d40b6-c244-4c20-a540-5c37ea94e622")
+		)
+		(pin "7"
+			(uuid "faf4a444-9fef-45a0-900c-1f53c48bc3be")
+		)
+		(pin "16"
+			(uuid "1dafe2ab-93cd-4d63-bde0-da638f003cb4")
+		)
+		(pin "12"
+			(uuid "1d4c804d-7a26-4423-b40c-18d87acc3988")
+		)
+		(pin "11"
+			(uuid "800196c2-5c5a-4cd0-a295-c91693e562d1")
+		)
+		(pin "20"
+			(uuid "7b4bcf2c-5fc1-4fb3-b4f5-7d07c4024ff6")
+		)
+		(pin "19"
+			(uuid "91a64452-e28b-475b-a52b-a7cd8bd92683")
+		)
+		(pin "13"
+			(uuid "2e37f363-6428-4a13-b34a-748590759f06")
+		)
+		(pin "10"
+			(uuid "e0bd4656-40a0-4e35-b760-c30022f66d8c")
+		)
+		(instances
+			(project ""
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
+					(reference "U13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "AES_Library:74245_BA-AES")
+		(at 45.72 137.16 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7a47efd1-7d23-4a50-a8d8-acd2705e8bff")
+		(property "Reference" "U2"
+			(at 46.99 120.396 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "74FCT2245"
+			(at 46.482 153.924 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
+			(at 45.72 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/gpn/sn74LS245"
+			(at 45.72 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Octal BUS Transceivers, 3-State outputs"
+			(at 45.72 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Function" ""
+			(at 45.72 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "14"
+			(uuid "3947eda0-de1b-4942-ab86-27bf531c4a71")
+		)
+		(pin "5"
+			(uuid "0b7630d0-be0c-4c1a-a955-86cc5cc2445c")
+		)
+		(pin "1"
+			(uuid "3a992f3a-5be9-484e-b6a4-8ee54cdaba9d")
+		)
+		(pin "2"
+			(uuid "babaccaf-e471-4eb3-b60e-d875f37986a2")
+		)
+		(pin "18"
+			(uuid "e54df448-f19f-4092-91d4-c5d5f7b3aab8")
+		)
+		(pin "15"
+			(uuid "42b894ab-1a67-4f76-a25a-9c1aa06101da")
+		)
+		(pin "6"
+			(uuid "4df12f8a-d7a0-4adb-a925-328382501ef0")
+		)
+		(pin "8"
+			(uuid "caef9982-f21c-40ed-8c98-1a672ac19493")
+		)
+		(pin "9"
+			(uuid "8cd17e9a-40aa-41c0-a38c-6c183e930fc1")
+		)
+		(pin "4"
+			(uuid "e016bd1e-dcc2-4dac-afa4-371f656ce19d")
+		)
+		(pin "3"
+			(uuid "09300621-0491-467a-93b9-00de90bebd12")
+		)
+		(pin "17"
+			(uuid "7f8d40b6-c244-4c20-a540-5c37ea94e622")
+		)
+		(pin "7"
+			(uuid "faf4a444-9fef-45a0-900c-1f53c48bc3be")
+		)
+		(pin "16"
+			(uuid "1dafe2ab-93cd-4d63-bde0-da638f003cb4")
+		)
+		(pin "12"
+			(uuid "1d4c804d-7a26-4423-b40c-18d87acc3988")
+		)
+		(pin "11"
+			(uuid "800196c2-5c5a-4cd0-a295-c91693e562d1")
+		)
+		(pin "20"
+			(uuid "7b4bcf2c-5fc1-4fb3-b4f5-7d07c4024ff6")
+		)
+		(pin "19"
+			(uuid "91a64452-e28b-475b-a52b-a7cd8bd92683")
+		)
+		(pin "13"
+			(uuid "2e37f363-6428-4a13-b34a-748590759f06")
+		)
+		(pin "10"
+			(uuid "e0bd4656-40a0-4e35-b760-c30022f66d8c")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
+					(reference "U2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "AES_Library:74245_BA-AES")
+		(at 45.72 179.07 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7a47efd1-7d23-4a50-a8d8-acd2705e8bff")
+		(property "Reference" "U3"
+			(at 46.99 162.306 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "74FCT2245"
+			(at 46.482 195.834 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
+			(at 45.72 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/gpn/sn74LS245"
+			(at 45.72 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Octal BUS Transceivers, 3-State outputs"
+			(at 45.72 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Function" ""
+			(at 45.72 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "14"
+			(uuid "3947eda0-de1b-4942-ab86-27bf531c4a71")
+		)
+		(pin "5"
+			(uuid "0b7630d0-be0c-4c1a-a955-86cc5cc2445c")
+		)
+		(pin "1"
+			(uuid "3a992f3a-5be9-484e-b6a4-8ee54cdaba9d")
+		)
+		(pin "2"
+			(uuid "babaccaf-e471-4eb3-b60e-d875f37986a2")
+		)
+		(pin "18"
+			(uuid "e54df448-f19f-4092-91d4-c5d5f7b3aab8")
+		)
+		(pin "15"
+			(uuid "42b894ab-1a67-4f76-a25a-9c1aa06101da")
+		)
+		(pin "6"
+			(uuid "4df12f8a-d7a0-4adb-a925-328382501ef0")
+		)
+		(pin "8"
+			(uuid "caef9982-f21c-40ed-8c98-1a672ac19493")
+		)
+		(pin "9"
+			(uuid "8cd17e9a-40aa-41c0-a38c-6c183e930fc1")
+		)
+		(pin "4"
+			(uuid "e016bd1e-dcc2-4dac-afa4-371f656ce19d")
+		)
+		(pin "3"
+			(uuid "09300621-0491-467a-93b9-00de90bebd12")
+		)
+		(pin "17"
+			(uuid "7f8d40b6-c244-4c20-a540-5c37ea94e622")
+		)
+		(pin "7"
+			(uuid "faf4a444-9fef-45a0-900c-1f53c48bc3be")
+		)
+		(pin "16"
+			(uuid "1dafe2ab-93cd-4d63-bde0-da638f003cb4")
+		)
+		(pin "12"
+			(uuid "1d4c804d-7a26-4423-b40c-18d87acc3988")
+		)
+		(pin "11"
+			(uuid "800196c2-5c5a-4cd0-a295-c91693e562d1")
+		)
+		(pin "20"
+			(uuid "7b4bcf2c-5fc1-4fb3-b4f5-7d07c4024ff6")
+		)
+		(pin "19"
+			(uuid "91a64452-e28b-475b-a52b-a7cd8bd92683")
+		)
+		(pin "13"
+			(uuid "2e37f363-6428-4a13-b34a-748590759f06")
+		)
+		(pin "10"
+			(uuid "e0bd4656-40a0-4e35-b760-c30022f66d8c")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
+					(reference "U3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+5V")
 		(at 143.51 226.06 0)
 		(unit 1)
@@ -45217,138 +45445,6 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
 					(reference "#PWR040")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "AES_Library:74541-AES")
-		(at 207.01 285.75 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "86885ffc-de8f-4881-9960-54b7074950d3")
-		(property "Reference" "U13"
-			(at 208.28 268.986 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "74FCT541C"
-			(at 208.026 302.768 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
-			(at 207.01 285.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.ti.com/lit/gpn/sn74LS541"
-			(at 207.01 285.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "8-bit Buffer/Line Driver 3-state outputs, 2-AND enables, in/out across"
-			(at 207.01 285.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Function" ""
-			(at 207.01 285.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "19"
-			(uuid "a4af0757-3776-4912-bd87-39f768ada34b")
-		)
-		(pin "16"
-			(uuid "14a163e9-34e9-48cb-aa7c-c023361ad549")
-		)
-		(pin "4"
-			(uuid "d66b91a0-dfd6-4fd1-9fc7-a4ddbeaa3b6f")
-		)
-		(pin "7"
-			(uuid "c850566c-af93-48b0-9031-6fed8c68421b")
-		)
-		(pin "8"
-			(uuid "bf1ea709-a9c8-458d-94e6-8a98fe9f028a")
-		)
-		(pin "5"
-			(uuid "5099e5e8-ef19-4e42-b010-c36aa8cb9d86")
-		)
-		(pin "6"
-			(uuid "47579152-e5ea-42e6-a6f3-aec3d839e89d")
-		)
-		(pin "1"
-			(uuid "2407a646-63a9-44f2-be45-f6da1e21ff81")
-		)
-		(pin "9"
-			(uuid "3c189789-5974-444c-abfc-e6ede9a784aa")
-		)
-		(pin "20"
-			(uuid "d5741e19-f3ec-461d-9268-d75940cecba3")
-		)
-		(pin "2"
-			(uuid "87073ae2-b3a1-4dba-9007-8abee193af55")
-		)
-		(pin "10"
-			(uuid "6fa75970-72a8-4a54-80c3-c2bf86567dca")
-		)
-		(pin "18"
-			(uuid "7b70424a-12ec-497e-a815-f86be83611b1")
-		)
-		(pin "3"
-			(uuid "663d9226-c93f-4556-9e21-71df27d7a608")
-		)
-		(pin "17"
-			(uuid "cf379fe0-8ac2-439a-ae2e-63cff6d39b2f")
-		)
-		(pin "13"
-			(uuid "5d684c91-4fa8-41ab-9a1d-9c12b60ea9d4")
-		)
-		(pin "11"
-			(uuid "62e75fbe-fc28-4557-a043-7e4739aeab2c")
-		)
-		(pin "14"
-			(uuid "0367ea80-786f-4aec-8a90-40f6d0fac716")
-		)
-		(pin "15"
-			(uuid "074a2d67-851b-4ede-9398-09bef21c3684")
-		)
-		(pin "12"
-			(uuid "55d57419-6903-499c-8727-5925fec7000c")
-		)
-		(instances
-			(project "ZID_MAIN"
-				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
-					(reference "U13")
 					(unit 1)
 				)
 			)
@@ -47586,138 +47682,6 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
 					(reference "#PWR013")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "AES_Library:74541-AES")
-		(at 45.72 137.16 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "c0edc2a9-c050-4672-9cba-e139c66c01b3")
-		(property "Reference" "U2"
-			(at 46.99 120.396 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "74FCT541C"
-			(at 46.736 154.178 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm"
-			(at 45.72 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.ti.com/lit/gpn/sn74LS541"
-			(at 45.72 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "8-bit Buffer/Line Driver 3-state outputs, 2-AND enables, in/out across"
-			(at 45.72 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Function" ""
-			(at 45.72 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "19"
-			(uuid "191cc0bc-8061-4063-8895-71b580af6d71")
-		)
-		(pin "16"
-			(uuid "a9248940-611a-493b-8acb-c9ecf24f8233")
-		)
-		(pin "4"
-			(uuid "76fa80eb-f9a8-405e-8d98-5540a4b029a6")
-		)
-		(pin "7"
-			(uuid "df0803d5-9066-4e0b-a90f-8a571708e456")
-		)
-		(pin "8"
-			(uuid "77adef1f-0e8a-499f-a772-655a805b9d2d")
-		)
-		(pin "5"
-			(uuid "57f3e826-9cd8-4b93-8108-2c6ee34aa64b")
-		)
-		(pin "6"
-			(uuid "05b6e5bb-e9be-45d1-ba6e-3213eb2fd0ae")
-		)
-		(pin "1"
-			(uuid "58f0e026-2a1f-4070-a940-23371fd1e3f8")
-		)
-		(pin "9"
-			(uuid "bd64199f-595d-431a-818f-15a5425a3282")
-		)
-		(pin "20"
-			(uuid "3852ff85-2348-4a3a-9feb-cd9fdeedd1a6")
-		)
-		(pin "2"
-			(uuid "7ff46190-5110-42fe-bc9c-f3e03cd69f3c")
-		)
-		(pin "10"
-			(uuid "f5b78779-54b9-46e7-9e18-7ead8bdb93cc")
-		)
-		(pin "18"
-			(uuid "19a5e2ce-239a-4423-b1d0-4b8c89d883e0")
-		)
-		(pin "3"
-			(uuid "2d7c443a-13e0-4bd6-8dff-1f7fe19fa51c")
-		)
-		(pin "17"
-			(uuid "b0ad51e3-0033-46f8-889a-4555ee30732f")
-		)
-		(pin "13"
-			(uuid "196ce8fc-beac-4e98-a10d-39d3bf3da782")
-		)
-		(pin "11"
-			(uuid "6aa68171-2b24-406d-970c-d8b0b8084db4")
-		)
-		(pin "14"
-			(uuid "0738aa8c-487a-4446-b2fa-b5ce56d07611")
-		)
-		(pin "15"
-			(uuid "8fb67014-ad62-4d88-9371-b40d66920b0a")
-		)
-		(pin "12"
-			(uuid "97eaf893-0e1b-4549-b965-443864885890")
-		)
-		(instances
-			(project "ZID_MAIN"
-				(path "/2be47242-6db6-4d8d-b590-8c682dee013e/f092485f-e7d4-42be-add8-9bafec004ccb"
-					(reference "U2")
 					(unit 1)
 				)
 			)
