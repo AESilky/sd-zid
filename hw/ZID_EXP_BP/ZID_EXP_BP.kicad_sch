@@ -6,7 +6,7 @@
 	(paper "A")
 	(title_block
 		(title "ZID EXPANSION BACKPLANE")
-		(date "2026-04-18")
+		(date "2026-04-21")
 		(rev "PR1.0")
 		(company "SilkyDESIGN")
 		(comment 1 "Copyright 2026 AESilky")
@@ -14015,6 +14015,26 @@
 		)
 		(uuid "0cd1e621-509a-46fd-b732-49c86cafb649")
 	)
+	(label "GND"
+		(at 39.37 35.56 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0d11a94d-76ae-41a0-aef1-e7e5c4fc5091")
+		(property "Note" "{not Z80 pin}"
+			(at 39.37 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
 	(label "WAIT-"
 		(at 39.37 78.74 180)
 		(effects
@@ -14535,16 +14555,6 @@
 		)
 		(uuid "421f86af-f2e5-44ca-b305-066166b7d4d0")
 	)
-	(label "A15"
-		(at 39.37 30.48 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "42887637-e10e-4e0f-b429-6a0e8a5080e3")
-	)
 	(label "P45"
 		(at 152.4 41.91 0)
 		(effects
@@ -14634,6 +14644,26 @@
 			(justify right bottom)
 		)
 		(uuid "50b68697-2ecc-4d1e-b94b-7b72fcf647d4")
+	)
+	(label "GND"
+		(at 39.37 30.48 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "519ec541-4c09-406a-b0d9-593b0c86108a")
+		(property "Note" "{not Z80 pin}"
+			(at 39.37 29.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
 	)
 	(label "P47"
 		(at 97.79 46.99 0)
@@ -15317,16 +15347,6 @@
 		)
 		(uuid "8cb21ee1-901e-4777-b47d-e9559194a5ba")
 	)
-	(label "GND"
-		(at 39.37 45.72 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "8d0f3ca0-37aa-45d3-b187-400129e72b25")
-	)
 	(label "RFSH-"
 		(at 152.4 82.55 0)
 		(effects
@@ -15386,6 +15406,26 @@
 			(justify left bottom)
 		)
 		(uuid "8f903cce-55e0-4f7f-ac63-e5f0edf14ac4")
+	)
+	(label "D4"
+		(at 39.37 45.72 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "8f9f2833-03f9-4d5e-be0e-b4a21a682667")
+		(property "Note" "{not Z80 pin}"
+			(at 39.624 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
 	)
 	(label "BACK-"
 		(at 39.37 76.2 180)
@@ -15566,16 +15606,6 @@
 			(justify left bottom)
 		)
 		(uuid "9b766790-0b55-4ca1-87dc-9079e049b2b1")
-	)
-	(label "GND"
-		(at 39.37 91.44 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "9bdf76f5-6b2e-4f7d-b0d1-f9f9f83ca4ec")
 	)
 	(label "MREQ-"
 		(at 39.37 66.04 180)
@@ -16491,15 +16521,25 @@
 		)
 		(uuid "e62978d9-8650-45ed-90c5-6904e7ae1d70")
 	)
-	(label "D4"
-		(at 39.37 35.56 180)
+	(label "A15"
+		(at 39.37 91.44 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right bottom)
 		)
-		(uuid "e97cf7fa-1993-4598-89ae-857e0c8a1eb0")
+		(uuid "e8fde22e-666d-4fd9-9013-461acca94bd3")
+		(property "Note" "{not Z80 pin}"
+			(at 39.624 90.424 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
 	)
 	(label "RST-"
 		(at 203.2 41.91 0)

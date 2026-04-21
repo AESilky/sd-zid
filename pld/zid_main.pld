@@ -465,7 +465,7 @@ $DEFINE B2OP_AM     [b2op2..0]:4
 $DEFINE B2OP_PW     [b2op2..0]:5
 $DEFINE B2OP_PR     [b2op2..0]:6
 $DEFINE B2OP_AP     [b2op2..0]:7
-$DEFINE NOP_FORCE   (zsprst1 # zsprst2)
+$DEFINE NOP_FORCE   (zsr_req & m1)
 /* Data byte for Special Reset From Break and Break2 Detect and PC-Save read by CPU */
 FIELD brk_pc_info   = [zid_init,sbcmode,'b'0,'b'0,sr_frombrk,brkhw_detect,'b'0,pcrd_b_in];
 
