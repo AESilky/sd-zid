@@ -1,2 +1,574 @@
 <?xml version='1.0' encoding='us-ascii'?>
-<Diagram Approve_quit="False" Confirm_delete="False" PDF_page_size="Letter" PDF_page_orientation="Portrait" Background_color="black" Scroll_rate="10" Mouse_dragging_min_x_dist="30" Superscript_font_size_ratio="66" Superscript_ratio_above="30" Subscript_font_size_ratio="66" Subscript_ratio_below="20" Top_frame="20" Bottom_frame="20" Left_frame="20" Right_frame="20" Version="3.0"><Title Position="Left" Above_waveforms="False" Transparent="True" Space_below="0"><Font Color="white" Info="1;18;-24;0;0;0;400;0;0;0;1;0;0;2;32;Arial" /></Title><Dimensions Exact="True" Height="928" Width="1552" X="-8" Y="-8" /><Grid Hor_color="rgb(128, 128, 64)" Vert_color="rgb(128, 128, 64)" Show_hor="True" Show_hor_in_spacer_row="True" Show_hor_in_time_axis="False" Show_vert="True" Show_vert_in_spacer_row="True" Show_vert_in_time_axis="True" Vert_select_end_unit="False" Draw_vert_pattern="True" Vert_group_pattern="False" Hor_style="Dot" Vert_style="Dot" Vert_start_unit="0" Vert_unit_spacing="10" Vert_group_size="1" Vert_group_unit_spacing="10" Vert_end_unit="99" Hor_line_width="1" Vert_line_width="1" /><Ruler Position="Top and bottom" Show_ruler="True" Show_count="True" Line_width="1" Count_spacing="5" Major_tick_height="25" Major_tick_units="10" Minor_tick_height="5" Num_units="650" Unit_width="2" Space_below="20" Space_above="20"><Font Color="red" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" /></Ruler><Waveforms Vert_spacing="30" Height="40" Seg_trans_units="0" Seg_level_units="1" Line_width="1" Left_open_end="True" Right_open_end="True"><Name Hor_name_spacing="10" Hor_position="Right" Vert_position="Center" Transparent="True"><Font Color="cyan" Info="1;11;-15;0;0;0;400;0;0;0;1;0;0;2;32;Arial" /></Name><Colors H="green" L="yellow" Z="magenta" D="green" X="red" D_fill="green" X_fill="red" D_fill_style="Solid" X_fill_style="Solid" /><Label Hor_position="Center" Vert_position="Center" Transparent="True"><Font Color="yellow" Info="1;11;-15;0;0;0;400;0;0;0;1;0;0;2;32;Arial" /></Label></Waveforms><Gaps Color="grey" Edge_rise="1" Width="2" Line_width="1" /><Arrows Line_style="Solid" Head_style="Full" Align_position="Center" Within_position="Entire row" Color="white" Align_value="0" Head_length="10" Head_height="5" Line_width="1"><Label Transparent="True"><Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" /></Label><Across><Label Anchor="Middle" Position="Center" Hor_offset="0" Vert_offset="0" /></Across><Along Guideline_style="Solid" Guideline_width="1"><Label Position="Below" Hor_offset="0" Vert_offset="0" /></Along></Arrows><Labels Align_position="Center" Within_position="Entire row" Transparent="True" Hor_position="Right" Vert_offset="0" Hor_offset="0"><Font Color="yellow" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" /></Labels><Value_lines Tick_length="5" Line_width="1" Style="Dot" Color="white"><Label Transparent="True" Hor_offset="-3"><Font Color="yellow" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" /></Label></Value_lines><Data Title_text="Instruction Fetch x3 (worst-case)"><Row Type="Auto_signal" Init_value="LH" L_units="25" LH_units="0" H_units="25" HL_units="0" First_seg_level_units="0" Gap_seg_level_units="1" First_seg_level_value="L" Gap_seg_level_value="L" Last_seg_level_value="L" Num_auto_segs="1" Num_gap_segs="0" Draw_auto_segs_to_end="True"> <Auto_label_format Base_type="Dec" Show_prefix="True" Label_width="1" Init_value="4" Change_type="+" Change_value="1" Wrap_around_value="4" Wrap_around_init_value="1"> </Auto_label_format><Auto_label Label="T@" Show="True" Use_defaults="True" Label_in_seg="H"> </Auto_label><Name Name="CLK" Show="True" Use_defaults="True"> </Name></Row><Row Type="Signal" Init_value="L" Show_label="True" Use_default_waveform_height="True"> <Segment Value="L" Trans_units="0" Level_units="65"> <Label Label="(last IF RFSH)" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="50"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="75"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="10"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="65"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="50"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="75"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="10"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="65"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="50"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="75"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="10"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="50"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Empty" Trans_units="0" Level_units="0"> </Segment><Name Name="MREQw-" Show="True" Use_defaults="True"> </Name><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="25" From_row_0_name="MREQw-" From_row_name="CLK" To_unit="65" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="40ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="75" From_row_0_name="MREQw-" From_row_name="CLK" To_unit="115" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="40ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="MREQw-" From_row_name="CLK" To_unit="190" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="40ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="190" From_row_0_name="MREQw-" From_row_name="MREQw-" To_unit="200" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="10ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="225" From_row_0_name="MREQw-" From_row_name="CLK" To_unit="265" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="40ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow></Row><Row Type="Signal" Init_value="H" Show_label="True" Use_default_waveform_height="True"> <Segment Value="H" Trans_units="0" Level_units="115"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="75"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="125"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="75"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="125"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="75"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="60"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Empty" Trans_units="0" Level_units="0"> </Segment><Name Name="RDw-" Show="True" Use_defaults="True"> </Name><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="75" From_row_0_name="RDw-" From_row_name="CLK" To_unit="115" To_row_0_name="RDw-" To_row_name="RDw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="40ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="RDw-" From_row_name="CLK" To_unit="190" To_row_0_name="RDw-" To_row_name="RDw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="40ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow></Row><Row Type="Signal" Init_value="H" Show_label="True" Use_default_waveform_height="True"> <Segment Value="H" Trans_units="0" Level_units="95"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="100"> <Label Label="IF-1" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="100"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="100"> <Label Label="IF-2" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="100"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="100"> <Label Label="IF-3" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="55"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Empty" Trans_units="0" Level_units="0"> </Segment><Name Name="M1w-" Show="True" Use_defaults="True"> </Name><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="50" From_row_0_name="M1w-" From_row_name="CLK" To_unit="95" To_row_0_name="M1w-" To_row_name="M1w-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="45ns" Transparent="True" Background_color="black" Position="Below" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="M1w-" From_row_name="CLK" To_unit="195" To_row_0_name="M1w-" To_row_name="M1w-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="45ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow></Row><Row Type="Signal" Init_value="L" Show_label="True" Use_default_waveform_height="True"> <Segment Value="L" Trans_units="0" Level_units="110"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="100"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="100"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="100"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="100"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="H" Trans_units="0" Level_units="100"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="L" Trans_units="0" Level_units="40"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Empty" Trans_units="0" Level_units="0"> </Segment><Name Name="RFSHw-" Show="True" Use_defaults="True"> </Name><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="RFSHw-" From_row_name="CLK" To_unit="210" To_row_0_name="RFSHw-" To_row_name="RFSHw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="60ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="50" From_row_0_name="RFSHw-" From_row_name="CLK" To_unit="110" To_row_0_name="RFSHw-" To_row_name="RFSHw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="60ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow></Row><Row Type="Bus" Show_label="True" Left_open_end="True" Right_open_end="True"> <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="0" After_trans_units="1" Level_units="106" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="RFSH ADDR" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="PC ADDR" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="RFSH ADDR" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="PC ADDR" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="RFSH ADDR" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="PC ADDR" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="0" Level_units="42" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="RFSH" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Empty" Before_trans_units="0" After_trans_units="0" Level_units="0"> </Segment><Name Name="ADDRw" Show="True" Use_defaults="True"> </Name><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="50" From_row_0_name="ADDRw" From_row_name="CLK" To_unit="107" To_row_0_name="ADDRw" To_row_name="ADDRw" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="57ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="ADDRw" From_row_name="CLK" To_unit="207" To_row_0_name="ADDRw" To_row_name="ADDRw" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="57ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow></Row><Row Type="Bus" Show_label="True" Left_open_end="True" Right_open_end="True"> <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="0" After_trans_units="1" Level_units="89" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Z" Before_trans_units="1" After_trans_units="1" Level_units="28"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="X" Before_trans_units="1" After_trans_units="1" Level_units="18"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="48" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="VALID" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Z" Before_trans_units="1" After_trans_units="1" Level_units="28"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="X" Before_trans_units="1" After_trans_units="1" Level_units="18"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="48" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="VALID" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Z" Before_trans_units="1" After_trans_units="1" Level_units="28"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="X" Before_trans_units="1" After_trans_units="1" Level_units="18"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="48" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="VALID" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="0" Level_units="59" Line_color="green" Fill_color="green" Fill_style="Transparent"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Empty" Before_trans_units="0" After_trans_units="0" Level_units="0"> </Segment><Name Name="DATAw" Show="True" Use_defaults="True"> </Name><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="138" From_row_0_name="DATAw" From_row_name="DATAw" To_unit="150" To_row_0_name="DATAw" To_row_name="CLK" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="12ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="-4" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow><Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="190" From_row_0_name="DATAw" From_row_name="DATAw" To_unit="191" To_row_0_name="DATAw" To_row_name="RDw-" Align_position="Center" Within_position="Entire row"> <Label Show_label="True" Label="0ns" Transparent="True" Background_color="black" Position="Above" Angle="0" Hor_offset="14" Vert_offset="0"> <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial"> </Font></Label></Arrow></Row></Data></Diagram>
+<Diagram Approve_quit="False" Confirm_delete="False" PDF_page_size="Letter" PDF_page_orientation="Portrait" Background_color="black" Scroll_rate="10" Mouse_dragging_min_x_dist="30" Superscript_font_size_ratio="66" Superscript_ratio_above="30" Subscript_font_size_ratio="66" Subscript_ratio_below="20" Top_frame="20" Bottom_frame="20" Left_frame="20" Right_frame="20" Version="3.0">
+    <Title Position="Left" Above_waveforms="False" Transparent="True" Space_below="0">
+        <Font Color="white" Info="1;18;-24;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+    </Title>
+    <Dimensions Exact="True" Height="928" Width="1552" X="-8" Y="-8" />
+    <Grid Hor_color="rgb(128, 128, 64)" Vert_color="rgb(128, 128, 64)" Show_hor="True" Show_hor_in_spacer_row="True" Show_hor_in_time_axis="False" Show_vert="True" Show_vert_in_spacer_row="True" Show_vert_in_time_axis="True" Vert_select_end_unit="False" Draw_vert_pattern="True" Vert_group_pattern="False" Hor_style="Dot" Vert_style="Dot" Vert_start_unit="0" Vert_unit_spacing="10" Vert_group_size="1" Vert_group_unit_spacing="10" Vert_end_unit="99" Hor_line_width="1" Vert_line_width="1" />
+    <Ruler Position="Top and bottom" Show_ruler="True" Show_count="True" Line_width="1" Count_spacing="5" Major_tick_height="25" Major_tick_units="10" Minor_tick_height="5" Num_units="650" Unit_width="2" Space_below="20" Space_above="20">
+        <Font Color="red" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+    </Ruler>
+    <Waveforms Vert_spacing="30" Height="40" Seg_trans_units="0" Seg_level_units="1" Line_width="1" Left_open_end="True" Right_open_end="True">
+        <Name Hor_name_spacing="10" Hor_position="Right" Vert_position="Center" Transparent="True">
+            <Font Color="cyan" Info="1;11;-15;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+        </Name>
+        <Colors H="green" L="yellow" Z="magenta" D="green" X="red" D_fill="green" X_fill="red" D_fill_style="Solid" X_fill_style="Solid" />
+        <Label Hor_position="Center" Vert_position="Center" Transparent="True">
+            <Font Color="yellow" Info="1;11;-15;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+        </Label>
+    </Waveforms>
+    <Gaps Color="grey" Edge_rise="1" Width="2" Line_width="1" />
+    <Arrows Line_style="Solid" Head_style="Full" Align_position="Center" Within_position="Entire row" Color="white" Align_value="0" Head_length="10" Head_height="5" Line_width="1">
+        <Label Transparent="True">
+            <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+        </Label>
+        <Across>
+            <Label Anchor="Middle" Position="Center" Hor_offset="0" Vert_offset="0" />
+        </Across>
+        <Along Guideline_style="Dash 2/4" Guideline_width="1">
+            <Label Position="Below" Hor_offset="0" Vert_offset="0" />
+        </Along>
+    </Arrows>
+    <Labels Align_position="Center" Within_position="Entire row" Transparent="True" Hor_position="Right" Vert_offset="0" Hor_offset="0">
+        <Font Color="yellow" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+    </Labels>
+    <Value_lines Tick_length="5" Line_width="1" Style="Dot" Color="white">
+        <Label Transparent="True" Hor_offset="-3">
+            <Font Color="yellow" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+        </Label>
+    </Value_lines>
+    <Data Title_text="Instruction Fetch x3 (worst/best-case)">
+        <Row Type="Auto_signal" Init_value="LH" L_units="25" LH_units="0" H_units="25" HL_units="0" First_seg_level_units="0" Gap_seg_level_units="1" First_seg_level_value="L" Gap_seg_level_value="L" Last_seg_level_value="L" Num_auto_segs="1" Num_gap_segs="0" Draw_auto_segs_to_end="True">
+            <Auto_label_format Base_type="Dec" Show_prefix="True" Label_width="1" Init_value="4" Change_type="+" Change_value="1" Wrap_around_value="4" Wrap_around_init_value="1" />
+            <Auto_label Label="T@" Show="True" Use_defaults="True" Label_in_seg="H" />
+            <Name Name="CLKw" Show="True" Use_defaults="True" />
+        </Row>
+        <Row Type="Signal" Init_value="L" Show_label="True" Use_default_waveform_height="True">
+            <Segment Value="L" Trans_units="0" Level_units="65">
+                <Label Label="(last IF RFSH)" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="50">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="10">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="65">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="50">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="10">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="65">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="50">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="10">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="50">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Trans_units="0" Level_units="0" />
+            <Name Name="MREQw-" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="25" From_row_0_name="MREQw-" From_row_name="CLKw" To_unit="65" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="40ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="75" From_row_0_name="MREQw-" From_row_name="CLKw" To_unit="115" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="40ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="MREQw-" From_row_name="CLKw" To_unit="190" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="40ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="190" From_row_0_name="MREQw-" From_row_name="MREQw-" To_unit="200" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="10ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="225" From_row_0_name="MREQw-" From_row_name="CLKw" To_unit="265" To_row_0_name="MREQw-" To_row_name="MREQw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="40ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Signal" Init_value="H" Show_label="True" Use_default_waveform_height="True">
+            <Segment Value="H" Trans_units="0" Level_units="115">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="125">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="125">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="60">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Trans_units="0" Level_units="0" />
+            <Name Name="RDw-" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="75" From_row_0_name="RDw-" From_row_name="CLKw" To_unit="115" To_row_0_name="RDw-" To_row_name="RDw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="40ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="RDw-" From_row_name="CLKw" To_unit="190" To_row_0_name="RDw-" To_row_name="RDw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="40ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Signal" Init_value="H" Show_label="True" Use_default_waveform_height="True">
+            <Segment Value="H" Trans_units="0" Level_units="95">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="IF-1" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="IF-2" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="IF-3" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="55">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Trans_units="0" Level_units="0" />
+            <Name Name="M1w-" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="50" From_row_0_name="M1w-" From_row_name="CLKw" To_unit="95" To_row_0_name="M1w-" To_row_name="M1w-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="45ns" Transparent="True" Position="Below" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="M1w-" From_row_name="CLKw" To_unit="195" To_row_0_name="M1w-" To_row_name="M1w-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="45ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Signal" Init_value="L" Show_label="True" Use_default_waveform_height="True">
+            <Segment Value="L" Trans_units="0" Level_units="110">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="40">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Trans_units="0" Level_units="0" />
+            <Name Name="RFSHw-" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="RFSHw-" From_row_name="CLKw" To_unit="210" To_row_0_name="RFSHw-" To_row_name="RFSHw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="60ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="50" From_row_0_name="RFSHw-" From_row_name="CLKw" To_unit="110" To_row_0_name="RFSHw-" To_row_name="RFSHw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="60ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Bus" Show_label="True" Left_open_end="True" Right_open_end="True">
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="0" After_trans_units="1" Level_units="106" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="RFSH ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="PC ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="RFSH ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="PC ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="RFSH ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="PC ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="0" Level_units="42" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="RFSH" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Before_trans_units="0" After_trans_units="0" Level_units="0" />
+            <Name Name="ADDRw" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="50" From_row_0_name="ADDRw" From_row_name="CLKw" To_unit="107" To_row_0_name="ADDRw" To_row_name="ADDRw" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="57ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="ADDRw" From_row_name="CLKw" To_unit="207" To_row_0_name="ADDRw" To_row_name="ADDRw" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="57ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Bus" Show_label="True" Left_open_end="True" Right_open_end="True">
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="0" After_trans_units="1" Level_units="89" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Z" Before_trans_units="1" After_trans_units="1" Level_units="28">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="X" Before_trans_units="1" After_trans_units="1" Level_units="16">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="50" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="VALID" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Z" Before_trans_units="1" After_trans_units="1" Level_units="28">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="X" Before_trans_units="1" After_trans_units="1" Level_units="18">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="48" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="VALID" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Z" Before_trans_units="1" After_trans_units="1" Level_units="28">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="X" Before_trans_units="1" After_trans_units="1" Level_units="18">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="48" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="VALID" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="0" Level_units="59" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Before_trans_units="0" After_trans_units="0" Level_units="0" />
+            <Name Name="DATAw" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="138" From_row_0_name="DATAw" From_row_name="DATAw" To_unit="150" To_row_0_name="DATAw" To_row_name="CLKw" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="12ns" Transparent="True" Position="Above" Angle="0" Hor_offset="-4" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Full" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="190" From_row_0_name="DATAw" From_row_name="DATAw" To_unit="191" To_row_0_name="DATAw" To_row_name="RDw-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="0ns" Transparent="True" Position="Above" Angle="0" Hor_offset="14" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Spacer_row"> <Name Name="-" Show="False" Use_defaults="True"> </Name></Row><Row Type="Signal" Init_value="L" Show_label="True" Use_default_waveform_height="True">
+            <Segment Value="L" Trans_units="0" Level_units="30">
+                <Label Label="(RFSH)" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="50">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="10">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="65">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="50">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="10">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="65">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="50">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="10">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="65">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="20"> <Label Label="" Show="True" Use_defaults="True"> </Label></Segment><Segment Value="Empty" Trans_units="0" Level_units="0" />
+            <Name Name="MREQb-" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="25" From_row_0_name="MREQb-" From_row_name="CLKb" To_unit="30" To_row_0_name="MREQb-" To_row_name="MREQb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="5ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="75" From_row_0_name="MREQb-" From_row_name="CLKb" To_unit="80" To_row_0_name="MREQb-" To_row_name="MREQb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="MREQb-" From_row_name="CLKb" To_unit="155" To_row_0_name="MREQb-" To_row_name="MREQb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="155" From_row_0_name="MREQb-" From_row_name="MREQb-" To_unit="165" To_row_0_name="MREQb-" To_row_name="MREQb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="10ns" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="225" From_row_0_name="MREQb-" From_row_name="CLKb" To_unit="230" To_row_0_name="MREQb-" To_row_name="MREQb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Signal" Init_value="H" Show_label="True" Use_default_waveform_height="True">
+            <Segment Value="H" Trans_units="0" Level_units="80">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="125">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="125">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="75">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="95">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Trans_units="0" Level_units="0" />
+            <Name Name="RDb-" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="75" From_row_0_name="RDb-" From_row_name="CLKb" To_unit="80" To_row_0_name="RDb-" To_row_name="RDb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="RDb-" From_row_name="CLKb" To_unit="155" To_row_0_name="RDb-" To_row_name="RDb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Signal" Init_value="H" Show_label="True" Use_default_waveform_height="True">
+            <Segment Value="H" Trans_units="0" Level_units="55">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="IF-1" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="IF-2" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="IF-3" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="95">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Trans_units="0" Level_units="0" />
+            <Name Name="M1b-" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="50" From_row_0_name="M1b-" From_row_name="CLKb" To_unit="55" To_row_0_name="M1b-" To_row_name="M1b-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Below" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="M1b-" From_row_name="CLKb" To_unit="155" To_row_0_name="M1b-" To_row_name="M1b-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Signal" Init_value="L" Show_label="True" Use_default_waveform_height="True">
+            <Segment Value="L" Trans_units="0" Level_units="55">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="H" Trans_units="0" Level_units="100">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="L" Trans_units="0" Level_units="95">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Trans_units="0" Level_units="0" />
+            <Name Name="RFSHb-" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="RFSHb-" From_row_name="CLKb" To_unit="155" To_row_0_name="RFSHb-" To_row_name="RFSHb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="50" From_row_0_name="RFSHb-" From_row_name="CLKb" To_unit="55" To_row_0_name="RFSHb-" To_row_name="RFSHb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Bus" Show_label="True" Left_open_end="True" Right_open_end="True">
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="0" After_trans_units="1" Level_units="54" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="RFSH ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="PC ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="RFSH ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="PC ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="RFSH ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="98" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="PC ADDR" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="0" Level_units="94" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="RFSH" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Before_trans_units="0" After_trans_units="0" Level_units="0" />
+            <Name Name="ADDRb" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="50" From_row_0_name="ADDRb" From_row_name="CLKb" To_unit="55" To_row_0_name="ADDRb" To_row_name="ADDRb" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="150" From_row_0_name="ADDRb" From_row_name="CLKb" To_unit="155" To_row_0_name="ADDRb" To_row_name="ADDRb" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="0" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Bus" Show_label="True" Left_open_end="True" Right_open_end="True">
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="0" After_trans_units="1" Level_units="79" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Z" Before_trans_units="1" After_trans_units="1" Level_units="38">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="X" Before_trans_units="1" After_trans_units="1" Level_units="16">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="15" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="VAL" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="123" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Z" Before_trans_units="1" After_trans_units="1" Level_units="38">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="X" Before_trans_units="1" After_trans_units="1" Level_units="16">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="15" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="VAL" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="123" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Z" Before_trans_units="1" After_trans_units="1" Level_units="38">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="X" Before_trans_units="1" After_trans_units="1" Level_units="16">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="1" Level_units="15" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="VAL" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="D" Color_style_use_defaults="False" Before_trans_units="1" After_trans_units="0" Level_units="89" Line_color="green" Fill_color="green" Fill_style="Transparent">
+                <Label Label="" Show="True" Use_defaults="True" />
+            </Segment>
+            <Segment Value="Empty" Before_trans_units="0" After_trans_units="0" Level_units="5" />
+            <Name Name="DATAb" Show="True" Use_defaults="True" />
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="True" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="138" From_row_0_name="DATAb" From_row_name="DATAb" To_unit="150" To_row_0_name="DATAb" To_row_name="CLKb" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="-4" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+            <Arrow Type="Along" Line_style="Solid" Line_width="1" Head_style="Hollow" Guideline_style="Dash 2/4" Guideline_width="1" Color="white" Show_hor_line="True" Show_left_head="True" Show_right_head="True" Show_left_guideline="True" Show_right_guideline="False" Extend_left_guideline="False" Extend_right_guideline="False" From_unit="155" From_row_0_name="DATAb" From_row_name="DATAb" To_unit="156" To_row_0_name="DATAb" To_row_name="RDb-" Align_position="Center" Within_position="Entire row">
+                <Label Show_label="True" Label="" Transparent="True" Position="Above" Angle="0" Hor_offset="14" Vert_offset="0">
+                    <Font Color="white" Info="1;9;-12;0;0;0;400;0;0;0;1;0;0;2;32;Arial" />
+                </Label>
+            </Arrow>
+        </Row>
+        <Row Type="Auto_signal" Init_value="LH" L_units="25" LH_units="0" H_units="25" HL_units="0" First_seg_level_units="0" Gap_seg_level_units="1" First_seg_level_value="L" Gap_seg_level_value="L" Last_seg_level_value="L" Num_auto_segs="1" Num_gap_segs="0" Draw_auto_segs_to_end="True">
+            <Auto_label_format Base_type="Dec" Show_prefix="True" Label_width="1" Init_value="4" Change_type="+" Change_value="1" Wrap_around_value="4" Wrap_around_init_value="1" />
+            <Auto_label Label="T@" Show="True" Use_defaults="True" Label_in_seg="H" />
+            <Name Name="CLKb" Show="True" Use_defaults="True" />
+        </Row>
+    </Data>
+</Diagram>
