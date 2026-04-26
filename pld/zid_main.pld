@@ -324,7 +324,7 @@ PIN [56..58,60] = [sbc_gp3..0];
 
 /** Boot/Reboot and Requested Reset  */
 PINNODE = mrst_req;         /* Master reset: brd_rst # rst_req */
-PINNODE = [rstSM2..0];      /* Reset state machine */
+PINNODE = [rstSM2..0];      /* Reset state machines */
 
 
 /** Z80 Special Reset */
