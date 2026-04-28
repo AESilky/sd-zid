@@ -291,12 +291,12 @@ PIN 28  = !zbusreq;     /* To the Z80 */
 PIN 35  = !mod_sel;     /* RP2040 Module Select                                 */
 /* */
 PIN 100 = ba_clk;       /* Break Address Clock                              */
-PIN 32  = !ba_clr;        /* Break Address Clear                            */ 
+PIN 32  = !ba_clr;      /* Break Address Clear                            */ 
 PIN 99  = baen_clk;     /* Break Address Enable Clock (WR)                  */
 PIN 98  = !baen_clr;    /* Break Address Enable Clear                       */
 PIN 36  = d7bo;         /* Data bit 7 buffered for use by break hardware    */
 /* */
-PIN 96  = !lcl_io;       /* Local I/O Addr Range and Op (ZID or SBC)        */
+PIN 96  = !lcl_io;      /* Local I/O Addr Range and Op (ZID or SBC)        */
 /* */
 PIN 94  = !tdbus_en;    /* Target Data Bus Enable                           */
 PIN 93  = !tdbus_in;    /* Target Data Bus Direction                        */
@@ -307,12 +307,12 @@ PIN 30  = !zint;        /* INT to Z80 */
 PIN 71  = !rfmr;        /* RFSH gated MREQ (for the target during debug)    */
 /* */
 PIN 10  = tgt_go;       /* Start the bus operation countdown */ /* 10: LED7 on DevKit */
-PIN  9  = !tgtmode;      /* Running target (not debug), used to reset OP counter */ /* 9: LED8 on DevKit */
+PIN  9  = !tgtmode;     /* Running target (not debug), used to reset OP counter */ /* 9: LED8 on DevKit */
 PIN 33  = mem_op;       /* Memory Op (excluding rfsh), used to clock OP counter */
 /* DBI Detect */
 PIN     = dbi_if2;      /* Double-Byte IF2 (not needed on a pin)        */
 /* */
-PIN 97  = !pc_latch;     /* Latch enable for the external PC Save register  */
+PIN 97  = !pc_latch;    /* Latch enable for the external PC Save register  */
 PIN 31  = brk_dtctd;    /* Break condition detected - SYNC signal on board */
 /* SBC General Purpose Output Bits (4) */
 PIN [56..58,60] = [sbc_gp3..0];
@@ -467,7 +467,7 @@ $DEFINE B2OP_AM     [b2op2..0]:4
 $DEFINE B2OP_PW     [b2op2..0]:5
 $DEFINE B2OP_PR     [b2op2..0]:6
 $DEFINE B2OP_AP     [b2op2..0]:7
-$DEFINE NOP_FORCE   (zsr_req & m1a)
+$DEFINE NOP_FORCE   ((brk_dtctd # zsr_req) & m1a)
 /* Data byte for Special Reset From Break and Break2 Detect and PC-Save read by CPU */
 FIELD brk_pc_info   = [zid_init,sbcmode,'b'0,'b'0,sr_frombrk,brkhw_detect,'b'0,pcrd_b_in];
 
@@ -779,7 +779,7 @@ sr_frombrk.d    = ON;
 sr_frombrk.ar   = to_target;
 /* */
 pc_latch   = m1a
-            & (!iorq & !dbi_if2 & tgtmode);
+            & (!dbi_if2 & !brk_dtctd & tgtmode);
 
 
 /** SBC General Purpose Output Bits */
