@@ -247,9 +247,9 @@ PIN  8 = !tint;        /* Target System INT request                    */
 PIN 83 = !twait;       /* Target System WAIT request                   */
 PIN 63 = !sbcmode;     /* We are running as an SBC   (Board-Jumpers)   */
 PIN  9 = !tgt_only;    /* Target System should run immediately (no Debug init) (Board-SW)  */
-PIN 35 = tgt_now;      /* Target-Go counter has reached terminal count */ /* 48: SW1 on DevKit */
+PIN 35 = tgt_now;      /* Target-Go counter has reached terminal count */
 PIN 33 = sop_now;      /* Single-Op counter has reached terminal count */
-PIN 65 = attn;         /* Request from RP2040 Module for attention     */ /* 44: SW3 on DevKit */
+PIN 65 = attn;         /* Request from RP2040 Module for attention     */
 PIN 79 = !mwtrq;       /* Wait Request from RP2040 Module              */
 /* */
 PIN 36 = !brk1_a_eq;   /* Address match for breakpoint 1               */
@@ -308,8 +308,8 @@ PIN 47  = !znmi;        /* NMI to Z80 */
 PIN 69  = !zint;        /* INT to Z80 */
 PIN 42  = !rfmr;        /* RFSH gated MREQ (for the target during debug)    */
 /* */
-PIN  7  = tgt_go;       /* Start the bus operation countdown */ /* 10: LED7 on DevKit */
-PIN 72  = !tgtmode;     /* Running target (not debug), used to reset OP counter */ /* 9: LED8 on DevKit */
+PIN  7  = tgt_go;       /* Start the bus operation countdown */
+PIN 72  = !tgtmode;     /* Running target (not debug), used to reset OP counter */
 PIN 45  = mem_op;       /* Memory Op (excluding rfsh), used to clock OP counter */
 /* */
 PIN 32  = !pc_latch;    /* Latch enable for the external PC Save register  */
@@ -669,8 +669,8 @@ ba_clr      = lcl_io & ioaddr:['b'xxx1011x];         /* 16: BRK-ADDR CLR    */
 baen_clk    = lcl_io & ioaddr:['b'xxx1100x];         /* 18: BRK-ADDREN CLK  */
 baen_clr    = lcl_io & ioaddr:['b'xxx1101x];         /* 1A: BRK-ADDREN CLR  */
 brkpc_rd    = lcl_io & ioaddr:['b'xxx1110x] & rd;    /* 1C: BRK-INFO RD     */
-/** Debug & SBC Port Decode */
-mod_sel     = lcl_io & ioaddr:['b'xxx1111x];     /* 1E/1F: RP Mod CTRL/DATA */
+/** RP Module Decode */
+mod_sel     = lcl_io & ioaddr:['b'xxx1111x] & (wr # rd);     /* 1E/1F: RP Mod CTRL/DATA */
 
 
 /** Breakpoint Registers and Control */
