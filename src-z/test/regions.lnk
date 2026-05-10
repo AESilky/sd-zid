@@ -1,0 +1,20 @@
+;
+; ulink control file for 'regions' ROM
+;
+; Copyright 2026 AESilky
+;
+;-0d    ; Debugging output messages
+-v      ; Verbose progress
+-bFF    ; Binary image, fill with FF
+;-a -s  ; a.out format without symbols
+-o=rom.bin
+-m=regions.map
+-lrgn0=00000
+-lrgn1=04000
+-lrgn2=08000
+-lrgn3=0C000
+-lrgn4=10000
+-lrgn5=14000
+-lrgn6=18000
+-lrgn7=1C000
+regions.obj
