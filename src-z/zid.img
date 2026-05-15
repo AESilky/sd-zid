@@ -1,0 +1,10 @@
+;
+; imager control file for 'SBC and Debug Monitor' ROM
+;
+; Copyright 2025-26 AESilky
+; SPDX-License-Identifier: MIT License
+;
+;-0dd    ; Debugging output messages
+-v      ; Verbose progress
+sbc/sbc1.bin:0:7FFF              ; SBC image is at 0
+dbm/dbmon.bin:1C000:1FFFF       ; Put the dbmon binary in region 7 of the ROM
