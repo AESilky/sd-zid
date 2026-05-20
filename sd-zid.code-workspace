@@ -105,6 +105,7 @@
             "SNGSTEP",
             "softbrk",
             "SOFTBRKEN",
+            "SPRST",
             "SYNCONLY",
             "tabus",
             "tbus",
