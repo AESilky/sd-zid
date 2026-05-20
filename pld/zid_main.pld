@@ -231,7 +231,7 @@ PIN 88 = !busreq;       /* Gated by target mode for zbusreq (on an in-only pin) 
 PIN [85,84] = [addr15..14]; /* Address inputs        */
 PIN [25..19,17] = [addr7..0];
 PROPERTY Atmel {pin_keep = on addr7,addr6,addr5,addr4,addr3,addr2,addr1,addr0};
-PIN 40 = !m1;         /* m1 in the G Block to be with MREQ, IORQ, and RFSH */
+PIN 40 = !m1;           /* m1 in the G Block to be with MREQ, IORQ, and RFSH */
 PIN 94 = !rd;
 PROPERTY Atmel {pin_keep = on rd};
 PIN 37 = !wr;
@@ -241,22 +241,23 @@ PROPERTY Atmel {pin_keep = on iorq};
 PIN 75 = !mreq;
 PROPERTY Atmel {pin_keep = on mreq};
 PIN 76 = !rfsh;
-PIN 10 = !zbusack;     /* BusAck from Z80, used to gen +/- signals     */
-PIN  2 = !tnmi;        /* Target System NMI request                    */
-PIN  8 = !tint;        /* Target System INT request                    */
-PIN 83 = !twait;       /* Target System WAIT request                   */
-PIN 63 = !sbcmode;     /* We are running as an SBC   (Board-Jumpers)   */
-PIN  9 = !tgt_only;    /* Target System should run immediately (no Debug init) (Board-SW)  */
-PIN 35 = tgt_now;      /* Target-Go counter has reached terminal count */
-PIN 33 = sop_now;      /* Single-Op counter has reached terminal count */
-PIN 65 = attn;         /* Request from RP2040 Module for attention     */
-PIN 79 = !mwtrq;       /* Wait Request from RP2040 Module              */
+PIN 10 = !zbusack;      /* BusAck from Z80, used to gen +/- signals     */
+PIN  2 = !tnmi;         /* Target System NMI request                    */
+PIN  8 = !tint;         /* Target System INT request                    */
+PIN 83 = !twait;        /* Target System WAIT request                   */
+PIN 63 = !sbcmode;      /* We are running as an SBC   (Board-Jumpers)   */
+PIN  9 = !tgt_only;     /* Target System should run immediately (no Debug init) (Board-SW)  */
+PIN 35 = tgt_now;       /* Target-Go counter has reached terminal count */
+PIN 33 = sop_now;       /* Single-Op counter has reached terminal count */
+PIN 65 = attn;          /* Request from RP2040 Module for attention     */
+PIN 79 = !mwtrq;        /* Wait Request from RP2040 Module              */
 /* */
-PIN 36 = !brk1_a_eq;   /* Address match for breakpoint 1               */
-PIN  6 = !brkn_a_eq;   /* Breakpoint 2..n Address match                */
-PIN 77 = !brkhw_det; /* Signal from external breakpoint boards.     */
-                         /* Provided as a port read bit to the cpu for  */
-                         /* its use. (1C-b2: BRK-INFO RD)               */
+PIN 36 = !brk1_a_eq;    /* Address match for breakpoint 1               */
+PIN  6 = !brkn_a_eq;    /* Breakpoint 2..n Address match                */
+PIN 77 = !brkhw_det;    /* Signal from external breakpoint boards.     */
+                        /* Provided as a port read bit to the cpu for  */
+                        /* its use. (1C-b2: BRK-INFO RD)               */
+PIN = !extbrkrq;
 /* */
 PIN 78 = pcrd_b_in;    /* Input bit from the PC Save shift register    */
 /* SBC General Purpose Input Bits (4) */
@@ -298,7 +299,7 @@ PIN 98  = baen_clk;     /* Break Address Enable Clock (WR)                  */
 PIN 100 = !baen_clr;    /* Break Address Enable Clear                       */
 PIN 68  = d7bo;         /* Data bit 7 buffered for use by break hardware    */
 /* */
-PIN 41  = !lcl_io;      /* Local I/O Addr Range and Op (ZID or SBC)        */
+PIN 41  = lcl_io;      /* Local I/O Addr Range and Op (ZID or SBC)        */
 /* */
 PIN 48  = !tdbus_en;    /* Target Data Bus Enable                           */
 PIN 61  = !tdbus_in;    /* Target Data Bus Direction                        */
@@ -310,7 +311,7 @@ PIN 42  = !rfmr;        /* RFSH gated MREQ (for the target during debug)    */
 /* */
 PIN  7  = tgt_go;       /* Start the bus operation countdown */
 PIN 72  = !tgtmode;     /* Running target (not debug), used to reset OP counter */
-PIN 45  = mem_op;       /* Memory Op (excluding rfsh), used to clock OP counter */
+PIN 45  = !mem_op;       /* Memory Op (excluding rfsh), used to clock OP counter */
 /* */
 PIN 32  = !pc_latch;    /* Latch enable for the external PC Save register  */
 PIN 71  = brk_dtctd;    /* Break condition detected - SYNC signal on board */
@@ -351,6 +352,7 @@ PINNODE = [mapD3..0];       /* MAP Reg-D Bits 3,2,1,0 (C000-FFFF) */
 /*  don't generate again until next memory op (1 wait-state)    */
 PINNODE = wait_req;
 PINNODE = wait_ho;
+PINNODE = MEM_OPH;
 
 
 /** Board/Operation Control */
@@ -422,8 +424,8 @@ PINNODE = sr_frombrk;   /* Indicates the Special Reset is from a break  */
 
 /** Z80 General */
 $DEFINE ZIF_1       ((m1 & mreq) & !dbi_if2)
-$DEFINE MEM_RD      (mem_op & rd)
-$DEFINE MEM_WR      (mem_op & wr)
+$DEFINE MEM_RD      ((mreq & !rfsh) # (m1 & !iorq) & rd)
+$DEFINE MEM_WR      ((mreq & !rfsh) # (m1 & !iorq) & wr)
 $DEFINE PORT_RD     (!m1 & iorq & rd)
 $DEFINE PORT_WR     (!m1 & iorq & wr)
 $DEFINE ZNOP        'h'00
@@ -531,11 +533,11 @@ zrst        = lrst                  /* Reset to local Z80 is the full reset */
             # (zsprst1 & !zsprst2); /*  or special reset                    */
 zrst_clk    = zrst & cpu_clk;       /* Z80 Reset and Clock - used by multiple nodes for reset */
 /* Special Reset Request        */
-zsr_req.ck  = tgtmode & !tgt_only   /* Running the target and not Target Only, and...   */
-             & ((sngl_step & rfsh)  /* Want a single IF (refresh indicates end of IF)   */
-              # (brk_dtctd & !sync_only) /* Break condition detected                    */
-              #  brk_req            /* Break request from SBC code (written to CTRL)    */
-              #  attn               /* RP-Module wants attention                        */
+zsr_req.ck  = tgtmode & !tgt_only   /* Running the target and not Target Only, and...           */
+             & ((sngl_step & rfsh)  /* Want a single IF (refresh indicates end of IF)           */
+              # (brk_dtctd & !sync_only) /* Break condition detected                            */
+              #  (brk_req # (softbrk_en & rst38det)) /* Break request from SBC code or RST38    */
+              #  attn               /* RP-Module wants attention                                */
              );
 zsr_req.d   = ON;
 zsr_req.ar  = !tgtmode & rfmr;
@@ -567,8 +569,9 @@ d7bo        = d7;           /* Data Bit 7 buffered for use by external breakpoin
 
 
 /** Memory Operation, excluding Refresh */
-mem_op      = (mreq & !rfsh) # (m1 & !iorq); /* Used to clock Operation Counter and some logic */
+mem_op      = (mreq & !rfsh); /* Used to clock Operation Counter and some logic */
 mem_op.oe   = ON;
+MEM_OPH      = (mreq & !rfsh);
 
 /** MMU Register Init/Write */
 mmu_io          = (lcl_io & ioaddr:['b'xxx0100x]);  /* n008: Top 2 bits select register */
@@ -598,7 +601,7 @@ mmu_io          = (lcl_io & ioaddr:['b'xxx0100x]);  /* n008: Top 2 bits select r
              # (( tgtmode & [addr15..14]:4000) & [mapB2..0])
              # (( tgtmode & [addr15..14]:8000) & [mapC2..0])
              # (( tgtmode & [addr15..14]:C000) & [mapD2..0]);
-rom_sel     = mem_op &
+rom_sel     = MEM_OPH &
             ( (!tgtmode & [addr15..14]:0000)
               #
               ( tgtmode & sbcmode &
@@ -609,7 +612,7 @@ rom_sel     = mem_op &
                )
               )
             );
-ram_sel     = mem_op &
+ram_sel     = MEM_OPH &
             ( (!tgtmode & [addr15..14]:4000)
               #
               ( tgtmode & sbcmode &
@@ -772,7 +775,7 @@ b1_det      =  (!b1ra # brk1_a_eq)
                  (B1OP_IF & ZIF_1)              /* Data isn't checked for IF */
                # (B1OP_MW & MEM_WR & b1_d_eq)
                # (B1OP_MR & MEM_RD & b1_d_eq)
-               # (B1OP_AM & mem_op & b1_d_eq)
+               # (B1OP_AM & MEM_OPH & b1_d_eq)
                # (B1OP_PW & !m1 & iorq & wr & b1_d_eq)
                # (B1OP_PR & !m1 & iorq & rd & b1_d_eq)
                # (B1OP_AP & !m1 & iorq & b1_d_eq)
@@ -783,13 +786,13 @@ b2_det      =  (!b2ra # brkn_a_eq)
                  (B2OP_IF & ZIF_1)
                # (B2OP_MW & MEM_WR)
                # (B2OP_MR & MEM_RD)
-               # (B2OP_AM & mem_op)
+               # (B2OP_AM & MEM_OPH)
                # (B2OP_PW & !m1 & iorq & wr)
                # (B2OP_PR & !m1 & iorq & rd)
                # (B2OP_AP & !m1 & iorq)
              );
 /* Break Detected - used to request a special reset */
-brk_dtctd.ck    = tgtmode & ((softbrk_en & rst38det) # b1_det # b2_det);
+brk_dtctd.ck    = tgtmode & (b1_det # b2_det # extbrkrq);
 brk_dtctd.d     = ON;
 brk_dtctd.ar    = zrst_clk  /* Clear the detected flag after Special Reset is generated, */
                  # (sync_only & m1); /* or the next M1 cycle for SYNC ONLY */
