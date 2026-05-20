@@ -1,0 +1,37 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"build/**/*": true
+		},
+		"cortex-debug.variableUseNaturalFormat": false,
+		"cSpell.words": [
+            "cstm",
+            "dbusc",
+            "dccmds",
+            "diagout",
+            "docsbc",
+            "errledfn",
+            "irqn",
+            "memmap",
+            "monrd",
+            "monwr",
+            "multicore",
+            "pocfg",
+            "RDRQ",
+            "SATEST",
+            "smpocfg",
+            "statled",
+            "stdlib",
+            "waitclr",
+            "waitpin",
+            "WAITRQ",
+            "wrreq",
+            "WRRQ"
+        ]
+	}
+}

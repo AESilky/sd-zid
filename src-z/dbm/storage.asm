@@ -17,8 +17,8 @@ BSS		.sect
 ; Temp stack and locations for register storage
 ;
 ; The registers are pushed as a pair, but labeled individually for access
-; (this order is important!!!)
-regsav:		.block	BYTE		; room for the 'f' when af pushed to save 'i'
+; (!!! This order is important. It matches the save/restore and transfer to/from DOC order. !!!)
+regied:		.block	BYTE		; 'f' when af pushed to save 'i', P/V is IE/ID
 regi:		.block	BYTE
 regfx:		.block	BYTE
 regax:		.block	BYTE
@@ -28,8 +28,6 @@ regex:		.block	BYTE
 regdx:		.block	BYTE
 reglx:		.block	BYTE
 reghx:		.block	BYTE
-regix:		.block	WORD
-regiy:		.block	WORD
 regsav_:	.equ	$		; this is where we start for tgtgo
 regc:		.block	BYTE
 regb:		.block	BYTE
@@ -42,6 +40,8 @@ regf:		.block	BYTE
 rega:		.block	BYTE
 regsp:		.block	WORD
 regpc:		.block	WORD
+regix:		.block	WORD
+regiy:		.block	WORD
 ;
 regsav2:	.equ	$		; Used for 2nd save operation (PC, SP, and AF) 
 		.block	32		; room for temporary stack (not expected to be used)
@@ -49,7 +49,8 @@ tempaf:		.block	WORD
 tempsp:		.block	WORD
 asave:		.block	BYTE
 z80im:		.block	BYTE
-tflag		.block	BYTE		; Target state/status bits
+tflag		.block	BYTE		; Target state/status bits (see .inc for bits)
+zflag		.block	BYTE		; ZID state/status bits (see .inc for bits)
 ;
 brk_pc_inf:	.block	BYTE		; Used to save the initial read from this port
 					; since each time the port is read it shifts

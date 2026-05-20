@@ -1,0 +1,6 @@
+# CMake/Make and build area
+build/
+CMakeLists.txt.user
+
+# Core dumps
+core

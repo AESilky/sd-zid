@@ -45,9 +45,9 @@ BOOT		.sect	W
 ; ===========================
 ;
 boot:
-		jp	bahndlr			; Reset and Restart Entries
+		jp	bahdlr			; Reset and Restart Entries
 rst08:		.org	boot+08h
-		jp	onrst08
+		jp	bar8hdlr		; ! RST8 used in place of SPRST when debugging with ZED
 rst10:		.org	boot+10h
 		jp	onrst10
 rst18:		.org	boot+18h
@@ -67,16 +67,28 @@ ver:		.equ	$
 		.input	"version.inc"		; build date/version
 
 nmivec:		.org	boot+66h
-		jp	bahndlr			; DOC ATTN when in Debug Mode uses NMI
+		jp	dmdocattn		; DOC ATTN when in Debug Mode uses NMI
+
+		.align	4
+bar8hdlr:	; Break|ATTN handler from RST8 (for debugging with ZED)
+		; ! ZZZ the breadboard doesn't have the PC latch, so
+		; ! we'll get the PC off the stack and then handle like a SPRST
+		ld	(tempsp),sp
+		ld	sp,tempsp
+		push	af			; we can now use AF and SP
+		ld	a,(zflag)
+		set	zf_dbzed,a		; indicate that we are debugging with ZED (RST8 rather than SPRST)
+		ld	(zflag),a
+		jp	dbzent
 
 		.org	boot+0100h
-bahndlr:	; This could be a breakpoint or DOC asking for attention
+bahdlr:	; This could be a breakpoint or DOC asking for attention
 		; Or it could be a full reset
 		; Treat as BRK or ATTN until we figure out for sure (save AF and SP)
 		ld	(tempsp),sp
 		ld	sp,tempsp
 		push	af			; we can now use AF and SP
-		in	a,(PCADDR_RD)		; read the PC-b0 and status. this will allow us to see if the
+dbzent:		in	a,(PCADDR_RD)		; read the PC-b0 and status. this will allow us to see if the
 		ld	(brk_pc_inf),a		; reset is from a BRK or ATTN, or
 		bit	ZIDINITD_B,a		; if the ZID isn't initialized, treat as Full Reset
 		jp	z,doinit		;  Do the initialization
@@ -89,29 +101,35 @@ brkattn:	; Break or Attention Common
 		push	hl
 		push	de
 		push	bc
-		; do IX, IY and the alternates
-		push	iy
-		push	ix
+		; do the alternates
 		ex	af,af'
 		exx
 		push	hl
 		push	de
 		push	bc
 		push	af
-		; put the primaries back (the DM doesn't use IX, IY, or alternate registers)
+		; put the primaries back (the DM doesn't use IX, IY, or alternate registers after init)
 		exx
 		ex	af,af'
 		; get the IV and IE state
 		ld	a,i
-		push	af		; this saves i
-		ld	hl,tflag
-		res	tf_ie,(hl)	; mark as int disabled
-		jp	po,sr0		; p/v flag = int dis (set by 'ld a,i' above)
-		set	tf_ie,(hl)	; int enabled
-sr0:		; we have the state of IFF2, disable ints (we don't use them)
+		push	af		; this saves i and p/v which indicates Ints Enabled/Disabled
+		; we have the state of IFF2, disable ints (we don't use them)
 		di
 		; Read in and build up the saved PC
-		; bit-15 was read to get the break status, get it back and build up the rest
+		ld	a,(zflag)
+		bit	zf_dbzed,a
+		jr	z,sr0		; Special Reset, not RST8 (ZED) debugging
+		; Debugging using RST8 rather than SPRST (to allow ZED to be used)
+		ld	sp,tempaf	; get the target 'sp' and 'af' saved initially
+		pop	bc		; 'AF' into BC
+		ld	sp,(tempsp)
+		pop	de		; PC into DE
+		ld	(tempsp),sp	; SP now correct for resuming
+		ld	hl,(tempsp)	;  put it into HL
+		; registers now match what SPRST builds up: PC in DE, SP in HL, AF in BC
+		jr	sr1	
+sr0:		; bit-15 was read to get the break status, get it back and build up the rest
 		xor	a
 		ld	d,a
 		ld	e,a
@@ -135,11 +153,11 @@ pcrd2:		and	00000001b
 		; DE now contains the PC saved by the Special Reset
 		ld	sp,tempaf	; get the target 'sp' and 'af' saved initially
 		pop	bc		; 'af' into bc
-		pop	hl		; 'sp' less 2
-		inc	hl		;  adjust it
-		inc	hl		; 'sp' now in hl
-		; target: PC in DE, SP in HL, AF in BC
+		pop	hl		; 'sp'
+sr1:		; target: PC in DE, SP in HL, AF in BC
 		ld	sp,regsav2
+		push	iy		; do IY and IX now, so the 2-byte registers are together
+		push	ix
 		push	de		; PC
 		push	hl		; SP
 		push	bc		; AF
@@ -150,19 +168,25 @@ pcrd2:		and	00000001b
 		;
 		ld	a,(brk_pc_inf)
 		bit	SR_ISBRK_B,a
-		jr	nz,sr_isbrk
+		ld	a,DMOKCMDRD
+		jr	z,doccmdrd
 		;
-		; SPRST was from DOC wanting Attention
-		ld	a,DCOKCMDRD
-		jr	doccmdrd
-sr_isbrk:	ld	a,DCBRKHIT
-doccmdrd:	out	(RPMCTRL),a	; on ATTN this returns quickly. BRKHIT takes longer due to waking DOC up.
+		; SPRST was from a breakpoint
+		ld	a,DMBRKHIT
+doccmdrd:	out	(RPMCTRL),a	; on ATTN this returns quickly. DMBRKHIT takes longer due to waking DOC up.
 		in	a,(RPMDATA)
 		ld	(doc_cmd),a
 		;
 		; process the DOC command
 		;
 		jp	doccmdprc
+;
+; DOC wants ATTN and we are already in Debug Mode (so no need to do any register saving)
+dmdocattn:	; We come here from an NMI, but we don't need to return, so just
+		; reset the SP.
+		ld	sp,dbmstk
+		ld	a,DMOKCMDRD	; sending this to DOC will cause it to turn off ATTN
+		jr	doccmdrd
 
 		.eject
 		.org	boot+300h
@@ -173,8 +197,6 @@ doccmdrd:	out	(RPMCTRL),a	; on ATTN this returns quickly. BRKHIT takes longer du
 ;; sends a status to the DOC and HALTs
 ;;
 ;;
-onrst08:	ld	b,08h
-		jr	onrst
 onrst10:	ld	b,10h
 		jr	onrst
 onrst18:	ld	b,18h
@@ -187,14 +209,26 @@ onrst30:	ld	b,30h
 		jr	onrst
 onrst38:	ld	b,38h
 		jr	onrst
-		.org	onrst08+20h
-onrst:		; Send an error status to DOC
-		ld	a,DCRSTEXEC
+		.align	4	; to aid debugging
+onrst:		; Send an error status to DOC and HALT (lights the HALT LED)
+		ld	a,DMRSTEXEC
 		out	(RPMCTRL),a
-		halt
+		halt		; Doc can wake us up if it wants
 
 		.eject
 		.org	boot+380h
+;; =============
+;; Send DOC our status and then go IDLE
+;;
+;; @Params
+;;	A: Status to send
+;; @Return
+;;	NO - This goes IDLE waiting for wake-up by DOC
+;;
+docstat:	out	(RPMCTRL),a
+		jr	docwait_
+
+		.align	4
 ;; =============
 ;; Process a DOC command
 ;;
@@ -206,7 +240,6 @@ onrst:		; Send an error status to DOC
 doccmdprc:	; ZZZ for now, just write it back to the RPM Data port for test and stop
 		out	(RPMDATA),a
 docwait_:	jr	docwait_	; Wait for the DOC to ask us to do something
-
 
 
 		.eject
@@ -244,7 +277,6 @@ init2:		; fill ram with 0
 		ld	(hl),0
 		ld	de,DB_RAMBASE+1
 		ld	bc,(DB_RAMPC*ONE_PAGE)-1
-		dec	bc
 		ldir
 		; put the JP instruction in ram for the Target hop, skip, jump
 		ld	a,JP_OP
@@ -258,9 +290,9 @@ init2:		; fill ram with 0
 		ld	a,ZIDINIT_M|SYNCONLY_M	; also set breaks to SYNC
 		out	(BRDCTRL),a
 		; now let DOC know that we've initialized
-		; and process its first request
-		ld	a,DCINIT
-		jp	doccmdrd	
+		;  and go idle...
+		ld	a,DMINIT
+		jp	docstat	
 
 		.eject
 		.org	boot+500h
@@ -274,7 +306,7 @@ init2:		; fill ram with 0
 ;; this is referred to as the, 'HOP, SKIP, and JUMP' to the Target.
 ;; 
 ;; @entry
-;;	NONE
+;;	Target registers and requested PC in our Target Storage Locations
 ;;**************
 tgtgo:		; restore the target registers...
 		; Note: IV, IX, IY, and alternates are always valid
@@ -288,24 +320,135 @@ tgtgo:		; restore the target registers...
 		;
 		; don't do AF and SP until we are ready to go
 		;
-		ld	a,DCTGTGO	; Tell DOC we are going to Target Mode
+		ld	a,DMTGTGO	; Tell DOC we are going to Target Mode
 		out	(RPMCTRL),a	;  so we don't want it to bother us for a while!
 		ld	sp,(regpc)	; Get Target PC and put
 		ld	(tgtjump),sp	; into ram at the JP instruction
 		; do interrupt enable/disable
-		ld	a,(tflag)
-		bit	tf_ie,a		; ints enabled?
+		ld	a,(regied)
+		bit	ie_b,a		; ints enabled?
 		jr	z,tgtgo1
 		ei
 tgtgo1:		ld	sp,rstgtgo_	; get ready to get AF
-		out	(TGTGO),a	; And the countdown begins (no turning back now)...
-		pop	af		; get AF	[mem_op: 15,14,13]
-		ld	sp,(regsp)	; get SP	[mem_op: 12,11,10,9]
-		nop			;		[mem_op: 8]
-		nop			;		[mem_op: 7]
-		nop			;		[mem_op: 6]
-		jp	tgtskip		; HOP,skip,jump to target [mem_op: 5,4,3]
-					; (SKIP,JUMP are [mem_op: 2,1,0])
+		out	(TGTGO),a	; And the countdown begins: 1
+		pop	af		; get AF	[mem_op: 2,3,4]
+		ld	sp,(regsp)	; get SP	[mem_op: 5,6,7,8]
+		jp	tgtskip		; HOP,skip,jump to target [mem_op: 9,10,11]
+					; (SKIP,JUMP are [mem_op: 12,13,14 - 15 in TGT])
+
+		.align	4		; to ease debugging
+;;**************
+;; @brief `twrbyte` Write the byte in E to the target address in HL.
+;; @ingroup dbmon
+;;
+;; @entry
+;;	E: Byte to write
+;;	HL: Address
+;; @uses
+;;	A
+;;**************
+twrbyte:	ld	a,(zflag)
+		bit	zf_usezid,a	; Use the ZID's memory?
+		jr	nz,wrbytez	;  yes->
+		; set Single-Op
+		in	a,(BRDCTRL)
+		or	SOP_M
+		out	(BRDCTRL),a
+		out	(TGTGO),a	; Countdown begins:
+		nop			; IF 1
+		nop			; IF 2
+		nop			; IF 3
+wrbytez:	ld	(hl),e		; IF 4 - write the byte
+		; clear Single-Op
+		and	~SOP_M
+		out	(BRDCTRL),a
+		ret
+
+
+		.align	4		; to ease debugging
+;;**************
+;; @brief `trdbyte` Read a byte from the target address in HL into E.
+;; @ingroup dbmon
+;;
+;; @entry
+;;	HL: Address
+;; @uses
+;;	A
+;; @return
+;;	E: Byte read
+;;**************
+trdbyte:	ld	a,(zflag)
+		bit	zf_usezid,a	; Use the ZID's memory?
+		jr	nz,rdbytez	;  yes->
+		; set Single-Op
+		in	a,(BRDCTRL)
+		or	SOP_M
+		out	(BRDCTRL),a
+		out	(TGTGO),a	; Countdown begins:
+		nop			; IF 1
+		nop			; IF 2
+		nop			; IF 3
+rdbytez:	ld	e,(hl)		; IF 4 - read the byte
+		; clear Single-Op
+		and	~SOP_M
+		out	(BRDCTRL),a
+		ret
+
+		.align	4		; to ease debugging
+;;**************
+;; @brief `toutbyte` Output the byte in E to the target port in BC.
+;; @ingroup dbmon
+;;
+;; @entry
+;;	E: Byte to output
+;;	BC: Address
+;; @uses
+;;	A
+;;**************
+toutbyte:	ld	a,(zflag)
+		bit	zf_usezid,a	; Use the ZID's port?
+		jr	nz,obytez	;  yes->
+		; set Single-Op
+		in	a,(BRDCTRL)
+		or	SOP_M
+		out	(BRDCTRL),a
+		out	(TGTGO),a	; Countdown begins:
+		nop			; IF 1
+		nop			; IF 2
+obytez:	out	(c),e			; IF 3&4 - output the byte
+		; clear Single-Op
+		and	~SOP_M
+		out	(BRDCTRL),a
+		ret
+
+
+		.align	4		; to ease debugging
+;;**************
+;; @brief `tinbyte` Input a byte from the target port in BC into E.
+;; @ingroup dbmon
+;;
+;; @entry
+;;	BC: Address
+;; @uses
+;;	A
+;; @return
+;;	E: Byte input
+;;**************
+tinbyte:	ld	a,(zflag)
+		bit	zf_usezid,a	; Use the ZID's memory?
+		jr	nz,inbytez	;  yes->
+		; set Single-Op
+		in	a,(BRDCTRL)
+		or	SOP_M
+		out	(BRDCTRL),a
+		out	(TGTGO),a	; Countdown begins:
+		nop			; IF 1
+		nop			; IF 2
+inbytez:	in	e,(c)		; IF 3&4 - input the byte
+		; clear Single-Op
+		and	~SOP_M
+		out	(BRDCTRL),a
+		ret
 
 
 		.byte	"!dbmon!"

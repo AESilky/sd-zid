@@ -16,7 +16,10 @@ DB_RAMPC	.equ	040h
 
 ; Memory locations
 ;
-	.global	regsav
+;  Registers
+;  (!!! This order is important. It matches the save/restore and transfer to/from DOC order. !!!)
+	.global	regied
+ie_b		.equ	2	;  P/V is IE
 	.global	regi
 	.global	regfx
 	.global	regax
@@ -26,8 +29,6 @@ DB_RAMPC	.equ	040h
 	.global	regdx
 	.global	reglx
 	.global	reghx
-	.global	regix
-	.global	regiy
 	.global regsav_
 	.global	regc
 	.global	regb
@@ -40,6 +41,8 @@ DB_RAMPC	.equ	040h
 	.global	rega
 	.global	regsp
 	.global	regpc
+	.global	regix
+	.global	regiy
 ;
 	.global	regsav2
 	.global	tempaf		; Temporary AF storage (saved by 'push')
@@ -47,8 +50,9 @@ DB_RAMPC	.equ	040h
 	.global	asave
 	.global	z80im		; Target Interrupt Mode
 	.global tflag		; Target state/status bits
-tf_ie		.equ	3	;  bit-3 IE (as defined by the TRIAD ZED)
-
+	.global zflag		; ZID state/status bits
+zf_usezid	.equ	7	;  bit-7: Use ZID memory and ports for 'target' ops
+zf_dbzed	.equ	6	;  bit-6: Using ZED to debug (RST8 rather than SPRST)
 	.global brk_pc_inf	; save initial read from the Break-PC and Information port
 
 	.global doc_cmd		; last command from DOC

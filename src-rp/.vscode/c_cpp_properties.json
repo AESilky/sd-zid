@@ -1,0 +1,16 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [
+        "DEBUG_MODE=1",
+        "SATEST",
+        "SHELL_ENABLE"
+      ],
+    }
+  ],
+  "version": 4
+}

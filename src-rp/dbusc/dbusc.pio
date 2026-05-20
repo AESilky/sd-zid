@@ -1,0 +1,63 @@
+;
+; Copyright 2025-26 AESilky (SilkyDESIGN)
+; SPDX-License-Identifier: MIT
+;
+
+; Control Bus signal monitor.
+;
+.pio_version RP2040
+
+.define MS_PIN      0       ; Only IN Pin
+.define MS_OFF      1       ; Active LOW
+.define MS_ON       0       ; Active LOW
+.define WAIT_OFF    1       ; Active LOW
+.define WAIT_ON     0       ; Active LOW
+
+.define PUBLIC PIO_RDRQ_IRQ 0
+.define PUBLIC PIO_WRRQ_IRQ 1
+.define PUBLIC PIO_WAIT_CLR 4
+
+.program cb_monrd
+; Control Bus - Monitor RD
+;
+; Waits for Module Select and then looks for RD
+;
+PUBLIC start:
+.wrap_target
+    set     pins,WAIT_ON                        ; Activate WAIT- (only goes to Host when MS is active)
+wait_ms:
+    wait    MS_ON pin MS_PIN                    ; Wait for Module Select
+    ; Look for RD
+    jmp     pin,wait_ms                         ; now - wait for RD-
+    ; We have MS and RD, let the CPU know.
+    irq     wait PIO_RDRQ_IRQ                   ; Signal CPU that Host wants to Read
+    wait    MS_OFF pin MS_PIN                   ; Wait for Module Select to clear
+.wrap
+
+.program cb_monwr
+; Control Bus - Monitor WR
+;
+; Waits for Module Select and then looks for WR
+;
+PUBLIC start:
+.wrap_target
+    set     pins,WAIT_ON                        ; Activate WAIT- (only goes to Host when MS is active)
+wait_ms:
+    wait    MS_ON pin MS_PIN                    ; Wait for Module Select
+    ; Look for WR
+    jmp     pin,wait_ms                         ; now - wait for WR-
+    ; We have MS and WR, let the CPU know.
+    irq     wait PIO_WRRQ_IRQ                   ; Signal CPU that Host wants to Write
+    wait    MS_OFF pin MS_PIN                   ; Wait for Module Select to clear
+.wrap
+
+.program cb_waitclr
+; Control Bus - WAIT- Clear
+;
+; Clear the WAIT- line. It was set by the RD or WR programs.
+;
+PUBLIC start:
+.wrap_target
+    irq     wait PIO_WAIT_CLR                   ; Wait on the flag being cleared to clear WAIT
+    set     pins,WAIT_OFF                       ; Clear WAIT-
+.wrap

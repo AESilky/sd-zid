@@ -24,27 +24,27 @@ At system start-up or for a full/board reset, the DC saves register A and the fl
 
 Once it has been determined that it is a Full/Board Reset the DC does a RAM check to verify the RAM is usable. If the check fails, FF is written to the RPM control port and the failing low address is written to the RPM data port. The upper address will be in the range 40-7F. Following those two writes the failing location is continually written and read to aid hardware debugging.
 
-If the RAM checks out, the DC sets up some memory values and establishes a stack to allow for more typical operation. When that is complete, the DC writes 70 to the RPM control port and goes into a HALT state waiting for the RPM to signal with ATTN.
+If the RAM checks out, the DC sets up some memory values and establishes a stack to allow for more typical operation. When that is complete, the DC writes 70 to the RPM control port and goes into a IDLE state waiting for the RPM to signal with ATTN.
 
 The following table describes the operations between the DOC and DC for a Full/Board Reset
 
 |Debug Monitor  |Dir|Meaning or Debug Operation Control     |
 |---------------|---|---------------------------------------|
 |C:80.          | > | DC initialized. In DEBUG Mode.        |
-| HALT          |   |                                       |
+| IDLE          |   |                                       |
 |               |   |prepares CMD:0 data                    |
 |.              |.  |ATTN (will generate NMI)               |
 |C:82.          | > | OK, READING COMMAND (Target Suspended)|
 |D RD 1         | < |CMD: Z80 Reset State                   |
 |C:81.          | > | OP DONE.                              |
-| HALT.         |   |                                       |
+| IDLE.         |   |                                       |
 |               |   |prepares CMD:1 data                    |
 |.              |.  |ATTN                                   |
 |C:82.          | > | OK, READING COMMAND (Target Suspended)|
 |D RD 1         | < |CMD: Breakpoint Count.                 |
 |D WR 1         | > | Number of breakpoints                 |
 |C:81.          | > | OP DONE.                              |
-| HALT.         |   |                                       |
+| IDLE.         |   |                                       |
 
 ### Target Go
 
@@ -69,11 +69,11 @@ The user can instruct the DOC to exit Target Mode (halt target code execution). 
 |.              |.  |ATTN (will generate SPRST)             |
 |               |   | DBM saves target reg.                 |
 |C:82.          | > | OK, READING COMMAND                   |
-|D RD 1         | < |CMD: Load Regs All+.                   |
-|D RD 28        | < |AF,BC,DE,HL,PC,SP,IX,IY,               |
-|               |.  |AF',BC',DE',HL',IE+IM,IV               |
+|D RD 1         | < |CMD: Get Regs All+.                    |
+|D WR 28        | > |AF,BC,DE,HL,PC,SP,IX,IY,               |
+|               |.  |AF',BC',DE',HL',IE/ID,IV               |
 |C;81.          | > | OP DONE                               |
-| HALT.         |.  |                                       |
+| IDLE.         |.  |                                       |
 
 |Debug Monitor  |Dir|Meaning or Debug Operation Control     |
 |---------------|---|---------------------------------------|
@@ -84,7 +84,7 @@ The user can instruct the DOC to exit Target Mode (halt target code execution). 
 |D RD 28        | < |AF,BC,DE,HL,PC,SP,IX,IY,               |
 |               |.  |AF',BC',DE',HL',IE+IM,IV               |
 |C;81.          | > | OP DONE                               |
-| HALT.         |.  |                                       |
+| IDLE.         |.  |                                       |
 
 ### Breakpoint Hit
 
@@ -101,4 +101,4 @@ When a breakpoint is hit the DBM saves the target registers and notifies the DOC
 |D WR 28        | < |AF,BC,DE,HL,PC,SP,IX,IY,               |
 |               |.  |AF',BC',DE',HL',IE+IM,IV               |
 |C;81.          | > | OP DONE                               |
-| HALT.         |.  |                                       |
+| IDLE.         |.  |                                       |
