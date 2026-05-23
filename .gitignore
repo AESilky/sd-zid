@@ -11,6 +11,9 @@
 *.obj
 *.elf
 
+# CMake Build
+**/build
+
 # Linker output
 *.ilk
 *.map

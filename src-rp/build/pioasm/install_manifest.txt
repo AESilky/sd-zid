@@ -1,5 +1,0 @@
-/home/esilky/proj/sd-zid/src-rp/build/pioasm-install/pioasm/pioasm
-/home/esilky/proj/sd-zid/src-rp/build/pioasm-install/pioasm/pioasmTargets.cmake
-/home/esilky/proj/sd-zid/src-rp/build/pioasm-install/pioasm/pioasmTargets-release.cmake
-/home/esilky/proj/sd-zid/src-rp/build/pioasm-install/pioasm/pioasmConfig.cmake
-/home/esilky/proj/sd-zid/src-rp/build/pioasm-install/pioasm/pioasmConfigVersion.cmake

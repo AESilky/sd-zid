@@ -344,7 +344,11 @@ static void _process_line(char* line) {
                 cmds = cmds->next;
                 int cmd_name_len = strlen(cmd->name);
                 if (user_cmd_len <= cmd_name_len && user_cmd_len >= cmd->min_match) {
+#ifdef SHELL_NOCASE
+                    if (0 == strnicmp(cmd->name, user_cmd, user_cmd_len)) {
+#else
                     if (0 == strncmp(cmd->name, user_cmd, user_cmd_len)) {
+#endif
                         // This command matches
                         command_matched = true;
                         _cmd_state = CMD_EXECUTING_COMMAND;

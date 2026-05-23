@@ -102,10 +102,9 @@ static void _do_on_char_rdy_irq() {
  */
 static void _clear_and_enable_input(void* data) {
 #ifdef SHELL_ENABLE
-    // Initialize modules that provide shell commands
     // Initialize the shell
+    // Initialize modules that provide shell commands
     shell_modinit("Debug and SBC", _do_on_char_rdy_irq);
-    // Initialize the Bus Client Commands
     dbusccmds_modinit();
     debugcmds_modinit();
     dccmds_modinit();

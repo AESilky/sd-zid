@@ -244,58 +244,6 @@ docwait_:	jr	docwait_	; Wait for the DOC to ask us to do something
 
 		.eject
 		.org	boot+400h
-;; =============
-;; Debug Monitor (and board) Initialization.
-;;
-;; The board has just done a Full Reset (power on or push button)
-;; Initialize the required functionality of the board and set up the Debug Monitor (DM)
-;;
-;; The PC and AF registers were saved in RAM in case it was a Special Reset (SPRST)
-;; for a Breakpoint Hit or DOC Attention, but it was determined that it was a Power-On
-;; or Push-Button (full) reset, so those values aren't needed.
-;;
-;; To initialize, we do:
-;; 1) RAM Test (verify the operation of the DM section of the RAM)
-;; 2) Fill RAM with 0 (assuming the test passed)
-;; 3) Set the CPLD flag indicating that ZID-DM Init is completed
-;; 4) Notify the DOC that initialization is complete, or that it failed
-;;
-;; This is the only place that we use the IY register
-doinit:		ld	iy,init2	; IY holds the address to return to (as we clobber ram)
-		ld	hl,DB_RAMBASE
-		ld	c,DB_RAMPC
-		jp	ramchk_ns	; test our ram (note that we don't test the whole board)
-		jr	z,init2		;  passed...
-		; !!! MEMORY ERROR !!!
-		; HL hold address of error, A expected, E read
-		; continuously write and read it (read to D to not mess up E)
-imemerr:	ld	(hl),a
-		ld	d,(hl)
-		jr	imemerr
-init2:		; fill ram with 0
-		ld	hl,DB_RAMBASE
-		ld	(hl),0
-		ld	de,DB_RAMBASE+1
-		ld	bc,(DB_RAMPC*ONE_PAGE)-1
-		ldir
-		; put the JP instruction in ram for the Target hop, skip, jump
-		ld	a,JP_OP
-		ld	(tgtskip),a
-		;
-		; that's it (the CPLD takes care of most of the init)
-		; Setting the ZID initialized bit in the CPLD also allows
-		; NMI via the DOC ATTN.
-		;
-		; No need to read and modify, as the SBC can't have run yet.
-		ld	a,ZIDINIT_M|SYNCONLY_M	; also set breaks to SYNC
-		out	(BRDCTRL),a
-		; now let DOC know that we've initialized
-		;  and go idle...
-		ld	a,DMINIT
-		jp	docstat	
-
-		.eject
-		.org	boot+500h
 ;;**************
 ;; @brief `tgtgo` Run the target code.
 ;; @ingroup dbmon
@@ -451,6 +399,93 @@ inbytez:	in	e,(c)		; IF 3&4 - input the byte
 		ret
 
 
+		.eject
+		.align	4
+;; =============
+;; Debug Monitor (and board) Initialization.
+;;
+;; The board has just done a Full Reset (power on or push button)
+;; Initialize the required functionality of the board and set up the Debug Monitor (DM)
+;;
+;; The PC and AF registers were saved in RAM in case it was a Special Reset (SPRST)
+;; for a Breakpoint Hit or DOC Attention, but it was determined that it was a Power-On
+;; or Push-Button (full) reset, so those values aren't needed.
+;;
+;; To initialize, we do:
+;; 1) RAM Test (verify the operation of the DM section of the RAM)
+;; 2) Fill RAM with 0 (assuming the test passed)
+;; 3) Determine the number of Breakpoint Address Units
+;; 4) Initialize memory structures for the breakpoint units (both 1 and 2N)
+;; 5) Set the CPLD flag indicating that ZID-DM Init is completed
+;; 6) Notify the DOC that initialization is complete, or that it failed
+;;
+;; This is the only place that we use the IY register. Once initialization is complete
+;; only the primary base registers are used.
+;;
+doinit:		ld	iy,init2	; IY holds the address to return to (as we clobber ram)
+		ld	hl,DB_RAMBASE
+		ld	c,DB_RAMPC
+		jp	ramchk_ns	; test our ram (note that we don't test the whole board)
+		jr	z,init2		;  passed...
+		; !!! MEMORY ERROR !!!
+		; HL hold address of error, A expected, E read
+		; continuously write and read it (read to D to not mess up E)
+imemerr:	ld	(hl),a
+		ld	d,(hl)
+		jr	imemerr
+init2:		; fill ram with 0
+		ld	hl,DB_RAMBASE
+		ld	(hl),0
+		ld	de,DB_RAMBASE+1
+		ld	bc,(DB_RAMPC*ONE_PAGE)-1
+		ldir
+		; put the JP instruction in ram for the Target hop, skip, jump
+		ld	a,JP_OP
+		ld	(tgtskip),a
+		;
+		; Determine how many Breakpoint Address Units (BAU) there are.
+		; 1 & 2 are on the main board, so they should be there, but
+		; the check has to shift through them, so we check them as well.
+		;
+		xor	a
+		ld	e,a		; keep the count in E
+		; to test, we shift an enable bit through the address enable
+		; registers and check the feedback at every other enable
+		; (the high enable)
+		;
+		; first, clear the enables
+		out	(BRKENCLR),a	; (the data doesn't matter)
+		dec	a		; put a 1 in bit 7 for the enable
+		out	(BRKENCLK),a	; shift an enable into Break-1 addr low enable
+		xor	a		;  only a single enable bit through the registers
+		out	(BRKENCLK),a	;  high enable
+		ld	b,14		; this is the most we support
+initbrkt:	in	a,(PCADDR_RD)	; this includes the break hardware detect bit
+		and	SR_ISBRK_M
+		jr	z,initbrkc	; if the read bit is zero the hardware isn't there
+		; hardware is there
+		inc	e		; bump the count
+		xor	a		;  make sure to shift in a 0 to the lower level
+		out	(BRKENCLK),a	;  next - low enable
+		out	(BRKENCLK),a	;  next - high enable
+		djnz	initbrkt
+initbrkc:	; we have the hardware breakpoint count in E
+		ld	a,e
+		ld	(baucnt),a
+		;
+		; that's it (the CPLD takes care of most of the init)
+		; Setting the ZID initialized bit in the CPLD also allows
+		; NMI via the DOC ATTN.
+		;
+		; No need to read and modify, as the SBC can't have run yet.
+		ld	a,ZIDINIT_M|SYNCONLY_M	; also set breaks to SYNC
+		out	(BRDCTRL),a
+		; now let DOC know that we've initialized
+		;  and go idle...
+		ld	a,DMINIT
+		jp	docstat	
+
+		.align	2
 		.byte	"!dbmon!"
 		.end
 

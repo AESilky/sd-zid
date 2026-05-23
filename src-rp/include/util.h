@@ -246,6 +246,9 @@ extern "C" {
      */
     extern void strdatetime(char* buf, uint bufsize, datetime_t* dt, strdatetime_ctrl_t ctrl);
 
+    /* Case insensitive compare N characters of S1 and S2.  */
+    extern int strnicmp(const char* s1, const char* s2, size_t n);
+
     /**
      * @brief Replace newline characters with '\000'.
      * @ingroup util

@@ -6,9 +6,11 @@
         "${workspaceFolder}/**"
       ],
       "defines": [
+        "HAS_RP2040_RTC",
         "DEBUG_MODE=1",
         "SATEST",
-        "SHELL_ENABLE"
+        "SHELL_ENABLE",
+        "SHELL_NOCASE"
       ],
     }
   ],

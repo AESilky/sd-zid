@@ -7,16 +7,19 @@
 ; SPDX-License-Identifier: MIT License
 ;
 ; ==============
-; Debug Monitor (DC) to Debug Operation Controller (DOC) State/Status indicators
+; Debug Monitor (DM) to Debug Operation Controller (DOC) State/Status indicators
+;
+; These are sent from the DM to the DOC when the DM initializes, a breakpoint is
+; hit, and in response to commands sent from the DOC.
 ;
 DMINIT		.equ	080h		; DM has finished initialization
-DMOPDONE	.equ	081h		; DM requested operation complete
+DMOPDONE	.equ	081h		; DOC requested operation complete
 DMOKCMDRD	.equ	082h		; OK, reading command
 DMBRKHIT	.equ	084h		; Breakpoint hit
 DMTGTGO		.equ	088h		; DM transitioning to Target Mode
 					; (so don't interrupt for a bit)
 
-DMRSTEXEC	.equ	0C1h		; DM executed a RST instruction (not expected)
+DMRSTEXEC	.equ	0C1h		; DM executed a RST instruction (ERROR)
 
 ; ==============
 ; DOC Commands for the DM.
@@ -37,10 +40,18 @@ DMRSTEXEC	.equ	0C1h		; DM executed a RST instruction (not expected)
 ;
 DCNOP		.equ	000h
 
+; --------------
+; Is the target the (same board) SBC?
+;
+; DC Sends to the data register:
+; 1 BYTE: 0=FALSE, Non-Zero=TRUE
+;
+DCISSBC		.equ	008h
+
 ;; ==============
 ;;
-;; 0x Commands (other than NOP) are primarily used when going TO/FROM
-;; Target Mode.
+;; 0x Commands (other than NOP and SBC Mode) are primarily used when going
+;; TO/FROM Target Mode.
 ;;
 ;; These are used to get and set the complete Z80 state en-mass.
 ;;

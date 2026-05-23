@@ -188,8 +188,9 @@ set(PICO_LIBS
 pico_set_program_name(docsbc ${NAME_BASE})
 pico_set_program_version(docsbc ${VERSION})
 target_compile_definitions(docsbc PUBLIC
-	DEBUG_MODE=0
+  DEBUG_MODE=0
   SHELL_ENABLE
+  SHELL_NOCASE
 )
 # Add the required include file paths for this module
 target_include_directories(docsbc PUBLIC
@@ -213,8 +214,9 @@ pico_add_extra_outputs(docsbc)
 pico_set_program_name(docsbc_db "${NAME_BASE}_DB")
 pico_set_program_version(docsbc_db ${VERSION})
 target_compile_definitions(docsbc_db PUBLIC
-	DEBUG_MODE=1
+  DEBUG_MODE=1
   SHELL_ENABLE
+  SHELL_NOCASE
 )
 # Add the required include file paths for this module
 target_include_directories(docsbc_db PUBLIC
@@ -240,6 +242,7 @@ target_compile_definitions(docsbc_sat PUBLIC
 	DEBUG_MODE=1
     SATEST
     SHELL_ENABLE
+    SHELL_NOCASE
 )
 # Add the required include file paths for this module
 target_include_directories(docsbc_sat PUBLIC
