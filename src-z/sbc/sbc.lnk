@@ -1,0 +1,18 @@
+;
+; ulink control file for 'SBC Test #1' ROM
+;
+; Copyright 2025-26 AESilky
+; SPDX-License-Identifier: MIT License
+;
+;-0d    ; Debugging output messages
+-v      ; Verbose progress
+-bFF    ; Binary image, fill with FF
+;-a -s  ; a.out format without symbols
+-o=sbc1.bin
+-m=sbc1.map
+-lBOOT=0000         ; Code area (region 0 & 1 of the rom)
+-lBSS=8000          ; Ram area (region 0 & 1 of the ram (8 & 9 abs))
+; Content
+sbc1.obj            ; SBC Test #1
+../diag/diag.obj    ; Boot diagnostics
+storage.obj

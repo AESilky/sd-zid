@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${env:PICO_SDK_PATH}/src/rp2040/**/include/",
+        "${env:PICO_SDK_PATH}/src/common/pico_base_headers/include/",
+        "${env:PICO_SDK_PATH}/src/common/pico_stdlib_headers/include/",
+        "${env:PICO_SDK_PATH}/src/rp2040/hardware_structs/include",
+        "${env:PICO_SDK_PATH}/src/common/pico_time/include/",
+        "${env:PICO_SDK_PATH}/src/common/pico_sync/include",
+        "${env:PICO_SDK_PATH}/src/rp2_common/**/include/",
+        "${env:PICO_SDK_PATH}/build/generated/pico_base/",
+        "${env:PICO_SDK_PATH}/src/rp2350/hardware_structs/include",
+        "${env:PICO_SDK_PATH}/src/rp2350/hardware_regs/include/"
+      ],
+      "defines": [
+        "HAS_RP2040_RTC",
+        "DEBUG_MODE=1",
+        "SATEST",
+        "SHELL_ENABLE",
+        "SHELL_NOCASE"
+      ],
+    }
+  ],
+  "version": 4
+}

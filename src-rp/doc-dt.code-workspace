@@ -1,0 +1,54 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"build/**/*": true
+		},
+		"cortex-debug.variableUseNaturalFormat": true,
+		"cSpell.words": [
+            "addrpin",
+            "cstm",
+            "ctrlreg",
+            "datard",
+            "dbusc",
+            "dbusccmds",
+            "dccmds",
+            "diagout",
+            "docsbc",
+            "errledfn",
+            "hwrt",
+            "irqn",
+            "memmap",
+            "modsel",
+            "monrd",
+            "monwr",
+            "msel",
+            "multicore",
+            "picohlp",
+            "picoutil",
+            "pindirs",
+            "piosmcfg",
+            "pocfg",
+            "rdpin",
+            "smpocfg",
+            "statled",
+            "stdlib",
+            "waitclr",
+            "waitpin",
+            "wrpin",
+            "wrreq"
+        ],
+        "files.associations": {
+            "dbusc.pio.h": "c",
+            "dbusc.h": "c",
+            "system_defs.h": "c",
+            "stdlib.h": "c",
+            "time.h": "c",
+            "timer.h": "c"
+        }
+	}
+}
