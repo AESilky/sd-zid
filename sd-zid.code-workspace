@@ -121,6 +121,7 @@
             "USEDATA",
             "zbusack",
             "zbusreq",
+            "ZFOP",
             "ZIDINIT",
             "zint",
             "znmi",
