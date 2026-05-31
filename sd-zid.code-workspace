@@ -56,13 +56,6 @@
             "busack",
             "busreq",
             "ckmux",
-<<<<<<< HEAD
-            "CMNFILES",
-            "CMNPATH",
-            "COMPBINS",
-            "COMPROMS",
-=======
->>>>>>> main
             "CPLD",
             "CPUL",
             "CSHFT",
@@ -145,16 +138,13 @@
             "fulladdr",
             "GCLK",
             "GCLR",
-<<<<<<< HEAD
             "hdlr",
             "imager",
             "imemerr",
             "IMGR",
             "inbytez",
-=======
             "h'FFFF",
             "idbus",
->>>>>>> main
             "INTACK",
             "Ints",
             "ioaddr",
@@ -274,6 +264,7 @@
             "zbusack",
             "zbusreq",
             "zflag",
+            "ZFOP",
             "ZIDINIT",
             "ZIDINITD",
             "zidrom",

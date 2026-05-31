@@ -15,8 +15,8 @@ FIT1502		:= fit1502.exe
 FIT1504		:= fit1504.exe
 FIT1508		:= fit1508.exe
 
-CUPLOPTS15		:= -kxm4nlxj    # ATF15xx: Don't convert XOR
-CUPLOPTS		:= -m3nlxj
+CUPLOPTS15		:= -kxm4nlxj    # ATF15xx: Don't convert XOR, m4 Espresso minimization (Good for fitter designs)
+CUPLOPTS		:= -kbm2nlxj	# 22Vxx, 16Vxx: Quine-McCluskey minimization
 
 FITOPTS_CMN		:= -CPUL -JTAG ON
 FITOPTS_1502	:= -tech ATF1502AS
@@ -31,12 +31,13 @@ FITOPTS_TQFP100	:= -device TQFP100
 
 all:	$(JEDECS)
 
-$(PLD_MAIN).jed: $(PLD_MAIN).tt2
+$(PLD_MAIN).jed: $(PLD_MAIN).tt2 makefile
 	$(FIT1508) -i $< $(FITOPTS_1508) $(FITOPTS_TQFP100) $(FITOPTS_CMN)
 
-$(PLD_BRKADDR).jed: $(PLD_BRKADDR).tt2
+$(PLD_BRKADDR).jed: $(PLD_BRKADDR).tt2 makefile
 	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
 
+# The BRK2X is no longer used on the board
 $(PLD_BRK2X).jed: $(PLD_BRK2X).pld
 	$(CUPL) $(CUPLOPTS) $<
 
