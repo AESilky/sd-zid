@@ -16,34 +16,34 @@
 
 #include <stdlib.h>
 
-static int _dbcmd(int argc, char** argv, const char* unparsed);
+const cmd_handler_entry_t cmds_altscr_entry;
 
-static const cmd_handler_entry_t cmd_debug_entry = {
-    _dbcmd,
-    2,
-    ".debug",
-    "[ON|OFF]",
-    "Set/reset debug flag.",
+static int _exec_s2test(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    if (argc > 2) {
+        // We only take 0 or 1 arguments.
+        cmd_help_display(&cmds_altscr_entry, HELP_DISP_USAGE);
+        return (-1);
+    }
+    bool v;
+    if (argc > 1) {
+        v = bool_from_str(argv[1]);
+        const char* vstr = (v ? "=>2\e[?1049h" : "=>1\e[?1049l");
+        shell_printf("Screen: %s\n", vstr);
+    }
+
+    return (retval);
+}
+
+const cmd_handler_entry_t cmds_altscr_entry = {
+    _exec_s2test,
+    6,
+    "altscr",
+    "[0|1]",
+    "TEST VT/XTERM Alt-Screen: 1 switch to #2, 0 switch to #1"
 };
 
 
-static int _dbcmd(int argc, char** argv, const char* unparsed) {
-    if (argc > 2) {
-        // We only take a single argument.
-        cmd_help_display(&cmd_debug_entry, HELP_DISP_USAGE);
-        return (-1);
-    }
-    else if (argc > 1) {
-        // Argument is bool (ON/TRUE/YES/1 | <anything-else>) to set flag
-        bool b = bool_from_str(argv[1]);
-        debug_mode_enable(b);
-    }
-    shell_printf("Debug: %s\n", (debug_mode_enabled() ? "ON" : "OFF"));
-
-    return (0);
-}
-
-
 void dccmds_modinit() {
-    //cmd_register(&cmd_dc_entry);
+    cmd_register(&cmds_altscr_entry);
 }

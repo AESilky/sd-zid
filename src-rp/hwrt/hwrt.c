@@ -62,8 +62,10 @@ static void _handle_apps_started(cmt_msg_t* msg) {
     // Switch debug to the USB
     debug_init(DIM_STDIO_TO_USB);
     // Initialize the Bus Controller
-    dbusc_modinit();
-
+    int iv = dbusc_modinit();
+    if (iv) {
+        board_panic("dbusc failed modinit");
+    }
 }
 
 /**

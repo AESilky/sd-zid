@@ -42,6 +42,8 @@ typedef struct {
  */
 typedef pio_sm_config(*piosmcfg_fn)(uint offset);
 
+#define NO_JMP_PIN (-1)
+#define NO_MOV_STATUS (-1)
 /**
  * @brief Completely configures a PIO State Machine from parameters.
  * @ingroup pio_sm
@@ -74,10 +76,11 @@ typedef pio_sm_config(*piosmcfg_fn)(uint offset);
  * @param pin_s_cnt The number of pins for SET
  * @param pin_ss The first pin for SIDE-SET
  * @param pin_ss_cnt The number of pins for SIDE-SET
- * @param pin_jmp The pin to use for JMP. Use -1 to indicate no JMP pin.
+ * @param pin_jmp The pin to use for JMP. Use NO_JMP_PIN (-1) to indicate no JMP pin.
+ * @param mov_status The status to be used for the `MOV d,STATUS` operation (STATUS_TX_LESSTHAN or STATUS_RX_LESSTHAN). Use NO_MOV_STATUS (-1) for no MOV STATUS operation.
  * @return pio_sm_pocfg Structure containing the 'pio', 'sm', 'offset', and 'sm cfg'. The offset is negative if there was an error.
  */
-extern pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp);
+extern pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp, int mov_status);
 
 /**
  * @brief Get the PIO State Machine PC value.

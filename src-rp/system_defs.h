@@ -79,28 +79,34 @@ extern "C" {
 #define DATA5                   GP7
 #define DATA6                   GP8
 #define DATA7                   GP9
+#define DATA_BUS_WIDTH          8
 #define DATA_BUS_MASK           0x000003FC      // Mask to set all 8 bits at once: 0000 0000 0000 0000 0000 0011 1111 1100
 #define DATA_BUS_SHIFT          2               // Shift to move an 8-bit value up/down to/from the DATA Bus
 #endif
 
 // PIO Blocks
 //
-#ifndef PIO_DEFS            // Defaults for the PIO use
+#ifndef PIO_DEFS            // Defaults for PIO use
 #define PIO_DEFS
-#define PIO_BUS_CTRL            pio1            // PIO Block 0 is used to watch and control system bus
-#define PIO_BC_RD_SM            0               // State Machine 0 is used to watch RD-
-#define PIO_BC_WR_SM            1               // State Machine 1 is used to watch WR-
-#define PIO_BC_WAIT_SM          2               // State Machine 2 is used to clear the WAIT signal-
-#define PIO_RD_REQ_IRQ          PIO1_IRQ_0      // PIO IRQ used to signal bus RD Request
-#define PIO_WR_REQ_IRQ          PIO1_IRQ_1      // PIO IRQ used to signal bus WR Request
-#define PIO_IRQ_RDRQ_IDX        0               // PIO IRQ index (0/1) for the RD Request
-#define PIO_IRQ_RDRQ_BIT        pis_interrupt0  // PIO Bit used to signal RD Request to CPU
-#define PIO_IRQ_WRRQ_IDX        1               // PIO IRQ index (0/1) for the WR Request
-#define PIO_IRQ_WRRQ_BIT        pis_interrupt1  // PIO Bit used to signal WR Request to CPU
+#define PIOBLK_DBUS_AUTO        pio1            // PIO Block 1 is used for automatic databus control
+#define PIO_BCA_MSEL_SM         0               // State Machine 0 is used to watch MOD_SEL-
+#define PIO_BCA_DATA_SM         1               // State Machine 1 is used for DATA operations
+#define PIO_BCA_RD_SM           2               // State Machine 2 is used to transfer data out
+#define PIO_BCA_RD_DREQ         DREQ_PIO1_TX2   // TXFIFO for reads from host
+#define PIO_BCA_WR_SM           3               // State Machine 3 is used to transfer data in
+#define PIO_BCA_WR_DREQ         DREQ_PIO1_RX3   // RXFIFO for writes from host
+#define SYSIRQ_PIO_ACTRL        PIO1_IRQ_0      // PIO IRQ 0 used to signal Control Operation Request
+#define SYSIRQ_PIO_ADATA_DR     PIO1_IRQ_1      // PIO IRQ 1 used to signal DATA-RD Data Needed
+#define PIOBLK_DBUS_MAN         pio0            // PIO Block 0 is used for manual databus control
+#define PIO_BCM_RD_SM           1               // State Machine 1 is used to manually transfer data out
+#define PIO_BCM_WR_SM           2               // State Machine 2 is used to manually transfer data in
+#define PIO_BCM_CTRLS_SM        3               // State Machine 3 (on PIO Block 0) used to read ADDR,RD-,WR-,MSEL- signals
 #endif
 
 // IRQ Inputs
 //
+// The data bus RD/WR uses PIO2 and DMA interrupts to process transfers
+#define SYSIRQ_DMA_TF_PIO       DMA_IRQ_0       // System DMA IRQ-0 raised when DMA finishes PIO data transfer
 
 
 // PWM - Used for a recurring interrupt for scheduled messages, sleep, housekeeping

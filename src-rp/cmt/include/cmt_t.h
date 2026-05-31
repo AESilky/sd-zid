@@ -40,6 +40,8 @@ typedef enum MSG_ID_ {
     MSG_SW_ACTION,
     MSG_SW_DEBOUNCE,
     MSG_SW_LONGPRESS_DELAY,
+    MSG_DBUS_XFER_DONE,
+    MSG_DBUS_CTRL_ACCESS,
     //
     // Hardware-Runtime (HWRT) messages 0x60 - 0xBF
     MSG_HWRT_NOOP = 0x60,

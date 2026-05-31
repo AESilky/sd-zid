@@ -10,6 +10,7 @@
 
 #include "board.h"
 #include "cmt.h"
+#include "dc.h"
 
 // ====================================================================
 // Data Section
@@ -41,5 +42,8 @@ void appops_modinit() {
         board_panic("!!! appops_modinit: Called more than once !!!");
     }
     _modinit_called = true;
+
+    // Initialize other Application Operation modules.
+    dc_modinit();
 }
 

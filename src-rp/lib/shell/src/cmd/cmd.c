@@ -68,7 +68,7 @@ static const cmd_handler_entry_t _cmd_dec_entry = {
     _cmd_dec,
     3,
     "decimal",
-    "hexval1 [hexval2] [hexvaln...]]",
+    "hexval1 [hexval2 [hexvaln...]]",
     "Convert hex value(s) to decimal.\n",
 };
 static const cmd_handler_entry_t _cmd_help_entry = {

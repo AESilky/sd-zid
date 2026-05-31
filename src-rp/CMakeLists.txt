@@ -143,7 +143,7 @@ set(APP_INCLUDES
   ${CMAKE_CURRENT_LIST_DIR}/cmt/include
   $(CMAKE_CURRENT_LIST_DIR)/dbusc/include
   ${CMAKE_CURRENT_LIST_DIR}/debugging/include
-  ${CMAKE_CURRENT_LIST_DIR}/doc/include
+  ${CMAKE_CURRENT_LIST_DIR}/dc/include
   ${CMAKE_CURRENT_LIST_DIR}/hwrt/include
   ${CMAKE_CURRENT_LIST_DIR}/picohlp/include
 )
@@ -158,8 +158,8 @@ set(CORE_LIBS
   dbusc
   dbusc_cmd
   debug_cmd
-  doc
-  doc_cmd
+  dc
+  dc_cmd
   pico_cmd
 )
 

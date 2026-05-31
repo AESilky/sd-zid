@@ -7,7 +7,7 @@
 */
 #include "pio_sm.h"
 
-pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp) {
+pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp, int mov_status) {
     pio_sm_set_enabled(pio, sm, false);
 
     pio_sm_pocfg smpocfg;
@@ -19,6 +19,8 @@ pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, p
     if (smpocfg.offset < 0) {
         return smpocfg;      // the program could not be added
     }
+
+    // configure the PINS
 
     for (int i = 0; i < pin_o_cnt; i++) {
         uint pin = pin_o + i;
@@ -44,6 +46,8 @@ pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, p
         pio_gpio_init(pio, pin_jmp);
         gpio_set_dir(pin_jmp, GPIO_IN);
     }
+
+    // configure the PIO/SM
 
     smpocfg.sm_cfg = smdefcfgfn(smpocfg.offset);
 
@@ -72,6 +76,9 @@ pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, p
     }
     if (in_bits > 0) {
         sm_config_set_in_shift(&smpocfg.sm_cfg, in_right, in_auto, in_bits);
+    }
+    if (mov_status != NO_MOV_STATUS) {
+        sm_config_set_mov_status(&smpocfg.sm_cfg, mov_status, 1);
     }
     sm_config_set_fifo_join(&smpocfg.sm_cfg, join_type);
     sm_config_set_clkdiv(&smpocfg.sm_cfg, clkdiv);

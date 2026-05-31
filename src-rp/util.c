@@ -295,7 +295,7 @@ int strnicmp(const char* s1, const char* s2, size_t n) {
         s2++;
         n--;
     }
-    return tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
+    return (n == 0 ? 0 : tolower((unsigned char)*s1) - tolower((unsigned char)*s2));
 }
 
 char* strnltonull(char* str){
