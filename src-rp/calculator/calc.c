@@ -1,26 +1,21 @@
 /**
- * Implementation of the Debug Operation Controller.
+ * Number operations support.
  *
- * Copyright 2023-26 AESilky
+ * Copyright 2026 AESilky
  * SPDX-License-Identifier: MIT License
  *
 */
-#include "dc.h" // Declarations for the Debug Operations Controller methods
+#include "calc.h"
 
 #include "board.h"
-#include "calc.h"
-#include "cmt.h"
-#include "dbusc.h"
-#include "debug_support.h"
-#include "msgpost.h"
-#include "shell.h"
-#include "util.h"
-#include "nbase.h"
-#include "num.h"
+#include "cmd/cmds.h"
+
+#include <stdio.h>
 
 // ====================================================================
 // Local Constants
 // ====================================================================
+
 
 
 // ====================================================================
@@ -46,44 +41,13 @@ static volatile bool _modinit_called;
 // Message Handler Methods
 // ====================================================================
 
-static void _handle_dbus_ctrl_op(cmt_msg_t* msg) {
-    uint8_t ot = highByte(msg->data.value16u);
-    bool wr = (ot & CTRL_WR_BIT_M);
-    char* op = (wr ? "WR:" : "RD\n");
-    shell_printf("CTRL %s", op);
-    if (wr) {
-        uint8_t v = lowByte(msg->data.value16u);
-        shell_printf("%02X\n", v);
-        // De-assert ATTN
-        attn_set_on(false);
-    }
-}
-
-static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
-    uint8_t ot = msg->data.value8u;
-    bool wr = (ot & DBXFER_WR);
-    char* op = (wr ? "WR:" : "RD\n");
-    shell_printf("Data %s", op);
-    if (wr) {
-        uint8_t v = dbus_last_wr_val();
-        shell_printf("%02X\n", v);
-    }
-}
-
 
 
 // ====================================================================
 // IRQ Methods
 // ====================================================================
 
-void _ctrl_reg_hdlr(void) {
-    //
-    // Initialize and post the message
-    //
-    cmt_msg_t msg;
-    cmt_msg_init(&msg, MSG_DBUS_CTRL_ACCESS);
-    postAPPMsg(&msg);
-}
+
 
 // ====================================================================
 // Local/Private Methods
@@ -95,32 +59,27 @@ void _ctrl_reg_hdlr(void) {
 // Public Methods
 // ====================================================================
 
+const uint32_t calc_result() {
+    return *_calc_result;
+}
+
+void calc_x_set(uint32_t x) {
+    // Call into the CMD implementation.
+    calc_setX(x);
+}
 
 
 // ====================================================================
 // Initialization/Start-Up Methods
 // ====================================================================
 
-int dc_modinit() {
+int calc_modinit() {
     if (_modinit_called) {
-        board_panic("!!! dc_modinit: Called more than once !!!");
+        board_panic("!!! calc_modinit: Called more than once !!!");
     }
     _modinit_called = true;
 
-    int retval = calc_modinit();
-    if (retval != 0) goto _fail;
-    retval = nbase_modinit();
-    if (retval != 0) goto _fail;
-    retval = num_modinit();
-    if (retval != 0) goto _fail;
-
-    cmt_msg_hdlr_add(MSG_DBUS_CTRL_ACCESS, _handle_dbus_ctrl_op);
-    cmt_msg_hdlr_add(MSG_DBUS_XFER_DONE, _handle_dbus_xfer_done);
+    int retval = 0;
 
     return retval;
-
-_fail:
-    board_panic("!!! dc_modinit, failed to init submodule !!!");
-    return -1; // Won't reach this
 }
-

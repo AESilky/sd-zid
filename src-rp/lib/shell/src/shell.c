@@ -21,6 +21,7 @@
 
 static bool _modinit_called;
 static bool _started;
+static const char* _shell_banner;
 static const char* _shell_title;
 
 /** Function to call when the stdio character ready interrupt handler indicates there is a character ready */
@@ -154,7 +155,7 @@ static void _host_welcome() {
     term_set_title(_shell_title);
     term_text_normal();
     // Tell the Host hello
-    shell_puts(_shell_title);
+    shell_puts(_shell_banner);
     _host_welcomed = true;
     _started = true;
     shell_build();
@@ -517,13 +518,14 @@ void shell_start() {
     cmd_activate(true);
 }
 
-void shell_modinit(const char* shell_title, shell_notify_fn notify_of_char_rdy) {
+void shell_modinit(const char* shell_title, const char* banner, shell_notify_fn notify_of_char_rdy) {
     if (_modinit_called) {
         panic("!!! shell_modinit already called. !!!");
     }
     _modinit_called = true;
 
     _shell_title = shell_title;
+    _shell_banner = banner;
     _notify_of_char_rdy = (notify_of_char_rdy ? notify_of_char_rdy : shell_do_input_char_ready);
 
     _esc_collecting = ESC_NOT_IN_PROGRESS;

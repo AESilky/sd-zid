@@ -140,16 +140,19 @@ set(PICO_INCLUDES
 
 # Include paths for the entire application
 set(APP_INCLUDES
+  ${CMAKE_CURRENT_LIST_DIR}/calculator/include
   ${CMAKE_CURRENT_LIST_DIR}/cmt/include
   $(CMAKE_CURRENT_LIST_DIR)/dbusc/include
   ${CMAKE_CURRENT_LIST_DIR}/debugging/include
   ${CMAKE_CURRENT_LIST_DIR}/dc/include
   ${CMAKE_CURRENT_LIST_DIR}/hwrt/include
+  ${CMAKE_CURRENT_LIST_DIR}/number/include
   ${CMAKE_CURRENT_LIST_DIR}/picohlp/include
 )
 
 # Our Modules (direct functionality)
 set(CORE_LIBS
+  calculator
   cmt
   debugging
   app
@@ -263,11 +266,13 @@ pico_add_extra_outputs(docsbc_sat)
 #
 # Build the subdirectories
 #
+add_subdirectory(calculator)
 add_subdirectory(cmt)
 add_subdirectory(dbusc)
 add_subdirectory(debugging)
 add_subdirectory(dc)
 add_subdirectory(hwrt)
+add_subdirectory(number)
 add_subdirectory(picohlp)
 #
 add_subdirectory(app)

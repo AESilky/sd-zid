@@ -44,6 +44,6 @@ void appops_modinit() {
     _modinit_called = true;
 
     // Initialize other Application Operation modules.
-    dc_modinit();
+    dc_modinit();   // Debug Controller (OUR MAIN APP MODULE)
 }
 

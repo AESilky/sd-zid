@@ -13,6 +13,9 @@
 #include "shell.h"
 #include "util.h"
 
+#include "calculator/cmd/cmds.h"
+#include "dbusc/cmd/cmds.h"
+#include "number/cmd/cmds.h"
 
 #include <stdlib.h>
 
@@ -46,4 +49,11 @@ const cmd_handler_entry_t cmds_altscr_entry = {
 
 void dccmds_modinit() {
     cmd_register(&cmds_altscr_entry);
+    //
+    // initialize the rest of the commands that we make available.
+    //
+    calccmds_modinit();
+    dbusccmds_modinit();
+    numcmds_modinit();
+
 }

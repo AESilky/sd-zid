@@ -29,7 +29,7 @@ typedef struct cmt_sm_counts_ {
     uint16_t core1;
 } cmt_sm_counts_t;
 
-typedef struct _PROC_STATUS_ACCUM_ {
+typedef struct PROC_STATUS_ACCUM_ {
     volatile uint64_t ts_psa;                       // Timestamp of last PS Accumulator/sec update
     volatile uint64_t t_active;
     volatile uint32_t retrieved;
