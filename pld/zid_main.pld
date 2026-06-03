@@ -12,7 +12,7 @@ Device   f1508isptqfp100; /* ATF1508AS 100TQFP ISP/JTAG */
 /* Configure cupl */
 Property Atmel {security = OFF};
 Property Atmel {power_reset = ON};
-Property Atmel {preassign = KEEP};   /* OFF, TRY, KEEP */
+Property Atmel {preassign = TRY};   /* OFF, TRY, KEEP */
 Property Atmel {TDI_pullup = ON};
 Property Atmel {TMS_pullup = ON};
 
@@ -304,8 +304,9 @@ PIN 50  = !lrst_R;  /* Local reset (registered) */
                     /*  triggered by rst_req_R */
                     /*  or when brd_rst is true for 3+ clocks */
 PIN [28,29,27] = [rra2..0]; /* ROM/RAM Address: Actually RRA16..14 on bus */
-PIN 16  = !ram_sel;
-PIN 32  = rom_sel_; /* Low-TRUE and used internally                     */
+PIN   = ram_sel;
+PIN     = rom_sel;
+/*PIN 32  = rom_sel_; /* Low-TRUE and used internally                     */
 PIN 30  = !zwait;
 PROPERTY Atmel {open_collector = on zwait}; /* ZZZ needed on breadboard */
 PIN 44  = !zbusreq;     /* To the Z80 */
@@ -587,7 +588,7 @@ mem_op_     = !(mreq & (rd # wr));   /* Used to clock Operation Counter  */
 mem_op_.oe  = ON;
 
 /** MMU Register Init/Write */
-mmu_io          = (lcl_io & ioaddr:['b'xxx0100x]);  /* n008: Top 2 bits select register */
+mmu_io          = (lcl_io & ioaddr:['b'xxx0100x]);  /* n008: Top 2 bits of 16-bit address select register */
 /* */
 [mapA3..0].ap   =  [d3..0] & [addr15..14]:0000 & mmu_io & wr;
 [mapA3..0].ar   = ![d3..0] & [addr15..14]:0000 & mmu_io & wr;
@@ -614,37 +615,41 @@ mmu_io          = (lcl_io & ioaddr:['b'xxx0100x]);  /* n008: Top 2 bits select r
              # (( tgtmode_R & [addr15..14]:4000) & [mapB2..0])
              # (( tgtmode_R & [addr15..14]:8000) & [mapC2..0])
              # (( tgtmode_R & [addr15..14]:C000) & [mapD2..0]);
-rom_sel_     = (!mreq)
-             # (!tgtmode_R & ![addr15..14]:0000)
-             # 
-               (
-                (tgtmode_R & sbcmode &
-                  ( ([mapA3] & [addr15..14]:0000)
-                  # ([mapB3] & [addr15..14]:4000)
-                  # ([mapC3] & [addr15..14]:8000)
-                  # ([mapD3] & [addr15..14]:C000)
-                  )
+rom_sel     = mreq
+             & 
+             ( (!tgtmode_R & !addr15 & !addr14)
+              # (tgtmode_R & sbcmode
+                &
+                 (
+                  (![mapA3] & !addr15 & !addr14)
+                 #(![mapB3] & !addr15 &  addr14)
+                 #(![mapC3] &  addr15 & !addr14)
+                 #(![mapD3] &  addr15 &  addr14)
+                 )
                 )
              );
-ram_sel     = (mreq) 
-            &
-            ( (!tgtmode_R & [addr15..14]:4000)
-              #
-              ( tgtmode_R & sbcmode &
-               ( ([mapA3] & [addr15..14]:0000)
-               # ([mapB3] & [addr15..14]:4000)
-               # ([mapC3] & [addr15..14]:8000)
-               # ([mapD3] & [addr15..14]:C000)
+ram_sel     = mreq 
+             &
+            ( (!tgtmode_R & !addr15 & addr14)
+             #
+               (tgtmode_R & sbcmode
+                &
+                 (
+                  ([mapA3] & !addr15 & !addr14)
+                 #([mapB3] & !addr15 &  addr14)
+                 #([mapC3] &  addr15 & !addr14)
+                 #([mapD3] &  addr15 &  addr14)
                )
               )
             );
+
 
 /** MMU Wait-State Generation - 1 WS for ROM Access */
 zwait       = (twait & tgtmode_R)
              # ((!tgtmode_R # sbcmode) & wait_req_R)
              # (mod_sel & mwtrq);
 wait_req_R.ck = cpu_clk;
-wait_req_R.d  = !rom_sel_ & !wait_ho_R;
+wait_req_R.d  = rom_sel & !wait_ho_R;
 wait_ho_R.ck  = cpu_clk;
 wait_ho_R.ce  = ON;
 wait_ho_R.d   = wait_req_R # wait_ho_R;
@@ -653,7 +658,7 @@ wait_ho_R.ap  = OFF;
 
 
 /* 'Local' Port Address Qualifier */
-lcl_io      = (!tgtmode_R # sbcmode) & !m1 & iorq & ioaddr:['b'000xxxxx]; /* Local I/O operation, ZID or SBC  */
+lcl_io      = (!tgtmode_R # sbcmode) & iorq & ioaddr:['b'000xxxxx]; /* Local I/O operation, ZID or SBC  */
 lcl_io.oe   = ON;
 
 /** Target Mode and Single Operation (Mem or I/O RD/WR), and Bus Control */
