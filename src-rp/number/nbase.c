@@ -14,6 +14,7 @@
 // Local Constants
 // ====================================================================
 
+static const char* _NB_BIN_NAME = "BINARY";
 static const char* _NB_DEC_NAME = "DECIMAL";
 static const char* _NB_HEX_NAME = "HEX";
 static const char* _NB_OCT_NAME = "OCTAL";
@@ -33,6 +34,11 @@ static volatile bool _modinit_called;
 
 static nbase_t _nbase;
 static nbase_ntt_t nbfid[] = {
+    {"binary",NB_BINARY},
+    {"bin",NB_BINARY},
+    {"b",NB_BINARY},
+    {"'",NB_BINARY},
+    {"2",NB_BINARY},
     {"decimal",NB_DECIMAL},
     {"dec",NB_DECIMAL},
     {"d",NB_DECIMAL},
@@ -109,6 +115,9 @@ const char* nbase_name_str(nbase_t nb) {
     const char* name = _NB_UNK_NAME;
 
     switch (nb) {
+        case NB_BINARY:
+            name = _NB_BIN_NAME;
+            break;
         case NB_OCTAL:
             name = _NB_OCT_NAME;
             break;

@@ -62,6 +62,40 @@ static volatile bool _modinit_called;
 // Public Methods
 // ====================================================================
 
+bool num_binstr(char* buf, uint32_t v, repsize_t rs) {
+    bool ovf = false;
+    int nbls = 8;
+    bool lz = false;        // If wordsize is 0, do 8 nibbles without leading 0 groups
+    if (rs != RS_UNLIMIT) {
+        lz = true;          // otherwise, display leading 0 nibbles
+        nbls = rs / 4;      // nibbles to display
+        long ubnd = ((long)1 << rs);
+        if (v >= ubnd) {
+            ovf = true;
+            v &= ubnd;
+        }
+    }
+    for (int i = nbls; i > 0; i--) {
+        int shft = (4 * (i - 1));
+        uint8_t n = lowByte(((v & (0x0F << shft)) >> shft));
+        if (n > 0 || lz) {
+            lz = (n | lz);
+            for (int j = 0; j < 4; j++) {
+                char d = ((n & 0x08) ? '1' : '0');
+                *buf++ = d;
+                n = n << 1;
+            }
+            if (i > 1) {
+                char sp = ((i % 2 == 0) ? '.' : ' ');
+                *buf++ = sp;
+            }
+        }
+        *buf = '\000';
+    }
+    return ovf;
+}
+
+
 bool num_decstr(char* buf, uint v, repsize_t rs) {
     bool ovf = false; // No overflow
     uint vc = v;    // Copy of value that is used
@@ -166,14 +200,18 @@ uint32_t num_valprovider(const char* str, repsize_t sz, valstatus_t* status) {
         lc = (int)tolower((unsigned char)*(str + (l - 1)));
         if (lc == 'h' || lc == 'x') {
             nb = NB_HEX;
-            l--;
+            l--;                // don't process the indicator
         }
         else if (lc == 'o' || lc == 'q') {
             nb = NB_OCTAL;
-            l--;
+            l--;                // don't process the indicator
         }
         else if (lc == 't' || lc == '.') {
             nb = NB_DECIMAL;
+            l--;                // don't process the indicator
+        }
+        else if (lc == '\'') {
+            nb = NB_BINARY;
             l--;
         }
     }
@@ -220,6 +258,9 @@ bool num_valstr_nb(char* buf, uint v, repsize_t rs, bool uc) {
     nbase_t nb = nbase_get();
 
     switch (nb) {
+        case NB_BINARY:
+            ovf = num_binstr(buf, v, rs);
+            break;
         case NB_DECIMAL:
             ovf = num_decstr(buf, v, rs);
             break;

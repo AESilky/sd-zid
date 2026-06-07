@@ -1,5 +1,5 @@
 /**
- * Calculator (math) commands.
+ * Calculator (calc) commands.
  *
  * Copyright 2023-26 AESilky
  * SPDX-License-Identifier: MIT License
@@ -35,15 +35,17 @@ typedef struct OPENT_ {
 #define WORD_MASK_16    0xffff
 #define WORD_MASK_8     0xff
 
-static const cmd_handler_entry_t cmds_math_entry;
+static const cmd_handler_entry_t cmds_add_entry;
+static const cmd_handler_entry_t cmds_calc_entry;
+static const cmd_handler_entry_t cmds_sub_entry;
 
+static void _dispv4(uint32_t v);
 static uint32_t _drop();
 static void _ensl(bool e); /* Enable Stack Lift */
 static void _lift(uint32_t v);
 static op_fn _getopfn(const char* s);
 static const char* _getovf(bool ovf);
 static uint32_t _getval(const char* s, bool* valid);
-static bool _isval(const char* s);
 static void _saveX();
 static void _setX(uint32_t x);
 static val_prvdr_fn _val_provider;
@@ -52,6 +54,8 @@ static bool _op_add();
 static bool _op_and();
 static bool _op_clr();
 static bool _op_clrx();
+static bool _op_dab();
+static bool _op_dbin();
 static bool _op_div();
 static bool _op_exy();
 static bool _op_getT();
@@ -84,6 +88,8 @@ static bool _op_s6();
 static bool _op_s7();
 static bool _op_s8();
 static bool _op_s9();
+static bool _op_sl();
+static bool _op_sr();
 static bool _op_stkshow();
 static bool _op_sub();
 static bool _op_wsize();
@@ -114,6 +120,8 @@ static opent_t* ops[] = {
     & (opent_t) {EN_EandD,".and",_op_and,"AND"},
     & (opent_t) {EN_EandD,".clr",_op_clr,"Clear all"},
     & (opent_t) {EN_EandD,".clx",_op_clrx,"Clear X"},
+    & (opent_t) {EN_EandD,".bin",_op_dbin,"Display X as Binary"},
+    & (opent_t) {EN_EandD,".dab",_op_dab,"Display X in all bases"},
     & (opent_t) {EN_EandD,".lx",_op_lstx,"Last X"},
     & (opent_t) {EN_EandD,".or",_op_or,"OR"},
     & (opent_t) {EN_Eonly,".r0",_op_r0,0},
@@ -140,6 +148,8 @@ static opent_t* ops[] = {
     & (opent_t) {EN_Eonly,".s8",_op_s8,0},
     & (opent_t) {EN_Eonly,".s9",_op_s9,0},
     & (opent_t) {EN_Donly,".sN",0,"Store Register 'N' (0-9)"},
+    & (opent_t) {EN_EandD,".sl",_op_sl,"Shift left"},
+    & (opent_t) {EN_EandD,".sr",_op_sr,"Shift right"},
     & (opent_t) {EN_EandD,".stk",_op_stkshow,"Show stack"},
     & (opent_t) {EN_EandD,".t",_op_getT,"Get T"},
     & (opent_t) {EN_EandD,".wsz",_op_wsize,"Set word size (0,8,16,32)"},
@@ -151,7 +161,36 @@ static opent_t* ops[] = {
     (opent_t*)0,
 };
 
-static int _exec_math(int argc, char** argv, const char* unparsed) {
+static int _exec_add(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    uint32_t tmp = 0;
+    bool updx = false;
+    argc--;argv++; // move past command name
+    while (argc) {
+        char* ent = *argv;
+        // Get a value
+        valstatus_t vstat;
+        uint rv = _val_provider(ent, RS_DWORD, &vstat);
+        if (vstat != VP_OK) goto _err;
+        uint32_t v = (uint32_t)rv;
+        tmp += v;
+        updx = true;
+        argc--;argv++;
+    }
+    if (updx) {
+        _saveX();
+        _setX(tmp);
+    }
+    _dispv4(_stk[X]);
+_finally:
+    return (retval);
+_err:
+    shell_printferr("invalid entry\n");
+    retval = -1;
+    goto _finally;
+}
+
+static int _exec_calc(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     bool dispr = true;
     argc--;argv++; // move past command name
@@ -191,17 +230,80 @@ _err:
     goto _finally;
 }
 
+static int _exec_sub(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    uint32_t tmp = 0;
+    bool updx = false;
+    argc--;argv++; // move past command name
+    while (argc) {
+        char* ent = *argv;
+        // Get a value
+        valstatus_t vstat;
+        uint rv = _val_provider(ent, RS_DWORD, &vstat);
+        if (vstat != VP_OK) goto _err;
+        uint32_t v = (uint32_t)rv;
+        if (!updx) {
+            tmp = v;
+            updx = true;
+        }
+        else {
+            tmp -= v;
+        }
+        argc--;argv++;
+    }
+    if (updx) {
+        _saveX();
+        _setX(tmp);
+    }
+    _dispv4(_stk[X]);
+_finally:
+    return (retval);
+_err:
+    shell_printferr("invalid entry\n");
+    retval = -1;
+    goto _finally;
+}
+
+static void _dispv4(uint32_t v) {
+    bool ovf;
+    char rs[48];
+    char* lbl;
+    for (int i = 0; i < 4; i++) {
+        switch (i) {
+            case 0:
+                ovf = num_decstr(rs, v, _wsize);
+                lbl = "DEC:";
+                break;
+            case 1:
+                ovf = num_hexstr(rs, v, _wsize, true);
+                lbl = "HEX:";
+                break;
+            case 2:
+                ovf = num_octstr(rs, v, _wsize);
+                lbl = "OCT:";
+                break;
+            case 3:
+                ovf = num_binstr(rs, v, _wsize);
+                lbl = "BIN:";
+                break;
+        }
+        const char* ovfi = _getovf(ovf);
+        shell_printf(" %s %s%s\n", lbl, rs, ovfi);
+    }
+}
+
 static op_fn _getopfn(const char* s) {
     op_fn opfn = (op_fn)0;
-    opent_t** opents = (opent_t **)&ops;
+    opent_t** opents = (opent_t**)&ops;
 
     while (*opents) {
         if ((*opents)->type == EN_EandD || (*opents)->type == EN_Eonly) {
 #ifdef SHELL_NOCASE
-            if (stricmp(s, (*opents)->opmn) == 0) {
+            if (stricmp(s, (*opents)->opmn) == 0)
 #else
-            if (strcmp(s, *opents->opmn) == 0) {
+            if (strcmp(s, *opents->opmn) == 0)
 #endif
+            {
                 opfn = (*opents)->opfn;
                 break;
             }
@@ -209,22 +311,6 @@ static op_fn _getopfn(const char* s) {
         opents++;
     }
     return opfn;
-}
-
-/*
- * Is the string a value?
- *
- * For now, just check for a decimal value.
- */
-static bool _isval(const char* s) {
-    if (s == NULL || *s == '\0') {
-        return false; // Reject empty strings
-    }
-    while (*s != '\0') {
-        if (!isdigit((int)*s)) return false;
-        s++;
-    }
-    return true;
 }
 
 static const char* _getovf(bool ovf) {
@@ -278,6 +364,21 @@ static bool _op_clrx() {
     _stk[X] = 0;
     _ensl(false);
     return true;
+}
+
+static bool _op_dab() {
+    _dispv4(_stk[X]);
+    return false;
+}
+
+static bool _op_dbin() {
+    uint32_t x = _stk[X];
+    char buf[44];
+
+    bool ovf = num_binstr(buf, x, _wsize);
+    const char* ovfi = _getovf(ovf);
+    shell_printf("%s%s\n",buf,ovfi);
+    return false;
 }
 
 static bool _op_div() {
@@ -345,7 +446,7 @@ static bool _op_ops() {
     while (*opents) {
         if ((*opents)->type == EN_EandD || (*opents)->type == EN_Donly) {
             desc = ((*opents)->desc ? (*opents)->desc : "");    
-            shell_printf("%s\t\t%s\n",(*opents)->opmn,desc);
+            shell_printf("\t%s\t\t%s\n",(*opents)->opmn,desc);
         }
         opents++;
     }
@@ -503,6 +604,22 @@ static bool _op_s9() {
     return true;
 }
 
+static bool _op_sl() {
+    _saveX();
+    uint32_t x = _drop();
+    uint32_t r = x << 1u;
+    _lift(r);
+    return true;
+}
+
+static bool _op_sr() {
+    _saveX();
+    uint32_t x = _drop();
+    uint32_t r = x >> 1u;
+    _lift(r);
+    return true;
+}
+
 static bool _op_stkshow() {
     char rs[13];
     bool ovf;
@@ -610,12 +727,38 @@ static void _lift(uint32_t v) {
     _setX(v);
 }
 
-static const cmd_handler_entry_t cmds_math_entry = {
-    _exec_math,
+static const cmd_handler_entry_t cmds_add_entry = {
+    _exec_add,
+    3,
+    "add",
+    "[num [[num] ...]]",
+    "Add multiple values or display the last result.\n   \
+The result is displayed in decimal, hex, and octal.\n   \
+The result is placed in the calculator's X register.\n   \
+See also: calc, nbase, sub\n"
+};
+
+static const cmd_handler_entry_t cmds_calc_entry = {
+    _exec_calc,
     1,
-    "math",
+    "calc",
     "[v|op] ...",
-    "Calculator in the spirit of the HP-16C. RPN using values 'v' and operations 'op'.\n Use: 'math ops' for a list of operators."
+    "Programmer's Calculator in the spirit of the HP-16C.\n   \
+RPN using values 'v' and operations 'op'. Entry can span multiple lines.\n   \
+Use: 'calc ops' for a list of operators.\n   \
+See also: add, nbase, sub\n"
+};
+
+static const cmd_handler_entry_t cmds_sub_entry = {
+    _exec_sub,
+    3,
+    "sub",
+    "[num [[num] ...]]",
+    "Subtract multiple values or display the last result. The values are\n   \
+subtracted from the first going from left to right. The result is displayed\n   \
+in decimal, hex, and octal.\n   \
+The result is placed in the calculator's X register.\n   \
+See also: calc, nbase, sub\n"
 };
 
 
@@ -643,5 +786,7 @@ void calccmds_modinit() {
     _wmask = WORD_MASK_32;
     _wsize = RS_UNLIMIT;
     _op_clr();
-    cmd_register(&cmds_math_entry);
+    cmd_register(&cmds_add_entry);
+    cmd_register(&cmds_calc_entry);
+    cmd_register(&cmds_sub_entry);
 }

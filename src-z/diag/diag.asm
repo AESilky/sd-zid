@@ -8,12 +8,12 @@
 ; ==============
 ;
 		.stitle	"Diagnostics"
-BOOT		.sect	W			; Put in the low ROM to use at start-up
+CODE		.sect	W
 
 		.input	"diag.inc"
 
 		.list	1
-		.input	"cmn/stddef.inc"	; stddef must be first
+		;.input	"cmn/stddef.inc"	; stddef must be first
 		.input	"cmn/board.inc"
 
 ;;**************

@@ -4,7 +4,6 @@
 ; Copyright 2025-26 AESilky
 ; SPDX-License-Identifier: MIT License
 ;
-		.title	"Single Board Computer (SBC) to run on the ZID board as a target"
 		.stitle	"Storage"
 
 		.list	1
@@ -15,13 +14,13 @@
 
 BSS		.sect
 
-gpio_val:	.block	BYTE
+do_delay:	.block	BYTE		; Flag 0/non-zero controling delay or not
+
+gpio_val:	.block	BYTE		; Memory backing for the GPIO
 
 ; stack
 ;
-; The registers are pushed as a pair, but labeled individually for access
-; (this order is important!!!)
-		.align	2		; Put on a word boundary
+		.align	8		; Put on a page boundary
 		.block	256		; Debug monitor stack space
 sbcstk:		.equ	$
 

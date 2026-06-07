@@ -142,7 +142,13 @@ void _irq_dma_from_pio() {
  * @brief IRQ Handler for CTRL Operation.
  *
  * Called when the PIO has detected a RD/WR for the Control Port (A:0)
- * Posts MSG_DBUS_CTRL_ACCESS
+ *
+ * By default this posts MSG_DBUS_CTRL_ACCESS after releasing the MSEL
+ * SM.
+ * 
+ * A handler can be registered. If a handler is registered it is called
+ * to completely handle the IRQ. Note that the MSEL PIO-SM is stalled
+ * and must be released.
  */
 void _irq_pio_ctrl_handler() {
     if (_creg_hdlr) {
@@ -153,13 +159,13 @@ void _irq_pio_ctrl_handler() {
         cmt_msg_t msg;
         uint8_t ctrl = _m_ctrl_state();
         msg.data.value16u = ctrl << 8;
-        bool wr = ((ctrl & CTRL_WR_BIT_M) == 0);
+        bool wr = ((ctrl & (CTRL_WR_BIT_M | CTRL_RD_BIT_M)) == CTRL_RD_BIT_M); // Bus signals are active LOW
         if (wr) {
-            uint8_t v = _man_read();
+            uint8_t v = _man_read();    // The HOST wrote to us
             msg.data.value16u |= v;
         }
         else {
-            _man_write(0xAA);
+            _man_write(0x90);   // The HOST is reading, put data on the bus
         }
         dbus_release_msel();
         cmt_msg_init(&msg, MSG_DBUS_CTRL_ACCESS);

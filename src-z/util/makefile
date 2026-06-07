@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: MIT License
 #
 
-# Define a variable with the current date/time
 .PHONY:	all clean listcode
 
+# Define a variable with the current date/time
 BUILD_DT 	:= $(shell date +"\"%Y%m%d-%H:%M\"")
 
 ASM		:= uasz80
@@ -14,7 +14,7 @@ ALINK	:= ulink
 BASEPATH	:= ../
 CMNPATH		:= $(BASEPATH)cmn/
 
-CMNFILES	:= $(CMNPATH)board.inc $(CMNPATH)stddef.inc
+CMNFILES	:= $(CMNPATH)stddef.inc
 
 ASMOPTS	:= -li$(BASEPATH) -li$(CMNPATH) -i./ -d _BLD_DT=$(BUILD_DT)
 
@@ -27,9 +27,9 @@ PRNOPTS := --media=Letter --landscape --lines-per-page=68 --no-header --font="Co
 %.lst:	%.asm
 	$(ASM) $(ASMOPTS) $<
 
-all: diag.obj
+all: util.obj
 
-diag.obj:	makefile diag.asm diag.inc $(CMNFILES)
+util.obj:	makefile util.asm util.inc $(CMNFILES)
 
 
 listcode: 

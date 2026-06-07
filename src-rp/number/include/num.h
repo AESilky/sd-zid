@@ -17,6 +17,28 @@ extern "C" {
 #include "pico/stdlib.h"
 
 /**
+ * @brief Get a binary string for a value with a given representation size.
+ * @ingroup number
+ *
+ * The string representing the value with the number of characters indicated
+ * by the `repsize_t` parameter.
+ * If the value is too large for the requested size, the value will be down-sized
+ * and `true` (overflow) will be returned.
+ * 
+ * The buffer needs to be large enough to hold 11 * num_bytes of repsize:
+ *   1  BYTE: 11
+ *   1  WORD: 22
+ *   1 DWORD: 44
+ * UNLIMITED: 44
+ * 
+ * @param buf Buffer to put the output into
+ * @param v The value
+ * @param rs The 'size' for the representation
+ * @return true:Overflow occurred, the value was down-sized.
+ */
+extern bool num_binstr(char* buf, uint32_t v, repsize_t rs);
+
+/**
  * @brief Get a decimal string for a value with a given representation size.
  * @ingroup number
  *
@@ -40,7 +62,7 @@ extern bool num_decstr(char* buf, uint v, repsize_t rs);
  * The string representing the value with the number of characters indicated
  * by the `repsize_t` parameter.
  * If the value is too large for the requested size, the value will be down-sized
- * and `false` will be returned.
+ * and `true` (overflow) will be returned.
  * 
  * @param buf Buffer to put the output into
  * @param v The value
@@ -49,6 +71,22 @@ extern bool num_decstr(char* buf, uint v, repsize_t rs);
  * @return true:Overflow occurred, the value was down-sized.
  */
 extern bool num_hexstr(char* buf, uint v, repsize_t rs, bool uc);
+
+/**
+ * @brief Get an octal string for a value with a given representation size.
+ * @ingroup number
+ *
+ * The string representing the value with the number of characters indicated
+ * by the `repsize_t` parameter.
+ * If the value is too large for the requested size, the value will be down-sized
+ * and `true` (overflow) will be returned.
+ *
+ * @param buf Buffer to put the output into
+ * @param v The value
+ * @param rs The 'size' for the representation
+ * @return true:Overflow occurred, the value was down-sized.
+ */
+extern bool num_octstr(char* buf, uint v, repsize_t rs);
 
 
 /**

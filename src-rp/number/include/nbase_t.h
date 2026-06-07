@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 typedef enum NBASE_ {
+    NB_BINARY = 2,
     NB_OCTAL = 8,
     NB_DECIMAL = 10,
     NB_HEX = 16

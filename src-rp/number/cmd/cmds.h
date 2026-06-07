@@ -1,5 +1,5 @@
 /**
- * Calculator (math) commands.
+ * Calculator (calc) commands.
  *
  * Copyright 2023-26 AESilky
  * SPDX-License-Identifier: MIT License

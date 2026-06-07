@@ -4,7 +4,7 @@
 #
 
 # Define a variable with the current date/time
-.PHONY:	all clean cleanall listing
+.PHONY:	all BIN LIBS clean cleanall listcode listmap liststo
 
 BUILD_DT 	:= $(shell date +"\"%Y%m%d-%H:%M\"")
 
@@ -16,6 +16,7 @@ BASEPATH	:= ../
 CMNPATH		:= $(BASEPATH)cmn/
 
 CMNFILES	:= $(BASEPATH)version.inc $(CMNPATH)board.inc $(CMNPATH)stddef.inc
+LIBFILES	:= $(BASEPATH)util/util.inc
 
 INCS		:= \
 		storage.inc\
@@ -25,10 +26,11 @@ LOBJS	:= \
 	sbc1.obj \
 	storage.obj
 
-ROMIMG	:= rom.bin
+ROMIMG	:= sbc1.obj
 
-ASMOPTS	:= -li$(BASEPATH) -i./ -d _BLD_DT=$(BUILD_DT)
+ASMOPTS	:= -li$(BASEPATH) -li$(CMNPATH) -i./ -d _BLD_DT=$(BUILD_DT)
 
+PRNOPTS := --media=Letter --landscape --lines-per-page=68 --no-header --font="Courier8" --truncate-lines --no-job-header
 
 %.obj:	%.asm
 	$(ASM) $(ASMOPTS) $<
@@ -38,25 +40,27 @@ ASMOPTS	:= -li$(BASEPATH) -i./ -d _BLD_DT=$(BUILD_DT)
 
 all:	$(LOBJS)
 
-sbc1.obj:	makefile sbc1.asm $(CMNFILES) $(INCS)
+sbc1.obj:	makefile sbc1.asm $(CMNFILES) $(LIBFILES) $(INCS)
 
 storage.obj: makefile storage.asm storage.inc $(CMNFILES)
 
 sbc.bin:	makefile $(LOBJS) LIBS sbc.lnk
 	$(ALINK) -f=sbc.lnk
 
-rom.bin:	makefile dbmon.bin
-	$(IMGR) rom.bin -f=zid.img
-
 LIBS:
 	cd $(BASEPATH);make libs
 
-ROM:	$(ROMIMG)
+BIN:	$(ROMIMG)
 
 
-listing: sbc1.lst
-	enscript --no-header --font="Courier8" sbc1.lst 
+listcode:	
+	enscript $(PRNOPTS) sbc1.lst 
 
+listmap:	
+	enscript $(PRNOPTS) scb1.map 
+
+liststo:	
+	enscript $(PRNOPTS) storage.lst 
 
 clean:
 	rm -f *.lst *.map *.obj

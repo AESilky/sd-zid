@@ -6767,7 +6767,7 @@ int f_puts (
 /* Put a Formatted String to the File (with sub-functions)               */
 /*-----------------------------------------------------------------------*/
 #if FF_PRINT_FLOAT && FF_INTDEF == 2
-#include <math.h>
+#include <calc.h>
 
 static int ilog10 (double n)	/* Calculate log10(n) in integer output */
 {

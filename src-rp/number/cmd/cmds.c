@@ -48,7 +48,7 @@ static const cmd_handler_entry_t cmds_nbase_entry = {
     2,
     "nbase",
     "[base]",
-    "Display/Set the number base. D,T,10:Decimal H,X,16:Hex O,Q,8:Octal"
+    "Display/Set the number base.\n   D,T,10:Decimal H,X,16:Hex O,Q,8:Octal B,BIN,'(s-quote),2:Binary"
 };
 
 

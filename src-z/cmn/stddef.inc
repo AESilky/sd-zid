@@ -1,3 +1,4 @@
+	.stitle	"Standard Definitions"
 ; ==============
 ;
 ; Standard Definitions.
@@ -7,6 +8,7 @@
 ;
 ; ==============
 ;
+
 BYTE		.equ	1		; Length of byte
 WORD		.equ	2		; Length of word
 BYTE_BITS	.equ	8		; Number of Bits in a Byte
