@@ -12,5 +12,6 @@ target_include_directories(dc_cmd INTERFACE
 
 target_link_libraries(dc_cmd INTERFACE
 	cmd
+    regext
     pico_stdlib
 )

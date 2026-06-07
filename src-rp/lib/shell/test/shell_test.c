@@ -61,7 +61,7 @@ int main() {
     async_context_add_when_pending_worker(&_async_context.core, &_worker);
 
     // Initialize and start the Shell so we can demonstrate that it works.
-    shell_modinit("Shell Test", _do_on_char_rdy_irq);
+    shell_modinit("Shell Test", "The shell has started.\nYou can enter commands.\nTry 'HELP'\n", _do_on_char_rdy_irq);
     shell_start();
 
     while (1) {

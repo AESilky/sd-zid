@@ -101,7 +101,7 @@ tgtskip:	.block	BYTE		; Target hop,SKIP,jump	[mem_op: 2]
 tgtjump:	.block	WORD		; Target hop,skip,JUMP  [mem_op: 1,0] (address set to Target PC)
 					; And we are now running in the Target!!!
 
-		.align	2		; Put on a word boundary
+		.align	8		; Put on a page boundary
 		.block	256		; Debug monitor stack space (not much stack is used)
 dbmstk:		.equ	$
 

@@ -11,6 +11,7 @@
 -o=dbmon.bin
 -m=dbmon.map
 -lBOOT=0000         ; Code area (actually in region 7 of the rom)
+-lCODE              ; Code area used by diag and util
 -lBSS=4000          ; Ram area (actually in region 7 of the ram (15 abs))
 ; Content
 dbmon.obj           ; Debug Monitor (boot and DOC command dispatching)

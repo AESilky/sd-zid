@@ -39,7 +39,7 @@
 
 int main() {
     // useful information for picotool
-    bi_decl(bi_program_description("SilkyDESIGN RP System Module"));
+    bi_decl(bi_program_description("SilkyDESIGN RP System Module w/ Debug Op Controller"));
 
     // Board/base level initialization
     if (board_init() != 0) {

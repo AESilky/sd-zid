@@ -18,6 +18,12 @@ DMOKCMDRD	.equ	082h		; OK, reading command
 DMBRKHIT	.equ	084h		; Breakpoint hit
 DMTGTGO		.equ	088h		; DM transitioning to Target Mode
 					; (so don't interrupt for a bit)
+DMBRT		.equ	090h		; Be Right There. Sent when ATTN requested
+					; indicating that DM is transitioning
+					; from Target to Debug and needs ATTN
+					; cleared to continue. DM will follow
+					; with DMOKCMDRD once the Target state
+					; has been taken care of.
 
 DMRSTEXEC	.equ	0C1h		; DM executed a RST instruction (ERROR)
 
@@ -146,7 +152,7 @@ DCRH_M		.equ	0Fh
 
 ; --------------
 ; PUT a register. The register is encoded in the lower 4 bits
-; (the same a GET REG)
+; (the same as GET REG)
 ;   F': 0000
 ;   A': 0001
 ;   C': 0010

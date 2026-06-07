@@ -1,25 +1,30 @@
+	.title	"Single Board Computer (SBC) to run on the ZID board as a target"
+	.stitle	"SBC Test #1 - Boot"
 ;
 ; Single Board Computer Example #1 (to run on the ZID board)
 ;
 ; Copyright 2025-26 AESilky
 ; SPDX-License-Identifier: MIT License
 ;
-		.title	"Single Board Computer (SBC) to run on the ZID board as a target"
-		.stitle	"SBC Test #1 - Boot"
 BOOT		.sect	W
 ;		.org	0
 
-		.input	"cmn/stddef.inc"	; stddef must be first
+		.list	1		; Don't list these included files
 		.input	"cmn/board.inc"
 		.input	"storage.inc"
-
-		.list	1		; Don't list these included files
 		.input	"diag/diag.inc"
-		.eject
+		.input	"util/util.inc"
 ; ===========================
 ; This is a simple test app to run on the ZID board SBC hardware as a target.
-; It is simple, in that it doesn't use interrupts or memory mapping, it just cycles
-; through the LEDs. But it provides something to test with.
+;
+; It is 'simple', in that it doesn't use interrupts or memory mapping, it just cycles
+; through the LEDs. But it provides something to test with, and it does do an initial
+; RAM test and leaves the test pattern (doesn't clear it to 0), so that also
+; provides something to look at with the Debug Monitor.
+;
+; Other than Page-0 reset/restart/nmi vector jumps, the code is put up in
+; higher ROM so that PC values won't conflict with Debug Monitor locations so
+; that breakpoints set for Debug Monitor code won't be hit be the SBC code.
 ; 
 ; ===========================
 
@@ -61,8 +66,17 @@ ver:		.equ	$
 nmivec:		.org	boot+66h
 		jp	onnmi
 
-		.org	boot+0100h
-onreset:	ld	iy,init2	; IY holds the address to return to (as we clobber ram)
+
+		.org	boot+6000h
+runtime:	.equ	$
+		.stitle	"POR Initialization"
+		.eject
+; ---------------------------------------------------------------------------
+;	Power-On-Reset Initialization
+; ---------------------------------------------------------------------------
+;
+onreset:	.equ	$
+		ld	iy,init2	; IY holds the address to return to (as we clobber ram)
 		ld	hl,SBC_RAMBASE
 		ld	c,SBC_RAMPC
 		jp	ramchk_ns	; test our ram (note that we don't test the whole board)
@@ -74,11 +88,20 @@ imemerr:	ld	(hl),a
 		ld	d,(hl)
 		jr	imemerr
 init2:		; don't fill the ram (some data to look at)
+		;
+		; but clear the two locations we actually use and set the stack
+		ld	sp,sbcstk
+		xor	a
+		ld	(do_delay),a
+		ld	(gpio_val),a
 		; that's it (the CPLD takes care of most of the init)
 		jp	main
 
+
+
+		.stitle	"NMI and RST Handlers"
 		.eject
-		.org	boot+500h
+		.org	runtime+100h
 ;; =============
 ;; NMI and Restart Handlers - None of these are expected.
 ;;
@@ -106,7 +129,9 @@ onrst38:	ld	b,38h
 onrst:		; Halt (will cause the HALT LED to come on if debugging)
 		halt
 
-		.align	8
+		.stitle	"Main application"
+		.eject
+		.align	8	; Page boundary
 main:		; Do something interesting...
 		in	a,(BRDCTRL)
 		or	SBC_USE_M
@@ -115,6 +140,8 @@ main:		; Do something interesting...
 		ld	(gpio_val),a	; clear our GPIO backing
 		ld	l,a
 		ld	b,a
+		inc	a		; put 1 in our 'do delay' flag
+		ld	(do_delay),a	; debugger can set to 0 to avoid the delay loop
 		ld	c,SBC_GPIO
 m1:		ld	e,l
 		call	swapends	; have bit-0 change the slowest on the out pins
@@ -122,39 +149,63 @@ m1:		ld	e,l
 		in	a,(c)		; port read (something to test break with)
 		ld	(gpio_val),a	; memory write (something to test break with)
 		ld	h,a
-		ld	a,(gpio_val)	; memory read (something to test break with)
-m2:		djnz	m2		; delay a bit
+		ld	a,(do_delay)	; see if we should delay (also something to test break with)
+		or	a
+		jr	z,m1		; no delay =>
+		; delay a bit
+m2:		djnz	m2
+m3:		djnz	m3
 		inc	l
 		jr	m1
 
 
-swapends:	ld	d,0
-		bit	7,e
-		jr	z,se1
-		set	0,d
-se1:		bit	6,e
-		jr	z,se2
-		set	1,d
-se2:		bit	5,e
-		jr	z,se3
-		set	2,d
-se3:		bit	4,e
-		jr	z,se4
-		set	3,d
-se4:		bit	3,e
-		jr	z,se5
-		set	4,d
-se5:		bit	2,e
-		jr	z,se6
-		set	5,d
-se6:		bit	1,e
-		jr	z,se7
-		set	6,d
-se7:		bit	0,e
-		ret	z
-		set	7,d
-		ret
+		.align	8
+do_rst:		.equ	$
+	; Request a RESET using the CTRL Bit. Put a couple ops on either side
+	;  for debugging
+	;
+		xor	a
+		ld	b,a
+		in	a,(BRDCTRL)
+		set	RSTREQ_B,a
+		out	(BRDCTRL),a
+		; We don't expect to get here
+		ld	b,a
+		ld	c,a
+		halt
 
+		.align	4
+do_brk:		.equ	$
+	; Request a BREAK using the CTRL Bit. Put a couple ops on either side
+	;  for debugging
+	;
+		xor	a
+		ld	b,a
+		in	a,(BRDCTRL)
+		set	BRKREQ_B,a
+		out	(BRDCTRL),a
+		; We may get here. Debugging will tell
+		ld	b,a
+		halt
+
+
+		.align	4
+do_sbrk:	.equ	$
+	; Do a SOFT BREAK. This will break if SOFT_BREAK is enabled in the
+	; CTRL port.
+	;
+	; Put a couple ops on either side for debugging
+	;
+		xor	a
+		ld	b,a
+		dec	a
+		rst	38h		; This will trigger a break if enabled
+		; We may get here. Debugging will tell
+		ld	b,a
+		halt
+
+
+		.align	2
 		.byte	"!sbc1!"
 		.end
 

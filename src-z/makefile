@@ -24,10 +24,12 @@ sbc.bin:
 
 libs:
 	cd diag;make
+	cd util;make
 
 clean:
 	rm -f *.lst *.map *.obj
 	cd dbm;make clean
 	cd diag;make clean
 	cd sbc;make clean
+	cd util;make clean
 

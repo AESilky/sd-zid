@@ -23,7 +23,7 @@ LOBJS	:= \
 
 ROMIMG	:= rom.bin
 
-ASMOPTS	:= -li$(BASEPATH) -i./ -d _BLD_DT=$(BUILD_DT)
+ASMOPTS	:= -li$(BASEPATH) -li$(CMNPATH) -i./ -d _BLD_DT=$(BUILD_DT)
 
 %.obj:	%.asm
 	$(ASM) $(ASMOPTS) $<

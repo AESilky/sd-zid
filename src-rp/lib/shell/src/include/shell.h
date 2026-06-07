@@ -329,10 +329,13 @@ extern void shell_start();
  * @brief Initialize the Shell Module.
  * @ingroup shell
  *
- * @param shell_title Title to output at top of screen when the shell is started/restarted.
+ * @param shell_title Title (single line without attributes) to set in the terminal header
+ *                      when the shell is started/restarted.
+ * @param banner Message to write to the terminal when the shell starts/restarts. Can be
+ *                      multiline and include terminal attributes. 
  * @param notify_of_char_rdy Function to call when stdio interrupt handler indicates there is a character ready.
  */
-extern void shell_modinit(const char* shell_title, shell_notify_fn notify_of_char_rdy);
+extern void shell_modinit(const char* shell_title, const char* banner, shell_notify_fn notify_of_char_rdy);
 
 #ifdef __cplusplus
     }

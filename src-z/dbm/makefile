@@ -2,7 +2,7 @@
 # Copyright 2025-26 AESilky
 # SPDX-License-Identifier: MIT License
 #
-.PHONY:	all clean cleanall LIBS listing ROM
+.PHONY:	all clean cleanall LIBS listcode listmap ROM
 
 # Define a variable with the current date/time
 BUILD_DT 	:= $(shell date +"\"%Y%m%d-%H:%M\"")
@@ -27,7 +27,9 @@ LOBJS	:= \
 
 ROMIMG	:= rom.bin
 
-ASMOPTS	:= -li$(BASEPATH) -i./ -d _BLD_DT=$(BUILD_DT)
+ASMOPTS	:= -li$(BASEPATH) -li$(CMNPATH) -i./ -d _BLD_DT=$(BUILD_DT)
+
+PRNOPTS := --media=Letter --landscape --lines-per-page=68 --no-header --font="Courier8" --truncate-lines --no-job-header
 
 %.obj:	%.asm
 	$(ASM) $(ASMOPTS) $<
@@ -52,8 +54,14 @@ LIBS:
 
 ROM:	$(ROMIMG)
 
-listing:	dbmon.lst
-	enscript --no-header --font="Courier8" dbmon.lst 
+listcode:	
+	enscript $(PRNOPTS) dbmon.lst 
+
+listmap:	
+	enscript $(PRNOPTS) dbmon.map 
+
+liststo:	
+	enscript $(PRNOPTS) storage.lst 
 
 clean:
 	rm -f *.lst *.map *.obj

@@ -12,20 +12,24 @@
  * The module uses multiple PIO programs and 4 PIO State Machines to handle
  * the data transfers.
  * State Machine:
- * 1) Monitors ModSel and Address. Triggers IRQ based on address:
+ * 1.1) Monitors ModSel and Address. Triggers IRQ based on address:
  *      0: To CPU for Control Write/Read
  *      4: PIO internal - Data transfer WR/RD
- * 3) Data Write. Transfers a byte of data from the bus.
- *      5: PIO Write (from Z80)
- * 4) Data Read. Transfers a byte of data to the bus.
- *      6: PIO Read (to Z80)
- * 4) Wait control. Turns WAITRQ off after a data transfer.
- *      7: PIO Clear WAIT-
+ * 1.2) Data. Triggered by ModSel when ADDR[1]
+ *      5: For a WRITE from the Z80
+ *      6: For a READ from the Z80
+ * 1.3) Data Write. Transfers a byte of data from the bus.
+ * 1.4) Data Read. Transfers a byte of data to the bus.
+ * 0.2) Manually Get control signals state
+ * 0.3) Manually Write a byte to the bus
+ * 0.4) Manually Read a byte from the bus
  *
  * In general, the module expects to know when data transfers will be made
  * and will have a buffer ready for writes (Z80 to RP) and data ready for
- * reads. But, the module provides a 1-byte read and write to handle the
- * case of an unexpected read or write.
+ * reads (RP to Z80). But, the module provides a 1-byte read and write to
+ * handle the case of an unexpected data read or write.
+ * 
+ * For CTRL access, the CPU is interrupted to handle the access.
  */
 
 #include "dbusc.h"
@@ -138,24 +142,30 @@ void _irq_dma_from_pio() {
  * @brief IRQ Handler for CTRL Operation.
  *
  * Called when the PIO has detected a RD/WR for the Control Port (A:0)
- * Posts MSG_DBUS_CTRL_ACCESS
+ *
+ * By default this posts MSG_DBUS_CTRL_ACCESS after releasing the MSEL
+ * SM.
+ * 
+ * A handler can be registered. If a handler is registered it is called
+ * to completely handle the IRQ. Note that the MSEL PIO-SM is stalled
+ * and must be released.
  */
 void _irq_pio_ctrl_handler() {
     if (_creg_hdlr) {
         _creg_hdlr();
     }
     else {
-        uint8_t c = piosm_pc(_cb_msel_pocfg);
+        //uint8_t c = piosm_pc(_cb_msel_pocfg);
         cmt_msg_t msg;
         uint8_t ctrl = _m_ctrl_state();
         msg.data.value16u = ctrl << 8;
-        bool wr = ((ctrl & CTRL_WR_BIT_M) == 0);
+        bool wr = ((ctrl & (CTRL_WR_BIT_M | CTRL_RD_BIT_M)) == CTRL_RD_BIT_M); // Bus signals are active LOW
         if (wr) {
-            uint8_t v = _man_read();
+            uint8_t v = _man_read();    // The HOST wrote to us
             msg.data.value16u |= v;
         }
         else {
-            _man_write(0xAA);
+            _man_write(0x90);   // The HOST is reading, put data on the bus
         }
         dbus_release_msel();
         cmt_msg_init(&msg, MSG_DBUS_CTRL_ACCESS);
@@ -298,7 +308,7 @@ static uint8_t _man_read() {
 
 /** @brief Manually write a byte to the data bus */
 static void _man_write(uint8_t v) {
-    uint8_t p = piosm_pc(_cb_mrd_pocfg);
+    //uint8_t p = piosm_pc(_cb_mrd_pocfg);
     // To write, clear the interrupt bit that the PIOSM is waiting on (allows PINDIRS to be set to out),
     pio_interrupt_clear(_cb_mwr_pocfg.pio, _cb_mwr_pocfg.sm);
     // then write the value.
@@ -342,7 +352,7 @@ void dbus_rd_def(uint8_t v) {
 
 void dbus_release_msel() {
     // Clear the interrupt bit that is holding the MSEL PIO-SM
-    uint8_t c = piosm_pc(_cb_msel_pocfg);
+    //uint8_t c = piosm_pc(_cb_msel_pocfg);
     if (pio_interrupt_get(_cb_msel_pocfg.pio, PIO_BCA_CTRL)) {
         pio_interrupt_clear(_cb_msel_pocfg.pio, PIO_BCA_CTRL);
     }

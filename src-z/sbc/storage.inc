@@ -16,6 +16,7 @@ SBC_RAMPC	.equ	080h
 
 ; Memory locations
 ;
+	.global do_delay	; Flag to control doing delay loop or not
 	.global gpio_val	; Last value of GPIO
 	
 	.global sbcstk		; SBC stack (top)

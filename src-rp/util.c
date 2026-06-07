@@ -283,6 +283,20 @@ void strdatetime(char* buf, uint bufsize, datetime_t* dt, strdatetime_ctrl_t ctr
 }
 #endif
 
+int stricmp(const char* s1, const char* s2) {
+    int c1, c2;
+    while (*s1 && *s2) {
+        c1 = (int)tolower((unsigned char)*s1);
+        c2 = (int)tolower((unsigned char)*s2);
+        if (c1 != c2) {
+            return (c1 - c2);
+        }
+        s1++;
+        s2++;
+    }
+    return (tolower((unsigned char)*s1) - tolower((unsigned char)*s2));
+}
+
 int strnicmp(const char* s1, const char* s2, size_t n) {
     int c1,c2;
     while (n && *s1 && *s2) {

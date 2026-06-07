@@ -8,7 +8,10 @@
 ;
 ; ==============
 ;
+		.stitle	"Board Specific Definitions"
 
+		.list	1
+		.input	"stddef.inc"
 ;
 ; I/O Device Addresses
 ;
@@ -38,19 +41,18 @@ BRKENCLR	.equ	01Ah		; Break Address Enable Clear
 BRDCTRL		.equ	006h		; [RW] Board Control
 SBC_USE_B	.equ	0		;  Bit-0 for use as desired by SBC
 SBC_USE_M	.equ	00000001b	;  Mask for SBC-Bit
-SBRK_EN_B	.equ	1		;  Soft-Break (RST38) Enable
-SBRK_EN_M	.equ	00000010b	;  Mask for Soft-Break Enable
-SBRK_EN_S	.equ	100000010b	;  Mask for Soft-Break Enable
-SOP_B		.equ	2		;  Single Bus Operation (enable)
-SOP_M		.equ	00000100b	;  Mask for SOP
-SSTEP_B		.equ	3		;  Perform a Single-Step on Target-GO
-SSTEP_M		.equ	00001000b	;  Mask for Single-Step
-SYNCONLY_B	.equ	4		;  Only generate SYNC signal on Breakpoint match
-SYNCONLY_M	.equ	00010000b	;  Mask for SYNC Only
-BRKREQ_B	.equ	5		;  Break Request, used by SBC to request a break (go to Debugger)
-BRKREQ_M	.equ	00100000b	;  Mask for Break Request
-RSTREQ_B	.equ	6		;  Reset Request. Forces a (full) reset from SBC or Debugger
-RSTREQ_M	.equ	01000000b	;  Mask for Reset Request
+BRKREQ_B	.equ	1		;  Break Request, used by SBC to request a break (go to Debugger)
+BRKREQ_M	.equ	00000010b	;  Mask for Break Request
+RSTREQ_B	.equ	2		;  Reset Request. Forces a (full) reset from SBC or Debugger
+RSTREQ_M	.equ	00000100b	;  Mask for Reset Request
+SYNCONLY_B	.equ	3		;  Only generate SYNC signal on Breakpoint match
+SYNCONLY_M	.equ	00001000b	;  Mask for SYNC Only
+SBRK_EN_B	.equ	4		;  Soft-Break (RST38) Enable
+SBRK_EN_M	.equ	00010000b	;  Mask for Soft-Break Enable
+SOP_B		.equ	5		;  Single Bus Operation (enable)
+SOP_M		.equ	00100000b	;  Mask for SOP
+SSTEP_B		.equ	6		;  Perform a Single-Step on Target-GO
+SSTEP_M		.equ	01000000b	;  Mask for Single-Step
 ZIDINIT_B	.equ	7		;  ZID (Debug Monitor) has been initialized
 ZIDINIT_M	.equ	10000000b	;  Mask for ZID Init
 
@@ -74,10 +76,12 @@ PCADDR_RD	.equ	01Ch		; This port reads multiple status bits.
 					; so each read is important.
 PCB_PC_B	.equ	0		;  bit-0 is break/attn saved PC Bit 15..0
 PCB_PC_M	.equ	00000001b
-BRK_HWD_B	.equ	2		;  bit-2 is Break Hardware Detect
-BRK_HWD_M	.equ	00000100b
-SR_ISBRK_B	.equ	3		;  bit-3 indicates that the Special Reset is from a Break
-SR_ISBRK_M	.equ	00001000b
+BRK_HWD_B	.equ	1		;  bit-1 is Break Hardware Detect
+BRK_HWD_M	.equ	00000010b
+SR_ISSBRK_B	.equ	2		;  bit-2 indicates that the Special Reset is from soft Break
+SR_ISSBRK_M	.equ	00000100b
+SR_ISHBRK_B	.equ	3		;  bit-3 indicates that the Special Reset is from hard Break
+SR_ISHBRK_M	.equ	00001000b
 ATTN_ON_B	.equ	4		;  bit-4 indicates that RPM ATTN is active
 ATTN_ON_M	.equ	00010000b
 TGTMODE_B	.equ	5		;  bit-5 indicates that the board is in Target Mode

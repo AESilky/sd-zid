@@ -20,6 +20,8 @@
 
 #ifdef SHELL_ENABLE
     #include "shell.h"
+    #include "dcmsg.h"
+    #include "calculator/cmd/cmds.h"
     #include "dbusc/cmd/cmds.h"
     #include "debugging/cmd/cmds.h"
     #include "dc/cmd/cmds.h"
@@ -69,7 +71,7 @@ int ERRORNO;    // Primarily used by the Shell and Shell Commands. Globally avai
 
 /**
  * @brief Handle character ready notification from the shell.
- * @ingroup shell_test
+ * @ingroup dc_shell
  *
  * In a full SD-Multicore-CMT implementation, this would post a message that
  * a message handler would be registered for that would then call the shell
@@ -100,14 +102,13 @@ static void _do_on_char_rdy_irq() {
  *
  * @param data Nothing important
  */
-static void _clear_and_enable_input(void* data) {
+static void _enable_ui(void* data) {
 #ifdef SHELL_ENABLE
     // Initialize the shell
+    shell_modinit(dcm_title, dcm_banner, _do_on_char_rdy_irq);
     // Initialize modules that provide shell commands
-    shell_modinit("Debug and SBC", _do_on_char_rdy_irq);
-    dbusccmds_modinit();
+    dccmds_modinit(); // Primary Application Commands
     debugcmds_modinit();
-    dccmds_modinit();
     picocmds_modinit();
     // Start the shell
     shell_start();
@@ -202,8 +203,8 @@ void start_app(void) {
     _modinit();
 
     //
-    // Clear the display and enable user input after 5 seconds.
-    cmt_run_after_ms(2000, _clear_and_enable_input, NULL);
+    // Clear the display and enable user input after 0.8 seconds.
+    cmt_run_after_ms(800, _enable_ui, NULL);
 
     //
     // Output status every 7 seconds

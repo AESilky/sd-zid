@@ -3,6 +3,7 @@ add_library(dc INTERFACE)
 
 target_sources(dc INTERFACE
     dc.c
+    dcmsg.c
 )
 
 target_include_directories(dc INTERFACE
@@ -12,5 +13,6 @@ target_include_directories(dc INTERFACE
 add_subdirectory(cmd)
 
 target_link_libraries(dc INTERFACE
+    calculator_cmd
     pico_stdlib
 )
