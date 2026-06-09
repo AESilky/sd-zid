@@ -167,9 +167,9 @@ void _irq_pio_ctrl_handler() {
         else {
             _man_write(0x90);   // The HOST is reading, put data on the bus
         }
-        dbus_release_msel();
         cmt_msg_init(&msg, MSG_DBUS_CTRL_ACCESS);
         postAPPMsg(&msg);
+        dbus_release_msel();
     }
 }
 
@@ -199,7 +199,7 @@ static pio_sm_pocfg _cb_msel_pio_init() {
         CTRL_MODSEL, 1,
         DATA0, DATA_BUS_WIDTH,
         CTRL_WAITRQ, 1,
-        0, 0,
+        26, 1,      // ZZZ for debugging
         CTRL_ADDR,
         NO_MOV_STATUS
     );
@@ -274,7 +274,7 @@ static pio_sm_pocfg _cb_mread_pio_init() {
         DATA0, DATA_BUS_WIDTH, // to 'in' data
         DATA0, DATA_BUS_WIDTH, // to 'out' pindirs
         CTRL_WAITRQ, 1,
-        0, 0,
+        27, 1,      // ZZZ for debugging
         NO_JMP_PIN,
         NO_MOV_STATUS
     );
@@ -289,7 +289,7 @@ static pio_sm_pocfg _cb_mwrite_pio_init() {
         0, 0,
         DATA0, DATA_BUS_WIDTH, // to 'out' pindirs and data
         CTRL_WAITRQ, 1,
-        0, 0,
+        28, 1,      // ZZZ for debugging
         NO_JMP_PIN,
         NO_MOV_STATUS
     );
@@ -299,6 +299,7 @@ static pio_sm_pocfg _cb_mwrite_pio_init() {
 /** @brief Manually read a byte from the data bus */
 static uint8_t _man_read() {
     uint8_t v = piosm_pc(_cb_mrd_pocfg);
+    debug_printf("\n_man_read PC: %hd\n", (short int)v);
     // To read, clear the interrupt bit that the PIOSM is waiting on,
     pio_interrupt_clear(_cb_mrd_pocfg.pio, _cb_mrd_pocfg.sm);
     // then read from the RXFIFO
@@ -308,7 +309,8 @@ static uint8_t _man_read() {
 
 /** @brief Manually write a byte to the data bus */
 static void _man_write(uint8_t v) {
-    //uint8_t p = piosm_pc(_cb_mrd_pocfg);
+    uint8_t p = piosm_pc(_cb_mrd_pocfg);
+    debug_printf("\n_man_write PC: %hd\n", (short int)p);
     // To write, clear the interrupt bit that the PIOSM is waiting on (allows PINDIRS to be set to out),
     pio_interrupt_clear(_cb_mwr_pocfg.pio, _cb_mwr_pocfg.sm);
     // then write the value.
@@ -319,13 +321,13 @@ static void _man_write(uint8_t v) {
 static uint8_t _m_ctrl_state() {
     // To get the CTRL signal bits, clear the interrupt bit that the PIOSM is waiting on.
     uint8_t c = piosm_pc(_cb_ctrls_pocfg);
-    if (pio_interrupt_get(_cb_ctrls_pocfg.pio, _cb_ctrls_pocfg.sm)) {
-        pio_interrupt_clear(_cb_ctrls_pocfg.pio, _cb_ctrls_pocfg.sm);
-        while (pio_sm_is_rx_fifo_empty(_cb_ctrls_pocfg.pio, _cb_ctrls_pocfg.sm)) {
-            tight_loop_contents();
-        }
-        c = (uint8_t)(_cb_ctrls_pocfg.pio->rxf[_cb_ctrls_pocfg.sm]);
+    debug_printf("\n_m_ctrl_state PC:%hd\n",(short int)c);
+    c = 0;
+    pio_interrupt_clear(_cb_ctrls_pocfg.pio, _cb_ctrls_pocfg.sm);
+    while (pio_sm_is_rx_fifo_empty(_cb_ctrls_pocfg.pio, _cb_ctrls_pocfg.sm)) {
+        tight_loop_contents();
     }
+    c = (uint8_t)(_cb_ctrls_pocfg.pio->rxf[_cb_ctrls_pocfg.sm]);
     return c;
 }
 

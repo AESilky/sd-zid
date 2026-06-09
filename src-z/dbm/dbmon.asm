@@ -141,15 +141,19 @@ brkattn:	; Break or Attention Common
 		out	(RPMCTRL),a
 		ld	sp,tempaf	; get the target 'sp' and 'af' saved initially
 		pop	bc		; 'AF' into BC
-		ld	sp,dbmstk	; set our stack
+		ld	sp,dbmstk	; set our stack (for the calls below)
 		ld	hl,(tempsp)	; get the saved SP into HL
 		; ATTN generates 2 forced RST8 so the PC was the first PC PUSH, then there was a 2nd
 		inc	hl		; remove the 2nd PC push
 		inc	hl
-		; now the pushed PC needs to be read from our memory (for ZED DB we make sure to have some)
-		ld	e,(hl)
+		; now the pushed PC needs to be read from target memory (for ZED DB we make sure target SP is valid)
+		call	trdbyte		; low byte
+		ld	d,e
 		inc	hl
-		ld	d,(hl)
+		call	trdbyte		; high byte
+		ld	a,e
+		ld	e,d
+		ld	d,a		; now DE has the correct order
 		; Since the forced RST8 instruction was executed, the pushed PC is actually 1 too much
 		dec	de		; Now DE has the correct PC
 		inc	hl		; Now HL has correct SP

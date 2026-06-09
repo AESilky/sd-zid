@@ -20,7 +20,7 @@ gpio_val:	.block	BYTE		; Memory backing for the GPIO
 
 ; stack
 ;
-		.align	8		; Put on a page boundary
-		.block	256		; Debug monitor stack space
+STK		.sect
+		.block	254		; Debug monitor stack space
 sbcstk:		.equ	$
 

@@ -27,11 +27,11 @@
 static const uint16_t cb_msel_program_instructions[] = {
             //     .wrap_target
     0x20a0, //  0: wait   1 pin, 0
-    0xa0e3, //  1: mov    osr, null
+    0xb0e3, //  1: mov    osr, null       side 0
     0x6088, //  2: out    pindirs, 8
     0xe000, //  3: set    pins, 0
     0x2020, //  4: wait   0 pin, 0
-    0x00c8, //  5: jmp    pin, 8
+    0x18c8, //  5: jmp    pin, 8          side 1
     0xc020, //  6: irq    wait 0
     0x0000, //  7: jmp    0
     0xc024, //  8: irq    wait 4
@@ -52,6 +52,7 @@ static const struct pio_program cb_msel_program = {
 static inline pio_sm_config cb_msel_program_get_default_config(uint offset) {
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_wrap(&c, offset + cb_msel_wrap_target, offset + cb_msel_wrap);
+    sm_config_set_sideset(&c, 2, true, false);
     return c;
 }
 #endif
@@ -229,9 +230,9 @@ static inline pio_sm_config cb_ctrls_program_get_default_config(uint offset) {
 
 static const uint16_t cb_m_write_program_instructions[] = {
             //     .wrap_target
-    0xa0eb, //  0: mov    osr, ~null
+    0xb0eb, //  0: mov    osr, ~null      side 0
     0xc030, //  1: irq    wait 0 rel
-    0x6088, //  2: out    pindirs, 8
+    0x7888, //  2: out    pindirs, 8      side 1
     0x80a0, //  3: pull   block
     0x6008, //  4: out    pins, 8
     0xe001, //  5: set    pins, 1
@@ -252,6 +253,7 @@ static const struct pio_program cb_m_write_program = {
 static inline pio_sm_config cb_m_write_program_get_default_config(uint offset) {
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_wrap(&c, offset + cb_m_write_wrap_target, offset + cb_m_write_wrap);
+    sm_config_set_sideset(&c, 2, true, false);
     return c;
 }
 #endif
@@ -268,9 +270,9 @@ static inline pio_sm_config cb_m_write_program_get_default_config(uint offset) {
 
 static const uint16_t cb_m_read_program_instructions[] = {
             //     .wrap_target
-    0xa0e3, //  0: mov    osr, null
+    0xb0e3, //  0: mov    osr, null       side 0
     0xc030, //  1: irq    wait 0 rel
-    0x6088, //  2: out    pindirs, 8
+    0x7888, //  2: out    pindirs, 8      side 1
     0x4008, //  3: in     pins, 8
     0x8020, //  4: push   block
     0xe001, //  5: set    pins, 1
@@ -291,6 +293,7 @@ static const struct pio_program cb_m_read_program = {
 static inline pio_sm_config cb_m_read_program_get_default_config(uint offset) {
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_wrap(&c, offset + cb_m_read_wrap_target, offset + cb_m_read_wrap);
+    sm_config_set_sideset(&c, 2, true, false);
     return c;
 }
 #endif
