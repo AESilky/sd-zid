@@ -173,10 +173,10 @@ static void _hwrt_started(cmt_msg_t* msg) {
     // Initialize all of the things that use the message loop (it is running now).
 
     // SPI initialization for the MicroSD Card.
-//    spi_init(SPI_SD_DEVICE, SPI_SLOW_SPEED);
+//    ZZZ allow DBUS to use pins for debugging: spi_init(SPI_SD_DEVICE, SPI_SLOW_SPEED);
 
     // Disk Operations
-//    dskops_modinit();
+//    ZZZ allow DBUS to use pins for debugging: dskops_modinit();
 
     cmt_msg_hdlr_add(MSG_APPS_STARTED, _handle_apps_started);
     cmt_msg_hdlr_add(MSG_PERIODIC_RT, _handle_housekeeping);

@@ -1,17 +1,13 @@
+	.stitle	"Storage"
 ;
 ; Storage for the ZID Debug Monitor
 ;
 ; Copyright 2025-26 AESilky
 ; SPDX-License-Identifier: MIT License
 ;
-		.stitle	"Storage"
-
 		.list	1
 		.input	"cmn/stddef.inc"	; stddef must be first
-		.list	2
 		.input	"storage.inc"
-		.eject
-
 BSS		.sect
 
 ; Temp stack and locations for register storage
@@ -101,7 +97,7 @@ tgtskip:	.block	BYTE		; Target hop,SKIP,jump	[mem_op: 2]
 tgtjump:	.block	WORD		; Target hop,skip,JUMP  [mem_op: 1,0] (address set to Target PC)
 					; And we are now running in the Target!!!
 
-		.align	8		; Put on a page boundary
-		.block	256		; Debug monitor stack space (not much stack is used)
+STK		.sect
+		.block	254		; Debug monitor stack space (not much stack is used)
 dbmstk:		.equ	$
 
