@@ -111,7 +111,7 @@ $DEFINE ZFOP        'h'CF   /* but, when debugging with ZED a RST8 is forced */
  *
  * Port Allocations:
  *      00..01: Break1 Data (internal)
- *      02..03: Break1 Data Mask (internal)
+ *      REMOVED: 02..03: Break1 Data Mask (internal)
  *      04..05: Break 1&2n Control (internal)
  *      06..07: Board Control (internal)
  *      08..09: MMU Registers (internal)
@@ -304,9 +304,9 @@ PIN 70  = zrst_;    /* Reset signal to the Z80 (low=true) */
 PIN 72  = !lrst_R;  /* Local reset (registered) */
                     /*  triggered by rst_req_R */
                     /*  or when brd_rst is true for 3+ clocks */
-PIN [48,46,47] = [rra2..0]; /* ROM/RAM Address: Actually RRA16..14 on bus */
-PIN 50  = ram_sel;
-PIN 49  = rom_sel;
+PIN [48,46,47] = [rra2..0]; /* ROM/RAM Address: Actually RRA16..14 on bus   */
+PIN 50  = !ram_sel;
+PIN 49  = rom_sel;  /* Defined as HIGH-TRUE and an inverter used externally */
 /*PIN 32  = rom_sel_; /* Low-TRUE and used internally                     */
 PIN 45  = !zwait;
 PROPERTY Atmel {open_collector = on zwait}; /* ZZZ needed on breadboard */
