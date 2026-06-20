@@ -13,4 +13,5 @@ target_include_directories(dbusc_cmd INTERFACE
 
 target_link_libraries(dbusc_cmd INTERFACE
     cmd
+    dbusc
 )

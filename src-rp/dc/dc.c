@@ -6,6 +6,7 @@
  *
 */
 #include "dc.h" // Declarations for the Debug Operations Controller methods
+#include "z80reg.h"
 
 #include "board.h"
 #include "calc.h"
@@ -18,6 +19,11 @@
 #include "nbase.h"
 #include "num.h"
 
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 // ====================================================================
 // Local Constants
 // ====================================================================
@@ -29,11 +35,41 @@
 
 static volatile bool _modinit_called;
 
+static dcm_t _mode;
+static char _promptbuf[10];     // Buffer to build the prompt into
+
+uint8_t dc_mem_buf[ONE_K];
 
 // ====================================================================
 // Local/Private Method Declarations
 // ====================================================================
 
+/* Prompt Provider for the Shell */
+static const char* _prompt_prov() {
+    char ied = (z80_intenbld() ? 'E' : 'D');
+    nbase_t nb = nbase_get();
+    char base;
+    switch (nb) {
+        case NB_BINARY:
+            base = 'B';
+            break;
+        case NB_DECIMAL:
+            base = 'D';
+            break;
+        case NB_HEX:
+            base = 'H';
+            break;
+        case NB_OCTAL:
+            base = 'O';
+            break;
+        default:
+            base = '?';
+            break;
+    }
+    char mode = (_mode == DCM_DEBUG ? 'D' : 'T');
+    sprintf(_promptbuf, "I%c %c %c:",ied,base,mode);
+    return _promptbuf;
+}
 
 
 // ====================================================================
@@ -48,10 +84,10 @@ static volatile bool _modinit_called;
 
 static void _handle_dbus_ctrl_op(cmt_msg_t* msg) {
     uint8_t ctrl = highByte(msg->data.value16u);
-    bool wr = ((ctrl & (CTRL_WR_BIT_M | CTRL_RD_BIT_M)) == CTRL_RD_BIT_M); // Bus signals are active LOW
-    char* op = (wr ? "WR" : "RD");
-    shell_printf("CTRL %s (%04X)", op, msg->data.value16u);
-    if (wr) {
+    bool rd = ((ctrl & CTRL_RD_BIT_M) == 0); // Bus signals are active LOW
+    char* op = (rd ? "RD" : "WR");
+    shell_printf("\nCTRL %s (%04X)", op, msg->data.value16u);
+    if (!rd) {
         uint8_t v = lowByte(msg->data.value16u);
         shell_printf(":%02X", v);
     }
@@ -60,9 +96,18 @@ static void _handle_dbus_ctrl_op(cmt_msg_t* msg) {
     attn_set_on(false);
 }
 
+static void _handle_dbus_read_unexptd(cmt_msg_t* msg) {
+    // The host performed a READ from DATA when we weren't expecting it
+    shell_printf("Unexpected DATA RD: %02X\n", msg->data.value8u);
+}
+
+static void _handle_dbus_write_unexptd(cmt_msg_t* msg) {
+    // The host performed a WRITE to DATA when we weren't expecting it
+    shell_printf("Unexpected DATA WR: %02X\n", msg->data.value8u);
+}
+
 static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
-    uint8_t ot = msg->data.value8u;
-    bool wr = (ot & DBXFER_WR);
+    bool wr = (msg->id == MSG_DBUS_DWRITE_XFER_DONE);
     char* op = (wr ? "WR:" : "RD\n");
     shell_printf("Data %s", op);
     if (wr) {
@@ -96,6 +141,40 @@ void _ctrl_reg_hdlr(void) {
 // Public Methods
 // ====================================================================
 
+uint32_t reg_num_valprov(const char* str, repsize_t sz, valstatus_t* status) {
+    // If it starts with a digit it can't be a register
+    if (isdigit((int)*str)) {
+        return num_valprovider(str, sz, status);
+    }
+    uint32_t v = 0;
+    const regaccess_t* pra = z80_ra_for_token(str);
+    if (!pra) {
+        // Couldn't get a Register Accessor for the token. Do a couple
+        // quick checks to help with the status returned
+        if (strlen(str) > 3) {
+            *status = VP_INV_TOKEN;
+            goto _err_invtkn;
+        }
+        else {
+            *status = VP_TOKEN_UNKNOWN;
+            goto _err_invtkn;
+        }
+    }
+    // Make sure the register isn't too big for the requested size
+    if (sz != RS_UNLIMIT && pra->sz > sz) {
+        *status = VP_INV_SIZE;
+        goto _err_invtkn;
+    }
+    zval_t zv = pra->getval();
+    zbwv_t bwv = zv.v;
+    v = (zv.sz == RS_BYTE ? bwv.bv : bwv.wv);
+    *status = VP_OK;
+_finally:
+    return v;
+_err_invtkn:
+    goto _finally;
+}
+
 
 
 // ====================================================================
@@ -108,18 +187,54 @@ int dc_modinit() {
     }
     _modinit_called = true;
 
-    int retval = calc_modinit();
+    int retval = z80_modinit();
+    if (retval != 0) goto _fail;
+    retval = calc_modinit();
     if (retval != 0) goto _fail;
     retval = nbase_modinit();
     if (retval != 0) goto _fail;
     retval = num_modinit();
     if (retval != 0) goto _fail;
 
+    // Clear our Z80 registers
+    regied_sv(0xFF); // F when pushed with I (using AF)
+    regi_sv(0x55);   // Interrupt
+    //
+    regfx_sv(0x00);  // F'
+    regax_sv(0x1A);  // A'
+    regcx_sv(0x1C);  // C'
+    regbx_sv(0x1B);  // B'
+    regex_sv(0x1E);  // E'
+    regdx_sv(0x1D);  // D'
+    reglx_sv(0x11);  // L'
+    reghx_sv(0x12);  // H'
+    //
+    regc_sv(0x2C);   // C
+    regb_sv(0x2B);   // B
+    rege_sv(0x2E);   // E
+    regd_sv(0x2D);   // D
+    regl_sv(0x21);   // L
+    regh_sv(0x22);   // H
+    regf_sv(0xFF);   // F
+    rega_sv(0x0A);   // A
+    //
+    regsp_sv(0x544A);  // SP (Stack Pointer)
+    regpc_sv(0x555B);  // PC (Program Counter)
+    regix_sv(0x566C);  // IX (Index X)
+    regiy_sv(0x577D);  // IY (Index Y)
+
+    _mode = DCM_DEBUG;
+
     // Set a default value for Data Bus READ operations.
-    dbus_rd_def(0x31);      // The DCGRP command for the PC
+    dbus_rd_def(0x08);      // The DCISSBC command for the DC (is SBC)
 
     cmt_msg_hdlr_add(MSG_DBUS_CTRL_ACCESS, _handle_dbus_ctrl_op);
-    cmt_msg_hdlr_add(MSG_DBUS_XFER_DONE, _handle_dbus_xfer_done);
+    cmt_msg_hdlr_add(MSG_DBUS_DREAD_UNEXPECTED, _handle_dbus_read_unexptd);
+    cmt_msg_hdlr_add(MSG_DBUS_DREAD_XFER_DONE, _handle_dbus_xfer_done);
+    cmt_msg_hdlr_add(MSG_DBUS_DWRITE_UNEXPECTED, _handle_dbus_write_unexptd);
+    cmt_msg_hdlr_add(MSG_DBUS_DWRITE_XFER_DONE, _handle_dbus_xfer_done);
+
+    shell_set_promptprov(_prompt_prov);
 
     return retval;
 

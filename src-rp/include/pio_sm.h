@@ -29,9 +29,18 @@ extern "C" {
 typedef struct {
     PIO pio;                // The PIO
     uint sm;                // The State Machine
-    uint offset;            // PIO program offset
+    int offset;             // PIO program offset
     pio_sm_config sm_cfg;   // The configuration for the State Machine
 } pio_sm_pocfg;
+
+/**
+ * @brief Get the PIO debug register and reset any set bits
+ * @ingroup pio_sm
+ * 
+ * @param pio PIO instance to check 
+ * @return uint32_t The value of the DEBUG register
+ */
+uint32_t pio_debug_get(PIO pio);
 
 /**
  * @brief Function type definition for a PIO State-Machine default configuration
@@ -61,6 +70,7 @@ typedef pio_sm_config(*piosmcfg_fn)(uint offset);
  * @param pio_prgm Pointer to the PIO program
  * @param smdefcfgfn Function that returns the default State Machine configuration
  * @param clkdiv The clock divider
+ * @param cfgpins Configure the GPIO Pins based on the PIO-SM config
  * @param join_type The FIFO join type to apply
  * @param in_bits The number of ISR bits to use (can be 0)
  * @param in_right True if the input shift is to the right (ignored if in_bits is 0)
@@ -80,7 +90,7 @@ typedef pio_sm_config(*piosmcfg_fn)(uint offset);
  * @param mov_status The status to be used for the `MOV d,STATUS` operation (STATUS_TX_LESSTHAN or STATUS_RX_LESSTHAN). Use NO_MOV_STATUS (-1) for no MOV STATUS operation.
  * @return pio_sm_pocfg Structure containing the 'pio', 'sm', 'offset', and 'sm cfg'. The offset is negative if there was an error.
  */
-extern pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp, int mov_status);
+extern pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, bool cfgpins, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp, int mov_status);
 
 /**
  * @brief Get the PIO State Machine PC value.

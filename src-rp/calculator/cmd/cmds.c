@@ -776,13 +776,17 @@ static void _setX(uint32_t x) {
     _stk[X] = x & _wmask;
 }
 
+void calc_set_valprov(val_prvdr_fn fn) {
+    _val_provider = (fn ? fn : num_valprovider);
+}
+
 /* Public, but intended to be called by the method exposed by 'calc' */
 void calc_setX(uint32_t x) {
     _setX(x);
 }
 
 void calccmds_modinit() {
-    _val_provider = num_valprovider;
+    calc_set_valprov(NULL); // This will set the default provider
     _wmask = WORD_MASK_32;
     _wsize = RS_UNLIMIT;
     _op_clr();

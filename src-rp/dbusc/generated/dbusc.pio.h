@@ -11,41 +11,40 @@
 #define PIO_BCA_CTRL 0
 #define PIO_BCA_RDDR 1
 #define PIO_DATA_IRQ 4
-#define PIO_RDRQ_IRQ 5
-#define PIO_WRRQ_IRQ 6
 
 // ------- //
 // cb_msel //
 // ------- //
 
-#define cb_msel_wrap_target 0
-#define cb_msel_wrap 8
+#define cb_msel_wrap_target 7
+#define cb_msel_wrap 9
 #define cb_msel_pio_version 0
 
 #define cb_msel_offset_start 0u
 
 static const uint16_t cb_msel_program_instructions[] = {
-            //     .wrap_target
-    0x20a0, //  0: wait   1 pin, 0
-    0xb0e3, //  1: mov    osr, null       side 0
-    0x6088, //  2: out    pindirs, 8
-    0xe000, //  3: set    pins, 0
-    0x2020, //  4: wait   0 pin, 0
-    0x18c8, //  5: jmp    pin, 8          side 1
+    0xa7e3, //  0: mov    osr, null              [7]
+    0x6788, //  1: out    pindirs, 8             [7]
+    0x300d, //  2: wait   0 gpio, 13      side 0
+    0x00c9, //  3: jmp    pin, 9
+    0xa0c3, //  4: mov    isr, null
+    0x4008, //  5: in     pins, 8
     0xc020, //  6: irq    wait 0
-    0x0000, //  7: jmp    0
-    0xc024, //  8: irq    wait 4
+            //     .wrap_target
+    0x3f8d, //  7: wait   1 gpio, 13      side 1 [7]
+    0x0700, //  8: jmp    0                      [7]
+    0xc724, //  9: irq    wait 4                 [7]
             //     .wrap
 };
 
 #if !PICO_NO_HARDWARE
 static const struct pio_program cb_msel_program = {
     .instructions = cb_msel_program_instructions,
-    .length = 9,
+    .length = 10,
     .origin = -1,
     .pio_version = cb_msel_pio_version,
 #if PICO_PIO_VERSION > 0
-    .used_gpio_ranges = 0x0
+    .used_gpio_ranges = 0x1
 #endif
 };
 
@@ -57,163 +56,47 @@ static inline pio_sm_config cb_msel_program_get_default_config(uint offset) {
 }
 #endif
 
-// ------- //
-// cb_data //
-// ------- //
+// ----------- //
+// cb_autodata //
+// ----------- //
 
-#define cb_data_wrap_target 5
-#define cb_data_wrap 9
-#define cb_data_pio_version 0
+#define cb_autodata_wrap_target 0
+#define cb_autodata_wrap 11
+#define cb_autodata_pio_version 0
 
-#define cb_data_offset_start 0u
+#define cb_autodata_offset_start 0u
 
-static const uint16_t cb_data_program_instructions[] = {
+static const uint16_t cb_autodata_program_instructions[] = {
+            //     .wrap_target
     0x2044, //  0: wait   0 irq, 4
-    0x00c7, //  1: jmp    pin, 7
-    0xa0e3, //  2: mov    osr, null
+    0x00ca, //  1: jmp    pin, 10
+    0xa0eb, //  2: mov    osr, ~null
     0x6088, //  3: out    pindirs, 8
-    0xc026, //  4: irq    wait 6
-            //     .wrap_target
-    0x20c4, //  5: wait   1 irq, 4
-    0x0000, //  6: jmp    0
-    0xa0eb, //  7: mov    osr, ~null
-    0x6088, //  8: out    pindirs, 8
-    0xc025, //  9: irq    wait 5
+    0xa045, //  4: mov    y, status
+    0x0067, //  5: jmp    !y, 7
+    0xc021, //  6: irq    wait 1
+    0x80a0, //  7: pull   block
+    0x6708, //  8: out    pins, 8                [7]
+    0x000b, //  9: jmp    11
+    0x4008, // 10: in     pins, 8
+    0x20c4, // 11: wait   1 irq, 4
             //     .wrap
 };
 
 #if !PICO_NO_HARDWARE
-static const struct pio_program cb_data_program = {
-    .instructions = cb_data_program_instructions,
-    .length = 10,
+static const struct pio_program cb_autodata_program = {
+    .instructions = cb_autodata_program_instructions,
+    .length = 12,
     .origin = -1,
-    .pio_version = cb_data_pio_version,
+    .pio_version = cb_autodata_pio_version,
 #if PICO_PIO_VERSION > 0
     .used_gpio_ranges = 0x0
 #endif
 };
 
-static inline pio_sm_config cb_data_program_get_default_config(uint offset) {
+static inline pio_sm_config cb_autodata_program_get_default_config(uint offset) {
     pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_wrap(&c, offset + cb_data_wrap_target, offset + cb_data_wrap);
-    return c;
-}
-#endif
-
-// --------- //
-// cb_a_read //
-// --------- //
-
-#define cb_a_read_wrap_target 0
-#define cb_a_read_wrap 8
-#define cb_a_read_pio_version 0
-
-#define cb_a_read_offset_start 0u
-
-static const uint16_t cb_a_read_program_instructions[] = {
-            //     .wrap_target
-    0xa042, //  0: nop
-    0x2045, //  1: wait   0 irq, 5
-    0xa045, //  2: mov    y, status
-    0x0065, //  3: jmp    !y, 5
-    0xc021, //  4: irq    wait 1
-    0x80a0, //  5: pull   block
-    0x6008, //  6: out    pins, 8
-    0xe001, //  7: set    pins, 1
-    0x20c5, //  8: wait   1 irq, 5
-            //     .wrap
-};
-
-#if !PICO_NO_HARDWARE
-static const struct pio_program cb_a_read_program = {
-    .instructions = cb_a_read_program_instructions,
-    .length = 9,
-    .origin = -1,
-    .pio_version = cb_a_read_pio_version,
-#if PICO_PIO_VERSION > 0
-    .used_gpio_ranges = 0x0
-#endif
-};
-
-static inline pio_sm_config cb_a_read_program_get_default_config(uint offset) {
-    pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_wrap(&c, offset + cb_a_read_wrap_target, offset + cb_a_read_wrap);
-    return c;
-}
-#endif
-
-// ---------- //
-// cb_a_write //
-// ---------- //
-
-#define cb_a_write_wrap_target 0
-#define cb_a_write_wrap 5
-#define cb_a_write_pio_version 0
-
-#define cb_a_write_offset_start 0u
-
-static const uint16_t cb_a_write_program_instructions[] = {
-            //     .wrap_target
-    0xa042, //  0: nop
-    0x2046, //  1: wait   0 irq, 6
-    0x4008, //  2: in     pins, 8
-    0x8020, //  3: push   block
-    0xe001, //  4: set    pins, 1
-    0x20c6, //  5: wait   1 irq, 6
-            //     .wrap
-};
-
-#if !PICO_NO_HARDWARE
-static const struct pio_program cb_a_write_program = {
-    .instructions = cb_a_write_program_instructions,
-    .length = 6,
-    .origin = -1,
-    .pio_version = cb_a_write_pio_version,
-#if PICO_PIO_VERSION > 0
-    .used_gpio_ranges = 0x0
-#endif
-};
-
-static inline pio_sm_config cb_a_write_program_get_default_config(uint offset) {
-    pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_wrap(&c, offset + cb_a_write_wrap_target, offset + cb_a_write_wrap);
-    return c;
-}
-#endif
-
-// -------- //
-// cb_ctrls //
-// -------- //
-
-#define cb_ctrls_wrap_target 0
-#define cb_ctrls_wrap 3
-#define cb_ctrls_pio_version 0
-
-#define cb_ctrls_offset_start 0u
-
-static const uint16_t cb_ctrls_program_instructions[] = {
-            //     .wrap_target
-    0xa042, //  0: nop
-    0xc030, //  1: irq    wait 0 rel
-    0x4004, //  2: in     pins, 4
-    0x8020, //  3: push   block
-            //     .wrap
-};
-
-#if !PICO_NO_HARDWARE
-static const struct pio_program cb_ctrls_program = {
-    .instructions = cb_ctrls_program_instructions,
-    .length = 4,
-    .origin = -1,
-    .pio_version = cb_ctrls_pio_version,
-#if PICO_PIO_VERSION > 0
-    .used_gpio_ranges = 0x0
-#endif
-};
-
-static inline pio_sm_config cb_ctrls_program_get_default_config(uint offset) {
-    pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_wrap(&c, offset + cb_ctrls_wrap_target, offset + cb_ctrls_wrap);
+    sm_config_set_wrap(&c, offset + cb_autodata_wrap_target, offset + cb_autodata_wrap);
     return c;
 }
 #endif
@@ -223,26 +106,25 @@ static inline pio_sm_config cb_ctrls_program_get_default_config(uint offset) {
 // ---------- //
 
 #define cb_m_write_wrap_target 0
-#define cb_m_write_wrap 5
+#define cb_m_write_wrap 4
 #define cb_m_write_pio_version 0
 
 #define cb_m_write_offset_start 0u
 
 static const uint16_t cb_m_write_program_instructions[] = {
             //     .wrap_target
-    0xb0eb, //  0: mov    osr, ~null      side 0
-    0xc030, //  1: irq    wait 0 rel
-    0x7888, //  2: out    pindirs, 8      side 1
+    0xc022, //  0: irq    wait 2
+    0xb8eb, //  1: mov    osr, ~null      side 1
+    0x6788, //  2: out    pindirs, 8             [7]
     0x80a0, //  3: pull   block
-    0x6008, //  4: out    pins, 8
-    0xe001, //  5: set    pins, 1
+    0x7008, //  4: out    pins, 8         side 0
             //     .wrap
 };
 
 #if !PICO_NO_HARDWARE
 static const struct pio_program cb_m_write_program = {
     .instructions = cb_m_write_program_instructions,
-    .length = 6,
+    .length = 5,
     .origin = -1,
     .pio_version = cb_m_write_pio_version,
 #if PICO_PIO_VERSION > 0
@@ -263,26 +145,24 @@ static inline pio_sm_config cb_m_write_program_get_default_config(uint offset) {
 // --------- //
 
 #define cb_m_read_wrap_target 0
-#define cb_m_read_wrap 5
+#define cb_m_read_wrap 3
 #define cb_m_read_pio_version 0
 
 #define cb_m_read_offset_start 0u
 
 static const uint16_t cb_m_read_program_instructions[] = {
             //     .wrap_target
-    0xb0e3, //  0: mov    osr, null       side 0
+    0xa0e3, //  0: mov    osr, null
     0xc030, //  1: irq    wait 0 rel
-    0x7888, //  2: out    pindirs, 8      side 1
+    0x6788, //  2: out    pindirs, 8             [7]
     0x4008, //  3: in     pins, 8
-    0x8020, //  4: push   block
-    0xe001, //  5: set    pins, 1
             //     .wrap
 };
 
 #if !PICO_NO_HARDWARE
 static const struct pio_program cb_m_read_program = {
     .instructions = cb_m_read_program_instructions,
-    .length = 6,
+    .length = 4,
     .origin = -1,
     .pio_version = cb_m_read_pio_version,
 #if PICO_PIO_VERSION > 0
@@ -293,7 +173,6 @@ static const struct pio_program cb_m_read_program = {
 static inline pio_sm_config cb_m_read_program_get_default_config(uint offset) {
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_wrap(&c, offset + cb_m_read_wrap_target, offset + cb_m_read_wrap);
-    sm_config_set_sideset(&c, 2, true, false);
     return c;
 }
 #endif

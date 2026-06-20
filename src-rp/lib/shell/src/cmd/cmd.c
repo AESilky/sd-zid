@@ -368,7 +368,7 @@ static void _process_line(char* line) {
     // Get another command from the user...
     _cmd_state = CMD_COLLECTING_LINE;
     shell_use_cmd_color();
-    shell_putc(CMD_PROMPT);
+    shell_prompt();
     shell_getline(_process_line);
 }
 
@@ -377,7 +377,7 @@ static void _wakeup() {
     _cmd_state = CMD_COLLECTING_LINE;
     shell_use_cmd_color();
     putchar('\n');
-    putchar(CMD_PROMPT);
+    shell_prompt();
     term_cursor_on(true);
     // Get a command from the user...
     shell_getline(_process_line);

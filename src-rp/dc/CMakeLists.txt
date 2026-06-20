@@ -4,6 +4,7 @@ add_library(dc INTERFACE)
 target_sources(dc INTERFACE
     dc.c
     dcmsg.c
+    z80reg.c
 )
 
 target_include_directories(dc INTERFACE

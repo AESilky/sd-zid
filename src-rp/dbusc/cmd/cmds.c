@@ -11,6 +11,7 @@
 #include "cmds.h"
 #include "dbusc.h"
 
+#include "num.h"
 #include "util.h"
 
 #include "shell.h"
@@ -22,7 +23,7 @@
 
 
 const cmd_handler_entry_t cmds_attn_entry;
-const cmd_handler_entry_t cmds_ctrlbits_entry;
+const cmd_handler_entry_t cmds_dbwr_entry;
 
 static int _exec_dbc_attn(int argc, char** argv, const char* unparsed) {
     int retval = 0;
@@ -45,17 +46,25 @@ static int _exec_dbc_attn(int argc, char** argv, const char* unparsed) {
     return (retval);
 }
 
-static int _exec_dbc_ctrl_rd(int argc, char** argv, const char* unparsed) {
+/*static*/ void man_write(uint8_t v);
+
+static int _exec_dbwr(int argc, char** argv, const char* unparsed) {
     int retval = 0;
-    if (argc > 1) {
-        // We don't take any arguments.
-        cmd_help_display(&cmds_ctrlbits_entry, HELP_DISP_USAGE);
+    if (argc != 2) {
+        // We take 1 argument.
+        cmd_help_display(&cmds_dbwr_entry, HELP_DISP_USAGE);
         return (-1);
     }
-    uint8_t ctrl = dbus_ctrl_state();
-    // Display the CTRL bits
-    shell_printf("MSEL-,WR-,RD-,ADDR is: 0x%01X\n", ctrl);
-
+    argv++;
+    valstatus_t status;
+    uint32_t v = num_valprovider(*argv, RS_BYTE, &status);
+    if (status != VP_OK) {
+        shell_printferr("Invalid argument\n");
+        retval = 1;
+        goto _finally;
+    }
+    man_write((uint8_t)v);
+_finally:
     return (retval);
 }
 
@@ -67,17 +76,17 @@ const cmd_handler_entry_t cmds_attn_entry = {
     "Show the ATTN line state. Set the ATTN line state."
 };
 
-const cmd_handler_entry_t cmds_ctrlbits_entry = {
-    _exec_dbc_ctrl_rd,
-    5,
-    "ctrlbits",
-    0,
-    "Show the state of MSEL-,WR-,RD-,ADDR."
+const cmd_handler_entry_t cmds_dbwr_entry = {
+    _exec_dbwr,
+    4,
+    "dbwr",
+    "v",
+    "Write the value to the data bus."
 };
 
 
 
 void dbusccmds_modinit(void) {
     cmd_register(&cmds_attn_entry);
-    cmd_register(&cmds_ctrlbits_entry);
+    cmd_register(&cmds_dbwr_entry);
 }

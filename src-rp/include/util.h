@@ -216,6 +216,20 @@ extern int skip_to_ws_eol(const char* line);
 extern char* str_value_create(const char* value);
 
 /**
+ * @brief Replace one character for another in a string.
+ * @ingroup util
+ * 
+ * Replaces all occurrences of character c1 with character c2 in the entire string
+ * and returns the number of replacements.
+ * 
+ * @param str Null terminated string of characters to process
+ * @param c1 The character to replace
+ * @param c2 The character to replace it with
+ * @return int The number of replacements made
+ */
+extern int strchrplc(char* str, char c1, char c2);
+
+/**
  * @brief Copy the first 'n' characters of 'src' string to the 'dest' with a terminating null.
  * @ingroup util
  *

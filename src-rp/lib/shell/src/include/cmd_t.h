@@ -24,7 +24,7 @@ extern "C" {
 #define CMD_GEN_EXCEPT (4)
 
 /**
- * @brief If `usage` begins with CTRL-A ('\001') it indicate that this command
+ * @brief If `usage` begins with CTRL-A ('\001') it indicates that this command
  *        is an alias for another. The rest of `usage` is the aliased command name.
  */
 #define CMD_ALIAS_INDICATOR '\001'

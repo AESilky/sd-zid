@@ -22,7 +22,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_options(
     -O0     # No optimizations
   )
-  add_compile_definitions(DEBUG_MODE)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
   message(STATUS "Building in Release mode. (EAS)")
   set(PICO_DEOPTIMIZED_DEBUG 0)

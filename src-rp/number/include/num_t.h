@@ -21,7 +21,8 @@ typedef enum VAL_PROVIDE_STATUS_ {
     VP_OK           = 0,    // Success
     VP_INV_SIZE,            // Invalid size (doesn't meet repsize_t requested)
     VP_INV_DIGIT,           // Invalid digit
-    VP_INV_TOKEN           // Invalid token
+    VP_INV_TOKEN,           // Invalid token
+    VP_TOKEN_UNKNOWN        // Unknown token - preferred over INV_TOKEN when token meets requirements but isn't known
 } valstatus_t;
 
 /**

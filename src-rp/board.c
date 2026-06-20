@@ -100,18 +100,22 @@ int board_init() {
     error_led_set_on(true);
 
     // CPU/BUS Control
-    gpio_set_function(CTRL_INTRQ, GPIO_FUNC_SIO);
+    gpio_init(CTRL_INTRQ);
     gpio_put(CTRL_INTRQ, CTRL_INTRQ_OFF);
     gpio_set_dir(CTRL_INTRQ, GPIO_OUT);
     gpio_set_drive_strength(CTRL_INTRQ, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_function(CTRL_WAITRQ, GPIO_FUNC_SIO);
-    gpio_put(CTRL_WAITRQ, CTRL_WAITRQ_OFF);
+    gpio_init(CTRL_WAITRQ);
+    gpio_put(CTRL_WAITRQ, CTRL_WAITRQ_ON);
     gpio_set_dir(CTRL_WAITRQ, GPIO_OUT);
-    gpio_set_drive_strength(CTRL_WAITRQ, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_function(CTRL_ADDR, GPIO_FUNC_SIO);
-    gpio_set_function(CTRL_MODSEL, GPIO_FUNC_SIO);
-    gpio_set_function(CTRL_RD, GPIO_FUNC_SIO);
-    gpio_set_function(CTRL_WR, GPIO_FUNC_SIO);
+    gpio_set_drive_strength(CTRL_WAITRQ, GPIO_DRIVE_STRENGTH_12MA);
+    gpio_init(CTRL_ADDR);
+    gpio_set_dir(CTRL_ADDR, GPIO_IN);
+    gpio_init(CTRL_MODSEL);
+    gpio_set_dir(CTRL_MODSEL, GPIO_IN);
+    gpio_init(CTRL_RD);
+    gpio_set_dir(CTRL_RD, GPIO_IN);
+    gpio_init(CTRL_WR);
+    gpio_set_dir(CTRL_WR, GPIO_IN);
 
     // SPI Pins for MicroSD Card
     // gpio_set_function(SPI_SD_SCK, GPIO_FUNC_SPI);

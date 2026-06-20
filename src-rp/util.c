@@ -200,6 +200,18 @@ char* str_value_create(const char* value) {
     return (malloced_value);
 }
 
+int strchrplc(char* str, char c1, char c2) {
+    int rc = 0;
+    while (*str) {
+        if (*str == c1) {
+            *str = c2;
+            rc++;
+        }
+        str++;
+    }
+    return rc;
+}
+
 size_t strcpynt(char* dest, const char* src, size_t maxchars) {
     size_t n = 0;
     char c;
