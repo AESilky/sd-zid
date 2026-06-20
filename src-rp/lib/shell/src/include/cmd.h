@@ -22,7 +22,7 @@ extern "C" {
 #define CMD_RECALL_LAST_CHAR '\013' // ^K
 #define CMD_RECALL_NEXT_CHAR '\014' // ^L
 
-#define CMD_PROMPT ':'
+#define CMD_DEF_PROMPT ":"
 
 typedef enum _CMD_STATES_ {
     CMD_SNOOZING,   // Waiting for user input to wake us up

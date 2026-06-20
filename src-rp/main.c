@@ -22,21 +22,6 @@
 #include <stdio.h>
 
 
- // 'H' (....) 'I' (..)
-[[maybe_unused]] static const int32_t say_hi[] = {
-    MORSE_DOT_MS,
-    MORSE_UP_MS,
-    MORSE_DOT_MS,
-    MORSE_UP_MS,
-    MORSE_DOT_MS,
-    MORSE_UP_MS,
-    MORSE_DOT_MS,
-    MORSE_CHR_SP_MS,
-    MORSE_DOT_MS,
-    MORSE_UP_MS,
-    MORSE_DOT_MS,
-    0 };
-
 int main() {
     // useful information for picotool
     bi_decl(bi_program_description("SilkyDESIGN RP System Module w/ Debug Op Controller"));
@@ -48,10 +33,6 @@ int main() {
 
     // Initialize debug
     debug_init(DIM_BOOT);
-
-
-    //led_on_off(say_hi);
-    //sleep_ms(100);
 
     // Initialize the multicore subsystem
     multicore_modinit(debug_mode_enabled());
@@ -65,7 +46,7 @@ int main() {
     start_hwrt();
 
     // How did we get here?!
-    const char* errmsg = "DKR.main - Somehow we are out of our endless message loop in `main()`!!!";
+    const char* errmsg = "DOC.main - Somehow we are out of our endless message loop in `main()`!!!";
     debug_trace(errmsg);
     error_printf(errmsg);
     // ZZZ Reboot!!!

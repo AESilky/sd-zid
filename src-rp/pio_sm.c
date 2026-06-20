@@ -7,7 +7,15 @@
 */
 #include "pio_sm.h"
 
-pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp, int mov_status) {
+uint32_t pio_debug_get(PIO pio) {
+    uint32_t debug = pio->fdebug & 0xffffff;
+    if (debug) {
+        pio->fdebug = debug;
+    }
+    return debug;
+}
+
+pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, bool cfgpins, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp, int mov_status) {
     pio_sm_set_enabled(pio, sm, false);
 
     pio_sm_pocfg smpocfg;
@@ -20,33 +28,34 @@ pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, p
         return smpocfg;      // the program could not be added
     }
 
-    // configure the PINS
-
-    for (int i = 0; i < pin_o_cnt; i++) {
-        uint pin = pin_o + i;
-        pio_gpio_init(pio, pin);
-        gpio_set_dir(pin, GPIO_OUT);
+    if (cfgpins) {
+        // configure the PINS
+        for (int i = 0; i < pin_o_cnt; i++) {
+            uint pin = pin_o + i;
+            pio_gpio_init(pio, pin);
+            gpio_set_dir(pin, GPIO_OUT);
+        }
+        for (int i = 0; i < pin_s_cnt; i++) {
+            uint pin = pin_s + i;
+            pio_gpio_init(pio, pin);
+            gpio_set_dir(pin, GPIO_OUT);
+        }
+        for (int i = 0; i < pin_ss_cnt; i++) {
+            uint pin = pin_ss + i;
+            pio_gpio_init(pio, pin);
+            gpio_set_dir(pin, GPIO_OUT);
+        }
+        for (int i = 0; i < pin_i_cnt; i++) {
+            uint pin = pin_i + i;
+            pio_gpio_init(pio, pin);
+            gpio_set_dir(pin, GPIO_IN);
+        }
+        if (pin_jmp >= 0) {
+            pio_gpio_init(pio, pin_jmp);
+            gpio_set_dir(pin_jmp, GPIO_IN);
+        }
     }
-    for (int i = 0; i < pin_s_cnt; i++) {
-        uint pin = pin_s + i;
-        pio_gpio_init(pio, pin);
-        gpio_set_dir(pin, GPIO_OUT);
-    }
-    for (int i = 0; i < pin_ss_cnt; i++) {
-        uint pin = pin_ss + i;
-        pio_gpio_init(pio, pin);
-        gpio_set_dir(pin, GPIO_OUT);
-    }
-    for (int i = 0; i < pin_i_cnt; i++) {
-        uint pin = pin_i + i;
-        pio_gpio_init(pio, pin);
-        gpio_set_dir(pin, GPIO_IN);
-    }
-    if (pin_jmp >= 0) {
-        pio_gpio_init(pio, pin_jmp);
-        gpio_set_dir(pin_jmp, GPIO_IN);
-    }
-
+    
     // configure the PIO/SM
 
     smpocfg.sm_cfg = smdefcfgfn(smpocfg.offset);

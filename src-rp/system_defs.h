@@ -91,16 +91,13 @@ extern "C" {
 #define PIOBLK_DBUS_AUTO        pio1            // PIO Block 1 is used for automatic databus control
 #define PIO_BCA_MSEL_SM         0               // State Machine 0 is used to watch MOD_SEL-
 #define PIO_BCA_DATA_SM         1               // State Machine 1 is used for DATA operations
-#define PIO_BCA_RD_SM           2               // State Machine 2 is used to transfer data out
-#define PIO_BCA_RD_DREQ         DREQ_PIO1_TX2   // TXFIFO for reads from host
-#define PIO_BCA_WR_SM           3               // State Machine 3 is used to transfer data in
-#define PIO_BCA_WR_DREQ         DREQ_PIO1_RX3   // RXFIFO for writes from host
+#define PIOBLK_DBUS_MAN         pio0            // PIO Block 0 is used for manual databus reads/writes
+#define PIO_BCM_OUT_SM          2               // State Machine 2 is used to manually transfer data out
+#define PIO_BCM_IN_SM           3               // State Machine 3 is used to manually transfer data in
 #define SYSIRQ_PIO_ACTRL        PIO1_IRQ_0      // PIO IRQ 0 used to signal Control Operation Request
 #define SYSIRQ_PIO_ADATA_DR     PIO1_IRQ_1      // PIO IRQ 1 used to signal DATA-RD Data Needed
-#define PIOBLK_DBUS_MAN         pio0            // PIO Block 0 is used for manual databus control
-#define PIO_BCM_RD_SM           1               // State Machine 1 is used to manually transfer data out
-#define PIO_BCM_WR_SM           2               // State Machine 2 is used to manually transfer data in
-#define PIO_BCM_CTRLS_SM        3               // State Machine 3 (on PIO Block 0) used to read ADDR,RD-,WR-,MSEL- signals
+#define PIO_BCA_TOHOST_DREQ     DREQ_PIO1_TX2   // TXFIFO for reads from host
+#define PIO_BCA_FROMHOST_DREQ   DREQ_PIO1_RX2   // RXFIFO for writes from host
 #endif
 
 // IRQ Inputs

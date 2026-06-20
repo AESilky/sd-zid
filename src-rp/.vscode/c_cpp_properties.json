@@ -8,6 +8,7 @@
         "${workspaceFolder}/lib/sd_card/ff15/source/",
         "${env:PICO_SDK_PATH}/src/rp2040/**/include/",
         "${env:PICO_SDK_PATH}/src/common/pico_base_headers/include/",
+        "${env:PICO_SDK_PATH}/src/common/pico_binary_info/include",
         "${env:PICO_SDK_PATH}/src/common/pico_stdlib_headers/include/",
         "${env:PICO_SDK_PATH}/src/rp2040/hardware_structs/include",
         "${env:PICO_SDK_PATH}/src/rp2350/hardware_structs/include/",

@@ -23,8 +23,11 @@ extern "C" {
 /**
  * @brief Function prototype for a CTRL register access IRQ handler.
  * @ingroup databus
+ * 
+ * @param ctrl Control Bits read from the CTRL PIO-SM
+ * @return True if handled, False if not
  */
-typedef void (*ctrlreg_irq_fn)(void);
+typedef bool (*ctrlreg_irq_fn)(uint8_t ctrl);
 
 
 /** @brief ADDR bit (mask) */
@@ -43,8 +46,8 @@ typedef void (*ctrlreg_irq_fn)(void);
  */
 typedef enum {
     DBXFER_UNKNOWN = 0,
-    DBXFER_RD = 1,
-    DBXFER_WR = 2
+    DBXFER_TOHOST = 1,
+    DBXFER_FROMHOST = 2
 } dbxfer_op_t;
 
 /**

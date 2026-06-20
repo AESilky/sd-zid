@@ -19,6 +19,8 @@
 #define ESC_NOT_IN_PROGRESS (-1)
 #define ESC_CHARS_MAX 20
 
+static const char* _promptprov_def();
+
 static bool _modinit_called;
 static bool _started;
 static const char* _shell_banner;
@@ -49,6 +51,8 @@ static char _wraptext_line[2 * shell_COLUMNS];
 
 static shell_input_available_handler _input_available_handler;
 static shell_getline_callback_fn _getline_callback; // Function pointer to be called when an input line is ready
+
+static shell_prompt_prov_fn _prompt_prov = _promptprov_def;
 
 static void _host_welcome();
 static bool _process_char(char c, bool process_ctrl);
@@ -283,6 +287,10 @@ static bool _process_char(char c, bool process_ctrl) {
     return (processed);
 }
 
+static const char* _promptprov_def() {
+    return CMD_DEF_PROMPT;
+}
+
 void shell_build(void) {
     term_color_default();
     term_text_normal();
@@ -303,6 +311,10 @@ void shell_color_set(term_color_t fg, term_color_t bg) {
     _color_term_text_current_fg = fg;
     term_color_bg(bg);
     term_color_fg(fg);
+}
+
+const char* shell_get_prompt() {
+    return _prompt_prov();
 }
 
 void shell_getline(shell_getline_callback_fn getline_cb) {
@@ -331,7 +343,7 @@ void shell_getline_replace(const char* rplcstr) {
         term_cursor_on(false);
         term_cursor_bol();
         term_erase_line();
-        shell_putc(CMD_PROMPT);
+        shell_prompt();
         shell_puts(rplcstr);
         term_cursor_on(true);
     }
@@ -444,6 +456,10 @@ static void _putchar_for_app(char c) {
     }
 }
 
+void shell_prompt() {
+    shell_puts(shell_get_prompt());
+}
+
 void shell_put_apptext(char* str) {
     // If the Command Shell is active, don't display output.
     if (CMD_SNOOZING == cmd_get_state()) {
@@ -488,6 +504,10 @@ void shell_register_esc_seq_handler(sescseq_t escseq, shell_escape_seq_handler h
 
 void shell_register_input_available_handler(shell_input_available_handler handler_fn) {
     _input_available_handler = handler_fn;
+}
+
+void shell_set_promptprov(shell_prompt_prov_fn fn) {
+    _prompt_prov = (fn ? fn : _promptprov_def);
 }
 
 void shell_use_output_color() {
