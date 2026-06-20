@@ -1,0 +1,161 @@
+;
+; Copyright 2025-26 AESilky (SilkyDESIGN)
+; SPDX-License-Identifier: MIT
+;
+
+; Control Bus signal monitor and data transfer.
+;
+.pio_version RP2040
+
+.define MS_PIN      0       ; Module Select Pin
+
+.define MS_OFF      1       ; Active LOW
+.define MS_ON       0       ; Active LOW
+.define WAIT_OFF    1       ; Active LOW
+.define WAIT_ON     0       ; Active LOW
+
+.define LEAVE_SET   0       ; Used with WAIT-IRQ to leave the flag set
+.define THEN_CLR    1       ; Used with WAIT-IRQ to clear the flag
+
+.define PUBLIC PIO_BCA_CTRL     0   ; CTRL register accessed (CPU IRQ)
+.define PUBLIC PIO_BCA_RDDR     1   ; DATA RD data required  (CPU IRQ)
+.define PUBLIC PIO_DATA_IRQ     4
+.define PUBLIC PIO_RDRQ_IRQ     5
+.define PUBLIC PIO_WRRQ_IRQ     6
+
+.program cb_msel
+.side_set   1 opt
+;
+; Control Bus - Monitor Module Select
+;
+; Waits for Module Select and generates IRQ based on address
+;
+PUBLIC start:
+.wrap_target
+    wait    MS_OFF pin MS_PIN                   ; Wait for Module Select to clear
+    mov     osr,NULL            side 0
+    out     pindirs,8                           ; set data bus to input
+    set     pins,WAIT_ON                        ; Activate WAIT- (only goes to Host when MS is active)
+    wait    MS_ON pin MS_PIN                    ; Wait for Module Select
+    ; Look for A0:A1
+    jmp     pin,addr1           side 1                ; Raise IRQ based on Control[0]/Data[1] 
+    ; We have MS and A:0 (Control), let the CPU know.
+    irq     wait PIO_BCA_CTRL                   ; Signal CPU that Host has selected Control
+    jmp     start
+addr1:
+    ; We have MS and A:1 (Data), run the Data Read/Write SM
+    irq     wait PIO_DATA_IRQ
+.wrap
+
+
+.program cb_data
+;
+; Control Bus - Handle data transfer
+;
+; Handles data transfer request. Launches RD or WR depending on
+;   signal pins.
+;
+PUBLIC start:
+    wait    LEAVE_SET irq PIO_DATA_IRQ          ; Wait for the DataIRQ to go active
+    ; Look at the WR pin.
+    jmp     pin,datard                          ; If WR is 1 we go to Read (should also look at RD)
+    mov     osr,NULL
+    out     pindirs,8                           ; set data bus to input
+    irq     wait PIO_WRRQ_IRQ                   ; wake up Write SM
+.wrap_target
+    wait    THEN_CLR irq PIO_DATA_IRQ           ; Release MOD_SEL SM
+    jmp     start
+datard:
+    mov     osr,~NULL
+    out     pindirs,8                           ; set data bus to output
+    irq     wait PIO_RDRQ_IRQ                   ; wake up Read SM
+.wrap
+
+
+.program cb_a_read
+;
+; Control Bus - Handle Read Request (data to Z80)
+;
+; Configured for 8 bits.
+;
+PUBLIC start:
+.wrap_target
+    nop
+    wait    LEAVE_SET irq PIO_RDRQ_IRQ          ; Wait for a Read Request
+    // Check that there is data available
+    mov     y,STATUS                            ; get the TXFIFO EMPTY status (configured in PIO-SM config)
+    jmp     !y,drdy                             ; there is data ready
+    irq     wait PIO_BCA_RDDR                   ; tell CPU we need data
+drdy:
+    pull                                        ; get the data
+    out     pins,8                              ; put it on the bus
+    set     pins,WAIT_OFF                       ; Clear WAIT-
+    wait    THEN_CLR irq PIO_RDRQ_IRQ           ; Release DATA SM
+.wrap
+
+
+.program cb_a_write
+;
+; Control Bus - Handle Write Request (data from Z80)
+;
+; Configured for 8 bits auto push, so a read from the bus triggers a push.
+;
+PUBLIC start:
+.wrap_target
+    nop
+    wait    LEAVE_SET irq PIO_WRRQ_IRQ          ; Wait for a Write Request
+    in      pins,8                              ; read from the bus
+    push                                        ; give to CPU
+    set     pins,WAIT_OFF                       ; Clear WAIT-
+    wait    THEN_CLR irq PIO_WRRQ_IRQ           ; Release DATA SM
+.wrap
+
+
+.program cb_ctrls
+; Control Bus - Get the state of the ADDR, RD-, WR-, and MSEL- pins 
+;
+; Configured for 4 bits no-auto push.
+;
+PUBLIC start:
+.wrap_target
+    nop
+    irq     wait 0 rel              ; Wait on the flag being cleared to read the pins
+    in      pins,4
+    push
+.wrap
+
+
+.program cb_m_write
+.side_set   1 opt
+;
+; Control Bus - Perform a single data bus write (data to Z80)
+;
+; Configured for 8 bits.
+;
+PUBLIC start:
+.wrap_target
+    mov     osr,~NULL   side 0
+    irq     wait 0 rel              ; Wait for a Manual Write Request
+    out     pindirs,8   side 1            ; set data bus to output
+    pull                            ; get the data
+    out     pins,8                  ; put it on the bus
+    set     pins,WAIT_OFF           ; Clear WAIT-
+.wrap
+
+
+.program cb_m_read
+.side_set   1 opt
+;
+; Control Bus - Perform a single data bus read (data from Z80)
+;
+; Configured for 8 bits no auto push.
+;
+PUBLIC start:
+.wrap_target
+    mov     osr,NULL    side 0
+    irq     wait 0 rel              ; Wait for a Manual Read Request
+    out     pindirs,8   side 1            ; set data bus to input
+    in      pins,8                  ; read from the bus
+    push                            ; data to CPU
+    set     pins,WAIT_OFF           ; Clear WAIT-
+.wrap

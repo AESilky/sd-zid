@@ -1,0 +1,20 @@
+;
+; ulink control file for 'Debug Monitor' ROM
+;
+; Copyright 2025-26 AESilky
+; SPDX-License-Identifier: MIT License
+;
+;-0d    ; Debugging output messages
+-v      ; Verbose progress
+-bFF    ; Binary image, fill with FF
+;-a -s  ; a.out format without symbols
+-o=dbmon.bin
+-m=dbmon.map
+-lBOOT=0000         ; Code area (actually in region 7 of the rom)
+-lCODE              ; Code area used by diag and util
+-lBSS=7C00          ; Ram area top 1K (actually in region 7 of the ram (15 abs))
+-lSTK=7F00          ; Stack in the top 256 bytes
+; Content
+dbmon.obj           ; Debug Monitor (boot and DOC command dispatching)
+../diag/diag.obj    ; Boot diagnostics
+storage.obj
