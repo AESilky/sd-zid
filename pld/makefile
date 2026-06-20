@@ -8,14 +8,17 @@ PLD_MAIN	:= zid_main
 PLD_BRKADDR	:= zid_ba
 PLD_BRK2X	:= zid_brk2x_ctrl
 
-JEDECS		:= $(PLD_BRKADDR).jed $(PLD_MAIN).jed
+#JEDECS		:= $(PLD_BRKADDR).jed $(PLD_MAIN).jed
+# !!! TEMP - Only zid_main for Microchip Case 01764879 investigation
+JEDECS		:= $(PLD_MAIN).jed
 
 CUPL		:= cupl.exe
 FIT1502		:= fit1502.exe
 FIT1504		:= fit1504.exe
 FIT1508		:= fit1508.exe
 
-CUPLOPTS15		:= -kxm4nlxj    # ATF15xx: Don't convert XOR, m4 Espresso minimization (Good for fitter designs)
+CUPLOPTS15		:= -kskxm4nlxj  # ATF15xx: Optimize product term usage Don't expand XOR (let fitter use XOR gate),
+								#  m4 Espresso minimization (Good for fitter designs)
 CUPLOPTS		:= -kbm2nlxj	# 22Vxx, 16Vxx: Quine-McCluskey minimization
 
 FITOPTS_CMN		:= -CPUL -JTAG ON
