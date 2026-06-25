@@ -110,16 +110,16 @@ $DEFINE ZFOP        'h'CF   /* but, when debugging with ZED a RST8 is forced */
  * use by external devices when running as an SBC...
  *
  * Port Allocations:
- *      00..01: Break1 Data (internal)
- *      REMOVED: 02..03: Break1 Data Mask (internal)
- *      04..05: Break 1&2n Control (internal)
+ *      00..01: Break1 Data (internal) - Write Only
+ *      02..03: Break1 Data Required (internal D:0) - Write Only
+ *      04..05: Break 1&2n Control (internal) - Write Only
  *      06..07: Board Control (internal)
  *      08..09: MMU Registers (internal)
  *      0A..0B: SBC General Purpose Bits (4 out / 4 in - pins on device)
- *      10..11: Target-Go
- *      16..17: Break Address CLK
- *      18..19: Break Address Enable CLK
- *      1A..1B: Break Address Enable CLR
+ *      10..11: Target-Go - Write Only (data doesn't matter)
+ *      16..17: Break Address CLK - Write Only
+ *      18..19: Break Address Enable CLK - Write Only
+ *      1A..1B: Break Address Enable CLR - Write Only (data doesn't matter)
  *      1C..1D: PC Saved Bit Read, Break Address Enable Detect,Break Status, SBC-Mode (RD)
  *      1E..1F: RP2040-Module
  *      20..FF: Reserved for External Devices (224 ports)
@@ -230,42 +230,42 @@ PIN 87 = cpu_clk;       /* CPU CLK (on GCLK1) */
 /* Inputs                                                               */
 /************************************************************************/
 
-PIN [25,13] = [addr15..14]; /* Address inputs                            */
-PIN [60,58,57,10,12,14,94] = [addr7..1];     /* addr0 is not used        */
+PIN [9,10] = [addr15..14]; /* Address inputs                            */
+PIN [52,45,44,13,14,19,1] = [addr7..1];     /* addr0 is not used        */
 PROPERTY Atmel {pin_keep = on addr7,addr6,addr5,addr4,addr3,addr2,addr1};
 PIN 90 = !m1;
-PIN 24 = !rd;
+PIN  2 = !rd;
 PROPERTY Atmel {pin_keep = on rd};
-PIN 23 = !wr;
+PIN 12 = !wr;
 PROPERTY Atmel {pin_keep = on wr};
-PIN 21 = !iorq;
+PIN 42 = !iorq;
 PROPERTY Atmel {pin_keep = on iorq};
-PIN 22 = !mreq;
+PIN 89 = !mreq;
 PROPERTY Atmel {pin_keep = on mreq};
-PIN 76 = !rfsh;
-PIN 65 = !brd_rst;      /* Board Reset */
-PIN 64 = !busreq;       /* Gated by target mode for zbusreq             */
-PIN 32 = !zbusack;      /* BusAck from Z80, used to gen +/- signals     */
-PIN 61 = !tnmi;         /* Target System NMI request                    */
-PIN 67 = !tint;         /* Target System INT request                    */
-PIN 55 = !twait;        /* Target System WAIT request                   */
-PIN 37 = !sbcmode;      /* We are running as an SBC   (Board-Jumpers)   */
-PIN 89 = !tgt_only;     /* Target System should run immediately (no Debug init) (Board-SW)  */
-PIN 69 = tgt_now;       /* Target-Go counter has reached terminal count */
-PIN 68 = sop_now;       /* Single-Op counter has reached terminal count */
-PIN 63 = attn;          /* Request from RP2040 Module for attention     */
-PIN 56 = !mwtrq;        /* Wait Request from RP2040 Module              */
+PIN 25 = !rfsh;
+PIN 67 = !brd_rst;      /* Board Reset */
+PIN 65 = !busreq;       /* Gated by target mode for zbusreq             */
+PIN 57 = !zbusack;      /* BusAck from Z80, used to gen +/- signals     */
+PIN 63 = !tnmi;         /* Target System NMI request                    */
+PIN 75 = !tint;         /* Target System INT request                    */
+PIN 41 = !twait;        /* Target System WAIT request                   */
+PIN 24 = !sbcmode;      /* We are running as an SBC   (Board-Jumpers)   */
+PIN 76 = !tgt_only;     /* Target System should run immediately (no Debug init) (Board-SW)  */
+PIN 54 = tgt_now;       /* Target-Go counter has reached terminal count */
+PIN 53 = sop_now;       /* Single-Op counter has reached terminal count */
+PIN 85 = attn;          /* Request from RP2040 Module for attention     */
+PIN  8 = !mwtrq;        /* Wait Request from RP2040 Module              */
 /* */
-PIN 88 = !brk1_a_eq;    /* Address match for breakpoint 1               */
-PIN 35 = !brkn_a_eq;    /* Breakpoint 2..n Address match                */
-PIN 30 = !brkhw_det;    /* Signal from external breakpoint boards.      */
+PIN 64 = !brk1_a_eq;    /* Address match for breakpoint 1               */
+PIN 40 = !brkn_a_eq;    /* Breakpoint 2..n Address match                */
+PIN 23 = !brkhw_det;    /* Signal from external breakpoint boards.      */
                         /* Provided as a port read bit to the cpu for   */
                         /* its use. (1C-b2: BRK-INFO RD)                */
-PIN 75 = !extbrkrq;     /* External input to request Break              */
+PIN 68 = !extbrkrq;     /* External input to request Break              */
 /* */
-PIN 36 = pcrd_b_in;    /* Input bit from the PC Save shift register     */
+PIN 21 = pcrd_b_in;    /* Input bit from the PC Save shift register     */
 /* SBC General Purpose Input Bits (4) */
-PIN [33,52,53,54] = [sbc_gp7..4];
+PIN [20,22,56,55] = [sbc_gp7..4];
 PROPERTY Atmel {pin_keep = on sbc_gp7};
 PROPERTY Atmel {pin_keep = on sbc_gp6};
 PROPERTY Atmel {pin_keep = on sbc_gp5};
@@ -276,7 +276,7 @@ PROPERTY Atmel {pin_keep = on sbc_gp4};
 /* Input/Output                                                         */
 /************************************************************************/
 
-PIN [97,16,17,19,93,96,98,92] = [d7..0];   /* Data I/O */
+PIN [7,5,49,50,99,100,93,6] = [d7..0];   /* Data I/O */
 PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
 
 
@@ -288,7 +288,7 @@ PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
 /* as POSITIVE signals and the logic equations written with negative    */
 /* logic!                                                               */
 /* To make these pins more obvious, they have been defined with a       */
-/* trailing underscore. For example; !zrst => zrst_                     */
+/* trailing underscore. For example; !rfmr => rfmr_                     */
 /*                                                                      */
 /* This only appears to be the case for COMBINATORIAL signals. Signals  */
 /* that are REGISTERED do not (SEEM) to have the problem. However, if   */
@@ -300,45 +300,45 @@ PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
 /*                                                                      */
 /************************************************************************/
 
-PIN 70  = zrst_;    /* Reset signal to the Z80 (low=true) */
-PIN 72  = !lrst_R;  /* Local reset (registered) */
+PIN 72  = !zrst_R;  /* Reset signal to the Z80 (low=true) */
+PIN 71  = !lrst_R;  /* Local reset (registered) */
                     /*  triggered by rst_req_R */
                     /*  or when brd_rst is true for 3+ clocks */
-PIN [48,46,47] = [rra2..0]; /* ROM/RAM Address: Actually RRA16..14 on bus   */
-PIN 50  = !ram_sel;
-PIN 49  = rom_sel;  /* Defined as HIGH-TRUE and an inverter used externally */
-/*PIN 32  = rom_sel_; /* Low-TRUE and used internally                     */
-PIN 45  = !zwait;
+PIN [30,28,29] = [rra2..0]; /* ROM/RAM Address: Actually RRA16..14 on bus   */
+PIN 32  = !ram_sel;
+PIN 27  = rom_sel;  /* Defined as HIGH-TRUE and an inverter used externally */
+                    /* to avoid the Microchip CUPL/Fitter issue.            */
+PIN 31  = !zwait;
 PROPERTY Atmel {open_collector = on zwait}; /* ZZZ needed on breadboard */
-PIN 41  = !zbusreq;     /* To the Z80 */
-PIN  8  = !mod_sel;     /* RP2040 Module Select                             */
+PIN 70  = !zbusreq;     /* To the Z80 */
+PIN 96  = !mod_sel;     /* RP2040 Module Select                             */
 /* */
-PIN 99  = ba_clk;       /* Break Address Clock                              */
-PIN 100 = !ba_clr;      /* Break Address Clear                              */ 
-PIN  2  = baen_clk;     /* Break Address Enable Clock (WR)                  */
-PIN  1  = !baen_clr;    /* Break Address Enable Clear                       */
-PIN 79  = d7bo;         /* Data bit 7 buffered for use by break hardware    */
+PIN 97  = ba_clk;       /* Break Address Clock                              */
+PIN 98  = !ba_clr;      /* Break Address Clear                              */ 
+PIN 92  = baen_clk;     /* Break Address Enable Clock (WR)                  */
+PIN 94  = !baen_clr;    /* Break Address Enable Clear                       */
+PIN 84  = d7bo;         /* Data bit 7 buffered for use by break hardware    */
 /* */
-PIN 44  = lcl_io;      /* Local I/O Addr Range and Op (ZID or SBC)          */
+PIN 33  = lcl_io;      /* Local I/O Addr Range and Op (ZID or SBC)          */
 /* */
 PIN 81  = !tdbus_en;    /* Target Data Bus Enable                           */
-PIN  7  = !tdbus_in;    /* Target Data Bus Direction                        */
+PIN 61  = !tdbus_in;    /* Target Data Bus Direction                        */
 PIN 83  = tcbus_fsel;   /* Target Control Bus Fixed Sel                     */
 /* */
-PIN 42  = !znmi;        /* NMI to Z80 */
+PIN 58  = !znmi;        /* NMI to Z80 */
 PIN 80  = !zint;        /* INT to Z80 */
-PIN 40  = rfmr_;        /* RFSH gated MREQ (for the target during debug)(low=true) */
+PIN 35  = rfmr_;        /* RFSH gated MREQ (for the target during debug)(low=true) */
 /* */
-PIN 71  = tgt_go_R;     /* Start the bus operation countdown                */
-PIN 85  = !tgtmode_R;   /* Running target (not debug), used to reset OP counter */
-PIN  9  = mem_op_;      /* Memory Op (excluding rfsh), used to clock OP counter (45)*/
+PIN 48  = tgt_go_R;     /* Start the bus operation countdown                */
+PIN 36  = !tgtmode_R;   /* Running target (not debug), used to reset OP counter */
+PIN 60  = mem_op_;      /* Memory Op (excluding rfsh), used to clock OP counter (45)*/
 /* */
-PIN  6  = !pc_latch;    /* Latch enable for the external PC Save register   */
-PIN 84  = sync;         /* Break condition detected - SYNC signal on board  */
+PIN 69  = !pc_latch;    /* Latch enable for the external PC Save register   */
+PIN 37  = sync;         /* Break condition detected - SYNC signal on board  */
 /* SBC General Purpose Output Bits (4) */
-PIN [28,5,29,27] = [sbc_gp3..0];
+PIN [47,46,16,17] = [sbc_gp3..0];
 
-PIN 20 = zsr_req_R;     /* Put on pin for board debugging                   */
+PIN 79 = zsr_req_R;     /* Put on pin for board debugging                   */
 
 
 /************************************************************************/
@@ -399,7 +399,7 @@ PINNODE = to_target;
 
 /**
  * Breakpoint Operations #1 and #2..n
- *  Breakpoint #1 condition, address equal input, data and mask
+ *  Breakpoint #1 condition, address equal input, data (if required)
  *  Breakpoint #2..n condition, address equal input (no data capability)
  *
  *  Breakpoint Condition:
@@ -411,22 +411,30 @@ PINNODE = to_target;
  *   5: Port (I/O) Write (PW)
  *   6: Port (I/O) Read (PR)
  *   7: Any Port (I/O) operation (AP)
+ *
+ *   8: OR'd with Condition indicates Address Required
  */
 PINNODE = [b1op2..0];   /* Breakpoint1 Operation                        */
-PINNODE = b1ra_R;       /* Breakpoint1 Require Address                  */
+PINNODE = b1ar_R;       /* Breakpoint1 Require Address                  */
+PINNODE = b1dr_R;       /* Breakpoint1 Require Data (D:0)               */
 PINNODE = [b2op2..0];   /* Breakpoint2..n Operation                     */
-PINNODE = b2ra_R;       /* Breakpoint2..n Require Address               */
+PINNODE = b2ar_R;       /* Breakpoint2..n Require Address               */
 PINNODE = [b1d7..0];    /* Data for BRK1                                */
 /*PINNODE = [b1dx7..0];   /* Data Don't Care for BRK1                     */
+
 /*  Breakpoint detection                                                */
 PINNODE = brkpc_rd;     /* PC Saved, BrkHW-Det, ZID, SBC, BrkInfo (RD)  */
 PINNODE = rst38det_R;   /* Used for 'SOFT' breakpoints                  */
 PINNODE = b1_det;       /* Breakpoint #1 condition detected             */
 PINNODE = b1_d_eq;      /*  Data equal                                  */
-PINNODE = b1_dA_eq;     /*   data NibbleA equal                         */
-PINNODE = b1_dB_eq;     /*   data NibbleB equal                         */
-PINNODE = b1_dC_eq;     /*   data NibbleB equal                         */
-PINNODE = b1_dD_eq;     /*   data NibbleB equal                         */
+PINNODE = b1_d0_eq;     /*   data NibbleA equal                         */
+PINNODE = b1_d1_eq;     /*   data NibbleB equal                         */
+PINNODE = b1_d2_eq;     /*   data NibbleB equal                         */
+PINNODE = b1_d3_eq;     /*   data NibbleB equal                         */
+PINNODE = b1_d4_eq;     /*   data NibbleB equal                         */
+PINNODE = b1_d5_eq;     /*   data NibbleB equal                         */
+PINNODE = b1_d6_eq;     /*   data NibbleB equal                         */
+PINNODE = b1_d7_eq;     /*   data NibbleB equal                         */
 /*  Breakpoint 2..n                                                     */
 PINNODE = b2_det;       /* Breakpoint #2n condition detected            */
 /*  Status for Debugger                                                 */
@@ -461,6 +469,7 @@ FIELD ioaddr        = [addr7..1];	/* A0 is not connected */
 /** Board and Breakpoint Control */
 $DEFINE B1DV_SEL    (lcl_io & ioaddr:'b'xxx0000x)   /* 00: BRK1 Data Value      */
 /*$DEFINE B1DX_SEL    (lcl_io & ioaddr:'b'xxx0001x)   /* 02: BRK1 Data Don't-Care */
+$DEFINE B1DR_SEL    (lcl_io & ioaddr:'b'xxx0001x)   /* 02: BRK1 Data Required (D:0) */
 $DEFINE BRKOP_SEL   (lcl_io & ioaddr:'b'xxx0010x)   /* 04: BRK1 & 2n Operation  */
 $DEFINE B1_OP_DATA      [d2..0]     /* BP1 Operation (Break Operation (0)) */
 $DEFINE B1_OP_RQADDR    [d3]        /* BP1 Require Address */
@@ -561,19 +570,20 @@ zsr_req_R.ck    = tgtmode_R                 /* Running the target and not Target
                 );
 zsr_req_R.d     = ON;
 zsr_req_R.ar    = !tgtmode_R & !rfmr_;
-/* Special Reset Generation (feeds into zrst_ below)    */
+/* Special Reset Generation (feeds into zrst_R below)    */
 /*  ZRST must be true on rising edge of M1-T2 only (see Zilog patent) */
-zsprst1_R.d     = zsr_req_R & !dbi_if2_R;
 zsprst1_R.ck    = rfmr_;               /* Accept request at end of refresh */
+zsprst1_R.d     = zsr_req_R & !dbi_if2_R;
 zsprst1_R.ar    = zrst_clk;
 /* */
-zsprst2_R.d     = zsprst1_R # zsprst2_R;
 zsprst2_R.ck    = !cpu_clk;
-zsprst2_R.ar    = !tgtmode_R & !rfmr_;
+zsprst2_R.d     = !m1 & (zsprst1_R # zsprst2_R);
+/* */
 /* Z80 Reset */
-zrst_           = ((!lrst_R & !zsprst1_R)   /* Reset to local Z80 is the full reset                     */
-                 # (!lrst_R & (!m1 # !zsprst2_R)));  /*  or special reset                               */
-zrst_clk        = !zrst_ & cpu_clk;         /* Z80 Reset and Clock - used by multiple nodes for reset   */
+zrst_R.ck       = !cpu_clk;
+zrst_R.d        = lrst_R                /* Reset to local Z80 is the full reset                     */
+                 # (m1 & zsprst2_R);    /*  or special reset                                        */
+zrst_clk        = zrst_R & cpu_clk;     /* Z80 Reset and Clock - used by multiple nodes for reset   */
 
 
 /** Local Z80 NMI and INT request generation */
@@ -581,7 +591,8 @@ znmi            = (tgtmode_R & tnmi    /* Target running and it has an NMI (no t
                 & !(sngl_op_R # sngl_step_R)) /* but not during Single-OP/STEP */
                  # (attn & attn_tms_R);  /* In Debug Mode (not running the target) and RP Module wants attention */
 
-zint            = tgtmode_R & !sngl_step_R & tint;   /* Target INT gated to Z80 only when in Target Mode */
+zint            = (tgtmode_R & tint   /* Target INT gated to Z80 only when in Target Mode */
+                & !(sngl_op_R # sngl_step_R)); /* but not during Single-OP/STEP */
 
 
 /** Refresh Gated Memory Request for the Target MREQ while in Debug Mode */
@@ -660,10 +671,8 @@ zwait       = (twait & tgtmode_R)
 wait_req_R.ck = cpu_clk;
 wait_req_R.d  = rom_sel & !wait_ho_R;
 wait_ho_R.ck  = cpu_clk;
-wait_ho_R.ce  = ON;
 wait_ho_R.d   = wait_req_R # wait_ho_R;
 wait_ho_R.ar  = !mreq;
-wait_ho_R.ap  = OFF;
 
 
 /* 'Local' Port Address Qualifier */
@@ -674,12 +683,12 @@ lcl_io.oe   = ON;
 to_target   = (tgt_now # (sop_now & sngl_op_R)) & ((mreq & !rfsh) # iorq);
 tgt_go_R.ck   = lcl_io & ioaddr:'b'xxx1000x;         /* 10: TARGET-GO        */
 tgt_go_R.d    = ON;
-tgt_go_R.ar   = tgtmode_R;
+tgt_go_R.ar   = tgtmode_R # lrst_R;
 tgtmode_R.ck  = to_target;            /* The Operation Counter is done, enter Target Mode */
 tgtmode_R.d   = ON;
 tgtmode_R.ap  = tgt_only;             /* If Target Only, ALWAYS in Target Mode                    */
 tgtmode_R.ar  = !tgt_only 
-            & (!zrst_                 /* Target Mode is cleared by either a Special or Full Reset */
+            & (zrst_R                 /* Target Mode is cleared by either a Special or Full Reset */
               # (sngl_op_R & so_done_R) /* or a Single Bus Op completed                             */
             );
 so_done_R.ck  = !mreq & !iorq;
@@ -709,18 +718,21 @@ mod_sel     = lcl_io & ioaddr:'b'xxx1111x & (wr # rd);     /* 1E/1F: RP Mod CTRL
 [b1op2..0].d    = B1_OP_DATA;   /* Breakpoint1 Operation                    */
 [b1op2..0].ck   = BRKOP_SEL;
 [b1op2..0].ar   = lrst_R;
-b1ra_R.d        = B1_OP_RQADDR; /* Breakpoint1 Require Address              */
-b1ra_R.ck       = BRKOP_SEL;
-b1ra_R.ar       = lrst_R;
+b1ar_R.d        = B1_OP_RQADDR; /* Breakpoint1 Require Address              */
+b1ar_R.ck       = BRKOP_SEL;
+b1ar_R.ar       = lrst_R;
 [b2op2..0].d    = B2_OP_DATA;   /* Breakpoint2 Operation                    */
 [b2op2..0].ck   = BRKOP_SEL;
 [b2op2..0].ar   = lrst_R;
-b2ra_R.d        = B2_OP_RQADDR; /* Breakpoint2 Require Address              */
-b2ra_R.ck       = BRKOP_SEL;
-b2ra_R.ar       = lrst_R;
+b2ar_R.d        = B2_OP_RQADDR; /* Breakpoint2 Require Address              */
+b2ar_R.ck       = BRKOP_SEL;
+b2ar_R.ar       = lrst_R;
 [b1d7..0].d     = databus;      /* Breakpoint1 Data                         */
 [b1d7..0].ck    = B1DV_SEL;
 [b1d7..0].ar    = lrst_R;
+b1dr_R.d        = d0;           /* Data Required                            */
+b1dr_R.ck       = B1DR_SEL;
+b1dr_R.ar       = lrst_R;
 /*[b1dx7..0].d    = databus;      /* Breakpoint1 Data 'X' (don't care)        */
 /*[b1dx7..0].ck   = B1DX_SEL;
 /*[b1dx7..0].ar   = lrst_R;
@@ -734,7 +746,7 @@ sbc_use_R.ar      = lrst_R;
 /* Break request (b1) */
 brk_req_R.d	= BREAK_REQ_B;
 brk_req_R.ck	= CTRL1_WR;
-brk_req_R.ar	= !zrst_;
+brk_req_R.ar	= zrst_R;
 /* RESET request (b2) */
 rst_req_R.d	= RESET_REQ_B;
 rst_req_R.ck	= CTRL1_WR;
@@ -781,25 +793,25 @@ rst38det_R.ar = mreq & rfsh;
 rst38det_R.ap = OFF;
 
 
-/** Breakpoint Detection, PC Capture (NOP Force is in the Data Bus section) */
+/** Breakpoint Detection, PC Capture (Z-OPeration Force is in the Data Bus section) */
 /*
- Had to break Data into 4 bit-pairs to keep CUPL from crashing and also to
- significantly reducing the number of logic terms needed to check the data.
+ Had to break Data into 8 bits to keep CUPL from crashing and also to
+ significantly reduce the number of logic terms needed to check the data.
 
  The CUPL error was specifically CUPLc getting a file read error due to
- CUPLn not finishing correctly.
+ CUPLn not finishing correctly. Or, CUPLm getting a disk write error.
 */
-b1_dA_eq     = (/*b1dx7 #*/ !(b1d7 $ d7))
-             & (/*b1dx6 #*/ !(b1d6 $ d6));
-b1_dB_eq     = (/*b1dx5 #*/ !(b1d5 $ d5))
-             & (/*b1dx4 #*/ !(b1d4 $ d4));
-b1_dC_eq     = (/*b1dx3 #*/ !(b1d3 $ d3))
-             & (/*b1dx2 #*/ !(b1d2 $ d2));
-b1_dD_eq     = (/*b1dx1 #*/ !(b1d1 $ d1))
-             & (/*b1dx0 #*/ !(b1d0 $ d0));
-b1_d_eq     = (b1_dA_eq & b1_dB_eq & b1_dC_eq & b1_dD_eq);
+b1_d7_eq    = !(b1d7 $ d7);
+b1_d6_eq    = !(b1d6 $ d6);
+b1_d5_eq    = !(b1d5 $ d5);
+b1_d4_eq    = !(b1d4 $ d4);
+b1_d3_eq    = !(b1d3 $ d3);
+b1_d2_eq    = !(b1d2 $ d2);
+b1_d1_eq    = !(b1d1 $ d1);
+b1_d0_eq    = !(b1d0 $ d0);
+b1_d_eq     = !b1dr_R # (b1_d7_eq & b1_d6_eq & b1_d5_eq & b1_d4_eq & b1_d3_eq & b1_d2_eq & b1_d1_eq & b1_d0_eq);
 
-b1_det      =  (!b1ra_R # brk1_a_eq)
+b1_det      =  (!b1ar_R # brk1_a_eq)
              & (
                  (B1OP_IF & ZIF_1)              /* Data isn't checked for IF (it's too late) */
                # (B1OP_MW & MEM_WR & b1_d_eq)
@@ -810,7 +822,7 @@ b1_det      =  (!b1ra_R # brk1_a_eq)
                # (B1OP_AP & !m1 & iorq & b1_d_eq)
              );
 
-b2_det      =  (!b2ra_R # brkn_a_eq)
+b2_det      =  (!b2ar_R # brkn_a_eq)
              & (
                  (B2OP_IF & ZIF_1)
                # (B2OP_MW & MEM_WR)
