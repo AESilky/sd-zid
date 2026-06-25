@@ -3,7 +3,7 @@
 	(generator "eeschema")
 	(generator_version "9.0")
 	(uuid "3e2ac85a-c9a4-4cbb-828f-4df0100cc40b")
-	(paper "User" 419.1 323.85)
+	(paper "User" 419.1 647.7)
 	(title_block
 		(title "hold & scratch (not on board)")
 		(date "2026-04-21")

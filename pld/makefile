@@ -15,9 +15,10 @@ JEDECS		:= $(PLD_MAIN).jed
 CUPL		:= cupl.exe
 FIT1502		:= fit1502.exe
 FIT1504		:= fit1504.exe
-FIT1508		:= fit1508.exe
+FIT1508		:= fit1508.exe		# C:/Wincupl/WinCupl/Fitters/fit1508.exe
 
-CUPLOPTS15		:= -kskxm4nlxj  # ATF15xx: Optimize product term usage Don't expand XOR (let fitter use XOR gate),
+CUPLOPTS15		:= -ksm3nlxj  # ATF15xx: Optimize product term usage (-ks)
+								#  Don't expand XOR (-kx let fitter use XOR gate),
 								#  m4 Espresso minimization (Good for fitter designs)
 CUPLOPTS		:= -kbm2nlxj	# 22Vxx, 16Vxx: Quine-McCluskey minimization
 
