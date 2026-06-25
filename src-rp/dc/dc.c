@@ -141,6 +141,35 @@ void _ctrl_reg_hdlr(void) {
 // Public Methods
 // ====================================================================
 
+uint8_t dc_mem_getB(uint16_t addr) {
+    int idx = (int)(addr & ONE_K_MASK);
+    uint8_t v = dc_mem_buf[idx];
+
+    return v;
+}
+
+uint16_t dc_mem_getW(uint16_t addr) {
+    int idxl = (int)(addr & ONE_K_MASK);
+    int idxh = (int)((addr+1) & ONE_K_MASK);
+    uint16_t v = ((uint16_t)(dc_mem_buf[idxh+1] << 8)) | (uint16_t)(dc_mem_buf[idxl]);
+
+    return v;
+}
+
+void dc_mem_setB(uint16_t addr, uint8_t value) {
+    int idx = (int)(addr & ONE_K_MASK);
+    dc_mem_buf[idx] = value;
+}
+
+void dc_mem_setW(uint16_t addr, uint16_t value) {
+    uint8_t lb = lowByte(value);
+    uint8_t hb = highByte(value);
+    int idxl = (int)(addr & ONE_K_MASK);
+    int idxh = (int)((addr + 1) & ONE_K_MASK);
+    dc_mem_buf[idxl] = lb;
+    dc_mem_buf[idxh] = hb;
+}
+
 uint32_t reg_num_valprov(const char* str, repsize_t sz, valstatus_t* status) {
     // If it starts with a digit it can't be a register
     if (isdigit((int)*str)) {
@@ -222,6 +251,11 @@ int dc_modinit() {
     regpc_sv(0x555B);  // PC (Program Counter)
     regix_sv(0x566C);  // IX (Index X)
     regiy_sv(0x577D);  // IY (Index Y)
+
+    // ZZZ for debug, fill our memory buffer with an incrementing pattern
+    for (int i = 0; i < ONE_K; i++) {
+        dc_mem_buf[i] = lowByte(i);
+    }
 
     _mode = DCM_DEBUG;
 

@@ -137,6 +137,69 @@ void nbase_set(nbase_t nb) {
     _nbase = nb;
 }
 
+int nbase_width(repsize_t sz) {
+    int fw = 0;
+    switch (_nbase) {
+        case NB_BINARY:
+            switch (sz) {
+                case RS_UNLIMIT:
+                case RS_DWORD:
+                    fw = 39;
+                    break;
+                case RS_BYTE:
+                    fw = 9;
+                    break;
+                case RS_WORD:
+                    fw = 19;
+                    break;
+            }
+            break;
+        case NB_DECIMAL:
+            switch (sz) {
+                case RS_UNLIMIT:
+                case RS_DWORD:
+                    fw = 10;
+                    break;
+                case RS_BYTE:
+                    fw = 3;
+                    break;
+                case RS_WORD:
+                    fw = 5;
+                    break;
+            }
+            break;
+        case NB_HEX:
+            switch (sz) {
+                case RS_UNLIMIT:
+                case RS_DWORD:
+                    fw = 8;
+                    break;
+                case RS_BYTE:
+                    fw = 2;
+                    break;
+                case RS_WORD:
+                    fw = 4;
+                    break;
+            }
+            break;
+        case NB_OCTAL:
+            switch (sz) {
+                case RS_UNLIMIT:
+                case RS_DWORD:
+                    fw = 12;
+                    break;
+                case RS_BYTE:
+                    fw = 3;
+                    break;
+                case RS_WORD:
+                    fw = 6;
+                    break;
+            }
+            break;
+    }
+    return fw;
+}
+
 // ====================================================================
 // Initialization/Start-Up Methods
 // ====================================================================
