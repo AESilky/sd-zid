@@ -60,7 +60,7 @@ zf_dbzed	.equ	6	;  bit-6: Using ZED to debug (RST8 rather than SPRST)
 ;
 	.global baucnt		; Breakpoint Address Unit Count
 	.global brk1data	; Break-1 Data Value
-	.global brk1mask	; Break-1 Data Mask
+	.global brk1dreq	; Break-1 Data Mask
 	.global brk1cond	; Break-1 Condition
 	.global brk1en		; Break-1 enabled flag (separate from the condition)
 	.global brkNcond	; Break-2N Condition

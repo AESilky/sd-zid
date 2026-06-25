@@ -56,7 +56,7 @@ brk_pc_inf:	.block	BYTE		; Used to save the initial read from this port
 ;
 baucnt:		.block	BYTE		; Breakpoint Address Unit Count
 brk1data:	.block	BYTE		; Break-1 Data Value
-brk1mask:	.block	BYTE		; Break-1 Data Mask
+brk1dreq:	.block	BYTE		; Break-1 Data Mask
 brk1cond:	.block	BYTE		; Break-1 Condition
 brk1en:		.block	BYTE		; Break-1 enabled flag (separate from the condition)
 brkNcond:	.block	BYTE		; Break-2N Condition

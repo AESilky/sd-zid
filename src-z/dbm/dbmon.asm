@@ -61,9 +61,10 @@ rst38:		.org	boot+38h
 		
 		.org	boot+40h
 id:		.byte	"ZID DEBUG MONITOR:"	; ID
+		.align	2
 ver:		.equ	$
 		.input	"version.inc"		; build date/version
-
+		.byte	0
 nmivec:		.org	boot+66h
 		jp	dmdocattn		; DOC ATTN when in Debug Mode uses NMI
 
@@ -247,8 +248,8 @@ onrst:		; Send an error status to DOC and HALT (lights the HALT LED)
 ;;	NO - This goes IDLE waiting for wake-up by DOC
 ;;
 docstat:	out	(RPMCTRL),a
-docwait_:	ld	sp,dbmstk
-dw2_:		jr	dw2_		; Wait for the DOC to ask us to do something
+go_idle:	ld	sp,dbmstk
+idle:		jr	idle		; Wait for the DOC to ask us to do something
 
 		.align	4
 doccmdrd:	out	(RPMCTRL),a	; on ATTN this returns quickly. DMBRKHIT takes longer due to waking DOC up.
@@ -277,7 +278,7 @@ dmdocattn:	; We come here from an NMI, but we don't need to return.
 ;;
 doccmdprc:	; ZZZ for now, just write it back to the RPM Data port for test and stop
 		out	(RPMDATA),a
-		jp	docwait_
+		jp	go_idle
 
 
 	.stitle	"TARGET Operations"
@@ -340,8 +341,8 @@ tgthop1:	ld	sp,rstgtgo_	; get ready to get AF
 		jp	tgtskip		; skip & jump to target [mem_op: 10,11,12]
 					; (SKIP,JUMP are [mem_op: 13,14,15 - 16 in TGT])
 
-	.stitle	"Target Write Byte"
 		.align	4		; to aid debugging
+	.stitle	"Target Write Byte"
 ;;**************
 ;; @brief `twrbyte` Write the byte in E to the target address in HL.
 ;; @ingroup dbmon
@@ -369,9 +370,13 @@ wrbytez:	ld	(hl),e		; MEMOP 4 - MEMOP 5 write the byte
 		out	(BRDCTRL),a
 		ret
 
+		.align	4
+_twrbyte:	ld	sp,dbmstk
+		call	twrbyte
+		jp	idle	
 
-	.stitle	"Target Read Byte"
 		.align	4		; to aid debugging
+	.stitle	"Target Read Byte"
 ;;**************
 ;; @brief `trdbyte` Read a byte from the target address in HL into E.
 ;; @ingroup dbmon
@@ -400,8 +405,13 @@ rdbytez:	ld	e,(hl)		; MEMOP 4 - MEMOP 5 read the byte
 		out	(BRDCTRL),a
 		ret
 
-	.stitle	"Target Out Byte"
+		.align	4
+_trdbyte:	ld	sp,dbmstk
+		call	trdbyte
+		jp	idle
+
 		.align	4		; to aid debugging
+	.stitle	"Target Out Byte"
 ;;**************
 ;; @brief `toutbyte` Output the byte in E to the target port in BC.
 ;; @ingroup dbmon
@@ -428,9 +438,14 @@ obytez:	out	(c),e			; MEMOP 3&4 - output the byte
 		out	(BRDCTRL),a
 		ret
 
+		.align	4
+_toutbyte:	ld	sp,dbmstk
+		call	toutbyte
+		jp	idle
 
-	.stitle	"Target In Byte"
+
 		.align	4		; to aid debugging
+	.stitle	"Target In Byte"
 ;;**************
 ;; @brief `tinbyte` Input a byte from the target port in BC into E.
 ;; @ingroup dbmon
@@ -458,9 +473,32 @@ inbytez:	in	e,(c)		; MEMOP 3&4 - input the byte
 		out	(BRDCTRL),a
 		ret
 
-
-	.stitle	"Initialization"
 		.align	4
+_tinbyte:	ld	sp,dbmstk
+		call	tinbyte
+		jp	idle
+
+
+		.align	4
+	.stitle	"Debug Operations"
+
+set_im0:	im	0
+		ld	a,i
+		jp	idle
+
+		.align	4
+set_im1:	im	1
+		ld	a,i
+		jp	idle
+
+		.align	4
+set_im2:	im	2
+		ld	a,i
+		jp	idle
+
+
+		.align	4
+	.stitle	"Initialization"
 ;; =============
 ;; Debug Monitor (and board) Initialization.
 ;;
