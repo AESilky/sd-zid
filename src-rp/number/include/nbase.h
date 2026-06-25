@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 #include "nbase_t.h"
+#include "num_t.h"
 
 #include "stdbool.h"
 #include "stdint.h"
@@ -33,6 +34,15 @@ extern "C" {
  * @return nbase_t 
  */
 extern nbase_t nbase_from_str(const char* nbs, bool* valid);
+
+/**
+ * @brief The width of a field for the size in the current number base.
+ * @ingroup number
+ * 
+ * @param sz The size (typically RS_BYTE or RS_WORD) 
+ * @return int The field width
+ */
+extern int nbase_width(repsize_t sz);
 
 /**
  * @brief Get the Number Base.

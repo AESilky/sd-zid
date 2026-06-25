@@ -66,7 +66,7 @@ static const cmd_handler_entry_t _cmd_cls_entry = {
 };
 static const cmd_handler_entry_t _cmd_dec_entry = {
     _cmd_dec,
-    3,
+    4,
     "decimal",
     "hexval1 [hexval2 [hexvaln...]]",
     "Convert hex value(s) to decimal.\n",
@@ -153,7 +153,7 @@ static int _cmd_help(int argc, char** argv, const char* unparsed) {
     argv++;
     if (argc > 1) {
         // They entered an option and/or command names
-        if (strcmp("-a", *argv) == 0 || strcmp("--all", *argv) == 0) {
+        if (stricmp("-a", *argv) == 0 || stricmp("--all", *argv) == 0) {
             disp_hidden = true;
             argv++; argc--;
         }
