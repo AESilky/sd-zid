@@ -1,3 +1,4 @@
+		.stitle	"Board Specific Definitions"
 ; ==============
 ;
 ; ZID (Z80 In-Circuit Debugger) Board Level Definitions
@@ -8,7 +9,6 @@
 ;
 ; ==============
 ;
-		.stitle	"Board Specific Definitions"
 
 		.list	1
 		.input	"stddef.inc"
@@ -18,7 +18,7 @@
 
 ;  Breakpoints
 BRK1DATA	.equ	000h		; [WO] Break-1 Data Value
-BRK1MASK	.equ	002h		; [WO] Break-1 Data Mask (Don't Care bits)
+BRK1DREQ	.equ	002h		; [WO] Break-1 Data Required
 BRKCTRL		.equ	004h		; [WO] Break Control (BRK1=b0..3 BRK2=b4..7)
 ;   Breakpoint Control Values
 BRK_NONE	.equ	0		;  No Break
@@ -37,7 +37,7 @@ BRKADCLK	.equ	016h		; Break Address Clock
 BRKENCLK	.equ	018h		; Break Address Enable Clock
 BRKENCLR	.equ	01Ah		; Break Address Enable Clear
 
-;  Board Control
+;  Board Control (available to ZID and SBC)
 BRDCTRL		.equ	006h		; [RW] Board Control
 SBC_USE_B	.equ	0		;  Bit-0 for use as desired by SBC
 SBC_USE_M	.equ	00000001b	;  Mask for SBC-Bit
@@ -45,6 +45,7 @@ BRKREQ_B	.equ	1		;  Break Request, used by SBC to request a break (go to Debugge
 BRKREQ_M	.equ	00000010b	;  Mask for Break Request
 RSTREQ_B	.equ	2		;  Reset Request. Forces a (full) reset from SBC or Debugger
 RSTREQ_M	.equ	00000100b	;  Mask for Reset Request
+;  Board Control (only available to ZID)
 SYNCONLY_B	.equ	3		;  Only generate SYNC signal on Breakpoint match
 SYNCONLY_M	.equ	00001000b	;  Mask for SYNC Only
 SBRK_EN_B	.equ	4		;  Soft-Break (RST38) Enable
@@ -73,7 +74,7 @@ TGTGO		.equ	010h		; 16 Mem-OPs for TGT_NOW, 8 for SOP_NOW (Mem/Port W/R)
 ;  PC Saved (bit) read, Break Address HW Detect, Break Status, SBC-Mode
 PCADDR_RD	.equ	01Ch		; This port reads multiple status bits.
 					; Each time it is read it shifts the BRK-PC to the next bit
-					; so each read is important.
+					; so each read is important after a Break or ATTN.
 PCB_PC_B	.equ	0		;  bit-0 is break/attn saved PC Bit 15..0
 PCB_PC_M	.equ	00000001b
 BRK_HWD_B	.equ	1		;  bit-1 is Break Hardware Detect
