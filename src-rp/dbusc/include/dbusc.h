@@ -13,6 +13,7 @@
 extern "C" {
 #endif
 
+#include "cmt_t.h"
 #include "system_defs.h"
 
 #include "pico/types.h" // 'uint' and other standard types
@@ -25,9 +26,12 @@ extern "C" {
  * @ingroup databus
  * 
  * @param ctrl Control Bits read from the CTRL PIO-SM
- * @return True if handled, False if not
+ * @param host_rd True if the operation was READ, false for WRITE
+ * @param d Pointer to data value written if the operation was Host WRITE
+ *      Handler should set to value put on bus if Hose READ
+ * @return True if handled (no further processing needed), False if not
  */
-typedef bool (*ctrlreg_irq_fn)(uint8_t ctrl);
+typedef bool (*ctrlreg_irq_fn)(uint8_t ctrl, bool host_rd, uint8_t* d);
 
 
 /** @brief ADDR bit (mask) */
@@ -80,17 +84,78 @@ extern void attn_set_on(bool on);
  * 
  * @param hdlr 
  */
-extern void dbus_creg_hdlr_set(ctrlreg_irq_fn hdlr);
+extern void dbus_ctrl_hdlr_set(ctrlreg_irq_fn hdlr);
 
 /**
- * @brief Get the state of the ADDR, RD-, WR-, and MSEL- (CTRL) pins.
+ * @brief Set the value returned from a CTRL port read.
  * @ingroup databus
  * 
- * Use the `CTRL_xxx_BIT_M` values to mask to the desired bit.
+ * This value is returned when the host reads from the control port.
  * 
- * @return uint8_t Bits value of: MSEL-,WR-,RD-,ADDR  
+ * @param v Value
  */
-extern uint8_t dbus_ctrl_state();
+extern void dbus_ctrl_status_set(uint8_t v);
+
+/**
+ * @brief Get the value of the last unexpected WRITE operation by the host.
+ * @ingroup databus
+ *
+ *
+ * @return uint8_t The value written
+ */
+extern uint8_t dbus_last_wr_val();
+
+/**
+ * @brief Prepare to receive data from the bus into a buffer.
+ * @ingroup databus
+ * 
+ * Sets up the incoming DMA to receive data and store it into the buffer
+ * for a specified number of bytes.
+ * An EXEC message will be posted with the given handler when the transfer
+ * is complete.
+ * The DMA operation is not started by this call.
+ * 
+ * @see dbus_start_recv
+ * 
+ * @param buf Pointer to buffer
+ * @param count Number of bytes
+ * @param on_cmplt EXEC message handler executed on completion
+ */
+extern void dbus_prep_recv(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt);
+
+/**
+ * @brief Prepare to send data from a buffer onto the bus.
+ * @ingroup databus
+ *
+ * Sets up the outgoing DMA to read data from the buffer and give to the PIO
+ * for a specified number of bytes.
+ * An EXEC message will be posted with the given handler when the transfer
+ * is complete.
+ * The DMA operation is not started by this call.
+ *
+ * @see dbus_start_send
+ *
+ * @param buf Pointer to buffer
+ * @param count Number of bytes
+ * @param on_cmplt EXEC message handler executed on completion
+ */
+extern void dbus_prep_send(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt);
+
+/**
+ * @brief Start a receive data operation (after calling `dbus_prep_recv`)
+ * @ingroup databus
+ * 
+ * @see dbus_prep_recv
+ */
+extern void dbus_start_recv();
+
+/**
+ * @brief Start a send data operation (after calling `dbus_prep_send`)
+ * @ingroup databus
+ *
+ * @see dbus_prep_send
+ */
+extern void dbus_start_send();
 
 /**
  * @brief Set the value returned for an unexpected READ operation by the host.
@@ -114,13 +179,18 @@ extern void dbus_rd_def(uint8_t v);
 extern void dbus_release_msel();
 
 /**
- * @brief Get the value of the last unexpected WRITE operation by the host.
+ * @brief Write a value to the Data Bus.
  * @ingroup databus
- * 
- * 
- * @return uint8_t The value written
+ *
+ * This should (generally) only be used by an IRQ Handler handling a CTRL
+ * register access operation to put a value on the bus to be read by
+ * the host.
+ *
+ * @param v The value to put on the bus
  */
-extern uint8_t dbus_last_wr_val();
+extern void dbus_value_put(uint8_t v);
+
+
 
 /**
  * @brief Initialize the module. Must be called once/only-once before module use.

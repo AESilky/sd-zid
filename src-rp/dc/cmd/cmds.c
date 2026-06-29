@@ -30,12 +30,17 @@
 // ====================================================================
 
 const cmd_handler_entry_t cmds_altscr_entry;
+const cmd_handler_entry_t cmds_dmgetregs_entry;
+const cmd_handler_entry_t cmds_dmputregs_entry;
+//
 const cmd_handler_entry_t cmds_dec_entry;
 const cmd_handler_entry_t cmds_dump_entry;
+const cmd_handler_entry_t cmds_go_entry;
 const cmd_handler_entry_t cmds_inc_entry;
 const cmd_handler_entry_t cmds_ld_entry;
 const cmd_handler_entry_t cmds_load_entry;
-const cmd_handler_entry_t cmds_z80reg_entry;
+const cmd_handler_entry_t cmds_step_entry;
+const cmd_handler_entry_t cmds_cpu_entry;
 
 // ====================================================================
 // Local Constants
@@ -243,6 +248,22 @@ static void _shell_inv_dest() {
     shell_putc(nl);
 }
 
+
+// ====================================================================
+// Message Handlers
+// ====================================================================
+
+static void _handle_dm_getregs(cmt_msg_t* msg) {
+    dcc_cpudisp();
+}
+
+static void _handle_dm_putregs(cmt_msg_t* msg) {
+    shell_printf("\nRegisters Sent\n");
+}
+
+
+
+
 // ====================================================================
 // Command Executors
 // ====================================================================
@@ -262,6 +283,42 @@ static int _exec_s2test(int argc, char** argv, const char* unparsed) {
         shell_printf("Screen: %s\n", vstr);
     }
 
+    return (retval);
+}
+
+static int _exec_dm_getregs(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    argc--; argv++; // Move past the command
+    if (argc > 0) {
+        // We don't take any arguments.
+        cmd_help_display(&cmds_dmgetregs_entry, HELP_DISP_USAGE);
+        return (-1);
+    }
+    dm_getallreg(_handle_dm_getregs);
+    return (retval);
+}
+
+static int _exec_dm_putregs(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    argc--; argv++; // Move past the command
+    if (argc > 0) {
+        // We don't take any arguments.
+        cmd_help_display(&cmds_dmputregs_entry, HELP_DISP_USAGE);
+        return (-1);
+    }
+    dm_putallreg(_handle_dm_putregs);
+    return (retval);
+}
+
+
+static int _exec_cpu(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    if (argc > 1) {
+        // We don't take any arguments.
+        cmd_help_display(&cmds_cpu_entry, HELP_DISP_USAGE);
+        return (-1);
+    }
+    dcc_cpudisp();
     return (retval);
 }
 
@@ -405,6 +462,39 @@ _finally:
     return (retval);
 }
 
+static int _exec_go(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    argc--; argv++; // Move past the command
+    if (argc > 1) {
+        // We can accept 1.
+        cmd_help_display(&cmds_go_entry, HELP_DISP_USAGE);
+        return (-1);
+    }
+    // Argument is the PC
+    if (argc) {
+        valstatus_t status;
+        zregWv_t pc = _val_provider(*argv, RS_WORD, &status);
+        if (status != VP_OK) {
+            if (status == VP_INV_SIZE) {
+                _shell_inv_arg(NULL, dcm_size);
+                retval = -2;
+                goto _finally;
+            }
+            _shell_inv_arg(NULL, NULL);
+            retval = -3;
+            goto _finally;
+        }
+        dm_goat(pc, NULL);
+    }
+    else {
+        dm_go(NULL);
+    }
+    SHPS(dcm_done);
+    SHPC(nl);
+_finally:
+    return (retval);
+}
+
 static int _exec_inc(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     argc--; argv++; // Move past the command
@@ -489,14 +579,36 @@ _finally:
     return (retval);
 }
 
-static int _exec_z80reg(int argc, char** argv, const char* unparsed) {
+static int _exec_step(int argc, char** argv, const char* unparsed) {
     int retval = 0;
+    argc--; argv++; // Move past the command
     if (argc > 1) {
-        // We don't take any arguments.
-        cmd_help_display(&cmds_z80reg_entry, HELP_DISP_USAGE);
+        // We can accept 1.
+        cmd_help_display(&cmds_step_entry, HELP_DISP_USAGE);
         return (-1);
     }
-    dcc_cpudisp();
+    // Argument is the PC
+    if (argc) {
+        valstatus_t status;
+        zregWv_t pc = _val_provider(*argv, RS_WORD, &status);
+        if (status != VP_OK) {
+            if (status == VP_INV_SIZE) {
+                _shell_inv_arg(NULL, dcm_size);
+                retval = -2;
+                goto _finally;
+            }
+            _shell_inv_arg(NULL, NULL);
+            retval = -3;
+            goto _finally;
+        }
+        dm_stepat(pc, NULL);
+    }
+    else {
+        dm_step(NULL);
+    }
+    SHPS(dcm_done);
+    SHPC(nl);
+_finally:
     return (retval);
 }
 
@@ -519,6 +631,8 @@ void dcc_cpudisp() {
     else if (nb == NB_HEX) {
         pad = 1;
     }
+    const char* sbcind = (dc_tgt_is_sbc() ? dcm_tgtsbc : dcm_blank);
+
     __clrbuf();
     SHPF(dcm_sps(18));
     SHPF("F:%s",_flagbits(regf_gv()));
@@ -530,7 +644,7 @@ void dcc_cpudisp() {
     SHPF(dcm_reghdr);
     SHPF("\n%s\n\n",_regallstr());
     SHPF(dcm_regwhdr);
-    SHPF("\n%s\n\n", _regallwstr());
+    SHPF("\n%s\n%s\n", _regallwstr(), sbcind);
     nbase_set(nb);
 }
 
@@ -554,6 +668,31 @@ const cmd_handler_entry_t cmds_altscr_entry = {
     "TEST VT/XTERM Alt-Screen: 1 switch to #2, 0 switch to #1"
 };
 
+const cmd_handler_entry_t cmds_dmgetregs_entry = {
+    _exec_dm_getregs,
+    5,
+    ".getreg",
+    0,
+    "Request the DM send all registers"
+};
+
+const cmd_handler_entry_t cmds_dmputregs_entry = {
+    _exec_dm_putregs,
+    5,
+    ".putreg",
+    0,
+    "Send all registers to the DM"
+};
+
+
+const cmd_handler_entry_t cmds_cpu_entry = {
+    _exec_cpu,
+    2,
+    "cpu",
+    0,
+    "CPU register display"
+};
+
 const cmd_handler_entry_t cmds_dec_entry = {
     _exec_dec,
     3,
@@ -571,6 +710,14 @@ const cmd_handler_entry_t cmds_dump_entry = {
   for the location to allow specifying count while continuing a dump.\n\
   The default count is 256 bytes (1 page). If the base is HEX, the dump\n\
   also includes ASCII characters.\n  SEE: DASCII to dump characters and control values"
+};
+
+const cmd_handler_entry_t cmds_go_entry = {
+    _exec_go,
+    1,
+    "go",
+    "[pc]",
+    "Run the target, optionally specifying a starting PC."
 };
 
 const cmd_handler_entry_t cmds_ld_entry = {
@@ -598,12 +745,12 @@ const cmd_handler_entry_t cmds_load_entry = {
  If dest is a memory location, multiple values are stored in consecutive locations."
 };
 
-const cmd_handler_entry_t cmds_z80reg_entry = {
-    _exec_z80reg,
-    2,
-    "cpu",
-    0,
-    "CPU register display"
+const cmd_handler_entry_t cmds_step_entry = {
+    _exec_step,
+    1,
+    "step",
+    "[pc]",
+    "Single-Step the target, optionally specifying a starting PC."
 };
 
 
@@ -615,12 +762,17 @@ const cmd_handler_entry_t cmds_z80reg_entry = {
 void dccmds_modinit() {
     // Register our commands    
     cmd_register(&cmds_altscr_entry);
+    cmd_register(&cmds_dmgetregs_entry);
+    cmd_register(&cmds_dmputregs_entry);
+    //
+    cmd_register(&cmds_cpu_entry);
     cmd_register(&cmds_dec_entry);
     cmd_register(&cmds_dump_entry);
+    cmd_register(&cmds_go_entry);
     cmd_register(&cmds_inc_entry);
     cmd_register(&cmds_ld_entry);
     cmd_register(&cmds_load_entry);
-    cmd_register(&cmds_z80reg_entry);
+    cmd_register(&cmds_step_entry);
     //
     // initialize the rest of the commands that we make available.
     //

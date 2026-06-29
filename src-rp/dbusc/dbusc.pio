@@ -20,6 +20,7 @@
 .define PUBLIC PIO_BCA_CTRL     0   ; CTRL register accessed (CPU IRQ)
 .define PUBLIC PIO_BCA_RDDR     1   ; DATA RD data required  (CPU IRQ)
 .define PUBLIC PIO_DATA_IRQ     4
+.define PUBLIC PIO_DDONE_IRQ    5
 
 .program cb_msel
 .side_set   1   opt ; Side-set used to control WAIT
@@ -32,8 +33,8 @@
 ;
 PUBLIC start:
     mov     osr,NULL                [7]
-    out     pindirs,8               [7]             ; set data bus to input
-    wait    MSEL_ON gpio MSEL_GPIO   side WAIT_ON   ; Wait for Module Select
+    out     pindirs,8               side WAIT_ON [7]; set data bus to input
+    wait    MSEL_ON gpio MSEL_GPIO  [7]             ; Wait for Module Select
     ; Look for A0:A1
     jmp     pin,addr1                               ; Raise IRQ based on Control[0]/Data[1] 
     ; We have MS and A:0 (Control). The CPU handles this, so let it know.
@@ -45,13 +46,16 @@ PUBLIC start:
     jmp     start                   [7]
 addr1:
     ; We have MS and A:1 (Data), run the Data Read/Write SM
-    irq     wait PIO_DATA_IRQ       [7]              ; Signal the DATA RD/WR SM
+    nop                             [7]
+    irq     PIO_DATA_IRQ                            ; Signal the DATA RD/WR SM to unblock
+    wait    irq PIO_DDONE_IRQ       [7]             ; Wait for it to finish
 .wrap
 
 
 .program cb_autodata
+.side_set   1   opt ; Side-set used for debugging
 ;
-; Control Bus - Handle data transfer
+; Control Bus - Handle automatic data transfer
 ;
 ; Handles data transfer request.
 ; Perform RD or WR depending on RD pin.
@@ -60,25 +64,24 @@ addr1:
 ;
 PUBLIC start:
 .wrap_target
-    wait    LEAVE_SET irq PIO_DATA_IRQ ; Wait for the DataIRQ to go active
+    wait    irq PIO_DATA_IRQ   side 0 ; Wait for the DataIRQ to go active
     ; Look at the RD pin.
-    jmp     pin,datain                 ; If RD is 1 we go to ZWrite/datain (Z80 => RP)
+    jmp     pin,datain         side 1  ; If RD is 1 we go to ZWrite/datain (Z80 => RP)
 dataout:
     ; MSEL SM leaves data bus set to input, so we need to change to output
-    mov     osr,~NULL                  
-    out     pindirs,8 
+    mov     osr,~NULL          side 0        
+    out     pindirs,8               [7]
     mov     y,STATUS                   ; get the TXFIFO EMPTY status
     jmp     !y,drdy                    ; there is data ready =>
-    irq     wait PIO_BCA_RDDR          ; tell CPU we need data
+    irq     wait PIO_BCA_RDDR  side 1  ; tell CPU we need data
 drdy:
-    pull    block                      ; get the data
-    out     pins,8                 [7] ; put it on the bus
+    pull    NOBLOCK            side 0  ; get the data
+    out     pins,8                  [7]; put it on the bus
     jmp     done                       
 datain:
-    ; MSEL SM leaves data bus set to input
-    in      pins,8                     ; read data from the bus
+    in      pins,8                      ; read data from the bus
 done:
-    wait    THEN_CLR irq PIO_DATA_IRQ  ; Clearing releases MOD_SEL SM
+    irq     PIO_DDONE_IRQ      side 0   ; Releases MOD_SEL SM
 .wrap
 
 
@@ -87,6 +90,8 @@ done:
 ; Control Bus - Perform a single data bus write (data to Z80)
 ;
 ; Configured for 8 bits.
+; CPU should assure that the bus is set back to input
+; (typically be releasing the MODSEL SM)
 ;
 PUBLIC start:
 .wrap_target

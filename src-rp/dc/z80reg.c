@@ -23,33 +23,6 @@
 #define ZrpDEx (*((rp_t*)&z80regs.regex))
 #define ZrpHLx (*((rp_t*)&z80regs.reglx))
 
-#define regied_ndx  0
-#define regi_ndx    1
-//
-#define regfx_ndx   2
-#define regax_ndx   3
-#define regcx_ndx   4
-#define regbx_ndx   5
-#define regex_ndx   6
-#define regdx_ndx   7
-#define reglx_ndx   8
-#define reghx_ndx   9
-//
-#define regc_ndx   10
-#define regb_ndx   11
-#define rege_ndx   12
-#define regd_ndx   13
-#define regl_ndx   14
-#define regh_ndx   15
-#define regf_ndx   16
-#define rega_ndx   17
-//
-#define regsp_ndx  18
-#define regpc_ndx  20
-#define regix_ndx  22
-#define regiy_ndx  24
-//
-#define ZREGBYTES   26
 
 static const char* const _regAname = "A";
 static const char* const _regBname = "B";
@@ -90,7 +63,7 @@ static const char* const _regIYname = "IY";
 // ====================================================================
 
 static volatile bool _modinit_called;
-static volatile uint8_t zregbuf[ZREGBYTES];
+static volatile uint8_t zregbuf[ZREGALLBYTES];
 
 // ====================================================================
 // Local/Private Method Declarations
@@ -107,6 +80,10 @@ static volatile uint8_t zregbuf[ZREGBYTES];
 // ====================================================================
 
 bool z80_intenbld() { return ((zregbuf[regied_ndx] & Z80IE_M) != 0); }
+
+volatile uint8_t* z80reg_buf_get() {
+    return zregbuf;
+}
 
 // F when pushed with I (using AF)
 zregBv_t regied_gv() {
