@@ -38,6 +38,7 @@ regsp:		.block	WORD
 regpc:		.block	WORD
 regix:		.block	WORD
 regiy:		.block	WORD
+_regend		.equ	$
 ;
 regsav2:	.equ	$		; Used for 2nd save operation (PC, SP, and AF) 
 		.block	32		; room for temporary stack (not expected to be used)
@@ -45,8 +46,9 @@ tempaf:		.block	WORD
 tempsp:		.block	WORD
 asave:		.block	BYTE
 z80im:		.block	BYTE
-tflag		.block	BYTE		; Target state/status bits (see .inc for bits)
-zflag		.block	BYTE		; ZID state/status bits (see .inc for bits)
+sflag:		.block	BYTE		; Flag indicating that the target is the SBC (same board)
+tflag:		.block	BYTE		; Target state/status bits (see .inc for bits)
+zflag:		.block	BYTE		; ZID state/status bits (see .inc for bits)
 ;
 brk_pc_inf:	.block	BYTE		; Used to save the initial read from this port
 					; since each time the port is read it shifts

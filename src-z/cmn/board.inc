@@ -102,6 +102,8 @@ RPMDATA		.equ	RPMODBASE+1	;   Module Data
 ONE_BLOCK	.equ	(ONE_KB*16)	; Bytes in a Block (with ZID MMU)
 ONE_REGION	.equ	(ONE_KB*16)	; Bytes in a Region (with ZID MMU)
 PAGES_PER_BLOCK	.equ	(ONE_BLOCK/ONE_PAGE)	; Number of 256-Byte Pages in an 16K-Byte Block
+MEM_ROM_SEL	.equ	0000b		; ROM is mapped with bit-4=0
+MEM_RAM_SEL	.equ	1000b		; RAM is mapped with bit-4=1
 MEMBLK0_ADR	.equ	00000h		; Block-0 Z80 Memory start address 
 MEMBLK1_ADR	.equ	04000h		; Block-1 Z80 Memory start address 
 MEMBLK2_ADR	.equ	08000h		; Block-2 Z80 Memory start address 

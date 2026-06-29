@@ -44,11 +44,21 @@ ie_b		.equ	2	;  P/V is IE
 	.global	regix
 	.global	regiy
 ;
+ZREGBYTES	.equ	26	; Must match DOC
+BYTEREG		.equ	BYTE
+WORDREG		.equ	WORD
+;
 	.global	regsav2
 	.global	tempaf		; Temporary AF storage (saved by 'push')
 	.global	tempsp		; Temporary SP storage (SP saved here, then set here)
 	.global	asave
 	.global	z80im		; Target Interrupt Mode
+;
+; Flag bytes
+;
+	.global sflag		; Is SBC
+sf_issbc	.equ	1	;  bit-1: Indicates target is the SBC (same board)
+sf_issbc_m	.equ	00000001b
 	.global tflag		; Target state/status bits
 	.global zflag		; ZID state/status bits
 zf_usezid	.equ	7	;  bit-7: Use ZID memory and ports for 'target' ops

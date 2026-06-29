@@ -7,7 +7,7 @@
 ;
 ; ==============
 
-; ROM and RAM start and page count
+; ROM and RAM start and page count with default MMU mapping
 ;
 SBC_ROMBASE	.equ	00000h
 SBC_ROMPC	.equ	080h

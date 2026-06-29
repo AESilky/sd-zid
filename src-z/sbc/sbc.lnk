@@ -11,9 +11,9 @@
 -o=sbc1.bin
 -m=sbc1.map
 -lBOOT=0000         ; Code area (region 0 & 1 of the rom)
--lCODE              ; Code area used by Diag and Util
+-lCODE=2000         ; Code area used by Diag and Util
 -lBSS=8000          ; Ram area (region 0 & 1 of the ram (8 & 9 abs))
--lSTK=B800          ; Separate area for stack (put here to work with ZED debugging)
+-lSTK=7800          ; Separate area for stack (put here to work with ZED debugging)
 ; Content
 sbc1.obj            ; SBC Test #1
 ../diag/diag.obj    ; Boot diagnostics
