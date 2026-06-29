@@ -10,17 +10,90 @@
 extern "C" {
 #endif
 
+#include "cmt_t.h"
 #include "num_t.h"
+#include "z80reg.h"
 
-#include "stdbool.h"
-#include "stdint.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 
 #define ONE_K_MASK 0x000003FF
 typedef enum DC_MODE_ {
     DCM_DEBUG = 0,
-    DCM_TARGET
+    DCM_TARGET,
+    DCM_ERROR = 0xFF
 } dcm_t;
+
+/**
+ * @brief Get all the Z80 registers from the Debug Monitor.
+ * @ingroup debugcontrol
+ * 
+ * This gets all the registers and displays them. The operation
+ * is asynchronous, so the registers aren't available when the method returns.
+ * 
+ * The passed in message handler (can be NULL) is executed when the
+ * operation completes.
+ * 
+ * @param on_cmplt Message Handler function called on completion (can be NULL)
+ */
+extern void dm_getallreg(msg_handler_fn on_cmplt);
+
+/**
+ * @brief Run the Target from the current PC.
+ * @ingroup debugcontrol
+ * 
+ * This starts the target running.
+ * 
+ * @param on_cmplt Message Handler function called on completion (can be NULL)
+ */
+extern void dm_go(msg_handler_fn on_cmplt);
+
+/**
+ * @brief Run the Target from the specified location.
+ * @ingroup debugcontrol
+ *
+ * This starts the target running after loading the PC with the specified value.
+ *
+ * @param pc Word value to load the PC with before running
+ * @param on_cmplt Message Handler function called on completion (can be NULL)
+ */
+extern void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt);
+
+/**
+ * @brief Send all Z80 registers to the Debug Monitor.
+ * @ingroup debugcontrol
+ *
+ * This sends all the registers. The operation is asynchronous, 
+ * so the registers may not have been sent when the method returns.
+ *
+ * The passed in message handler (can be NULL) is executed when the
+ * operation completes.
+ *
+ * @param on_cmplt Message Handler function called on completion (can be NULL)
+ */
+extern void dm_putallreg(msg_handler_fn on_cmplt);
+
+/**
+ * @brief Single-Step the Target from the current PC.
+ * @ingroup debugcontrol
+ *
+ * This steps the target.
+ *
+ * @param on_cmplt Message Handler function called on completion (can be NULL)
+ */
+extern void dm_step(msg_handler_fn on_cmplt);
+
+/**
+ * @brief Single-Step the Target from the specified location.
+ * @ingroup debugcontrol
+ *
+ * This steps the target after loading the PC with the specified value.
+ *
+ * @param pc Word value to load the PC with before stepping
+ * @param on_cmplt Message Handler function called on completion (can be NULL)
+ */
+extern void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt);
 
 /**
  * @brief Get a byte value from the memory buffer.
@@ -63,6 +136,14 @@ extern void dc_mem_setB(uint16_t addr, uint8_t value);
  * @param value Word value to set (store)
  */
 extern void dc_mem_setW(uint16_t addr, uint16_t value);
+
+/**
+ * @brief Is the Target the SBC
+ * @ingroup debugcontrol
+ * 
+ * @return bool True=SBC False=Not SBC 
+ */
+extern bool dc_tgt_is_sbc();
 
 /**
  * Value provider that processes Z80 register names and falls back to the

@@ -211,7 +211,7 @@ int nbase_modinit() {
     _modinit_called = true;
 
     int retval = 0;
-    _nbase = NB_DECIMAL;     // Start off with decimal as the number base
+    _nbase = NB_HEX;     // ZZZ - Start off with HEX as the number base
 
     return retval;
 }

@@ -94,6 +94,33 @@ typedef struct Z80REGS_ {
     zregWv_t  regix;  // IX (Index X)
     zregWv_t  regiy;  // IY (Index Y)
 } z80regs_t;
+//
+#define regied_ndx  0
+#define regi_ndx    1
+//
+#define regfx_ndx   2
+#define regax_ndx   3
+#define regcx_ndx   4
+#define regbx_ndx   5
+#define regex_ndx   6
+#define regdx_ndx   7
+#define reglx_ndx   8
+#define reghx_ndx   9
+//
+#define regc_ndx   10
+#define regb_ndx   11
+#define rege_ndx   12
+#define regd_ndx   13
+#define regl_ndx   14
+#define regh_ndx   15
+#define regf_ndx   16
+#define rega_ndx   17
+//
+#define regsp_ndx  18
+#define regpc_ndx  20
+#define regix_ndx  22
+#define regiy_ndx  24
+//
 
 /** @brief Union of a Byte and Word Value @ingroup z80 */
 typedef union ZBWVAL_ {
@@ -261,6 +288,21 @@ extern bool z80_intenbld();
  * @return regaccess_t The register Accessor or null if the token doesn't represent a register
  */
 extern const regaccess_t* z80_ra_for_token(const char* tkn);
+
+/**
+ * @brief Get the Z80 Register buffer (RAW)
+ * @ingroup z80
+ * 
+ * This returns the raw Z80 Register Buffer. Use of this method (and the raw buffer)
+ * is intended just for transferring to/from the Debug Monitor (Z80 code).
+ * 
+ * Other access to the registers should be done using the accessor methods.
+ *  
+ * @return uint8_t* 
+ */
+extern volatile uint8_t* z80reg_buf_get();
+/** @brief The number of bytes in the Z80 Register Buffer (for transfers) */
+#define ZREGALLBYTES   26
 
 /**
  * @brief Initialize the module. Must be called once/only-once before module use.

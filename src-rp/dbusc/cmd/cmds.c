@@ -46,7 +46,7 @@ static int _exec_dbc_attn(int argc, char** argv, const char* unparsed) {
     return (retval);
 }
 
-/*static*/ void man_write(uint8_t v);
+/*static*/ void dbus_value_put(uint8_t v);
 
 static int _exec_dbwr(int argc, char** argv, const char* unparsed) {
     int retval = 0;
@@ -63,7 +63,7 @@ static int _exec_dbwr(int argc, char** argv, const char* unparsed) {
         retval = 1;
         goto _finally;
     }
-    man_write((uint8_t)v);
+    dbus_value_put((uint8_t)v);
 _finally:
     return (retval);
 }

@@ -99,15 +99,18 @@ int board_init() {
     // turn the Error LED on until board init completes successfully
     error_led_set_on(true);
 
+    // Configure the WAIT line first/fast to keep the host from being stuck
+    gpio_init(CTRL_WAITRQ);
+    gpio_put(CTRL_WAITRQ, CTRL_WAITRQ_OFF);
+    gpio_set_pulls(CTRL_WAITRQ, false, false);  // No Pulls
+    gpio_set_drive_strength(CTRL_WAITRQ, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_dir(CTRL_WAITRQ, GPIO_OUT);
+
     // CPU/BUS Control
     gpio_init(CTRL_INTRQ);
     gpio_put(CTRL_INTRQ, CTRL_INTRQ_OFF);
     gpio_set_dir(CTRL_INTRQ, GPIO_OUT);
     gpio_set_drive_strength(CTRL_INTRQ, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_init(CTRL_WAITRQ);
-    gpio_put(CTRL_WAITRQ, CTRL_WAITRQ_ON);
-    gpio_set_dir(CTRL_WAITRQ, GPIO_OUT);
-    gpio_set_drive_strength(CTRL_WAITRQ, GPIO_DRIVE_STRENGTH_12MA);
     gpio_init(CTRL_ADDR);
     gpio_set_dir(CTRL_ADDR, GPIO_IN);
     gpio_init(CTRL_MODSEL);
