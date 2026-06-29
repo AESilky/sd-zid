@@ -9,14 +9,21 @@
 ; ==============
 ; Debug Monitor (DM) to Debug Operation Controller (DOC) State/Status indicators
 ;
+; Status from DOC (CTRL port read)
+DOCREADY	.equ	0FAh		; DOC is ready
+
+
+; ==============
 ; These are sent from the DM to the DOC when the DM initializes, a breakpoint is
 ; hit, and in response to commands sent from the DOC.
 ;
+DM_IS_SBC_M	.equ	00000001b	; added to status if running as SBC
 DMINIT		.equ	080h		; DM has finished initialization
-DMOPDONE	.equ	081h		; DOC requested operation complete
-DMOKCMDRD	.equ	082h		; OK, reading command
-DMBRKHIT	.equ	084h		; Breakpoint hit
-DMTGTGO		.equ	088h		; DM transitioning to Target Mode
+DMOPDONE	.equ	082h		; DOC requested operation complete
+DMOKCMDRD	.equ	084h		; OK, reading command
+DMCMDUK		.equ	088h		; Requested Command Unknown
+DMBRKHIT	.equ	08Ch		; Breakpoint hit
+DMTGTGO		.equ	08Eh		; DM transitioning to Target Mode
 					; (so don't interrupt for a bit)
 DMBRT		.equ	090h		; Be Right There. Sent when ATTN requested
 					; indicating that DM is transitioning
@@ -25,7 +32,7 @@ DMBRT		.equ	090h		; Be Right There. Sent when ATTN requested
 					; with DMOKCMDRD once the Target state
 					; has been taken care of.
 
-DMRSTEXEC	.equ	0C1h		; DM executed a RST instruction (ERROR)
+DMRSTEXEC	.equ	0C2h		; DM executed a RST instruction (ERROR)
 
 ; ==============
 ; DOC Commands for the DM.
@@ -41,26 +48,29 @@ DMRSTEXEC	.equ	0C1h		; DM executed a RST instruction (ERROR)
 ; All 16-bit transfers are low-byte then high-byte.
 ;
 
-; --------------
-; Do Nothing, just go IDLE.
-;
-DCNOP		.equ	000h
-
-; --------------
-; Is the target the (same board) SBC?
-;
-; DC Sends to the data register:
-; 1 BYTE: 0=FALSE, Non-Zero=TRUE
-;
-DCISSBC		.equ	008h
-
 ;; ==============
 ;;
-;; 0x Commands (other than NOP and SBC Mode) are primarily used when going
-;; TO/FROM Target Mode.
+;; NOTE: All commands have Bit-7 Set (indicating the value is for the DM)
+;;	If a command is read and doesn't have Bit-7 set it should be ignored
 ;;
-;; These are used to get and set the complete Z80 state en-mass.
+DCCMDIND	.equ	080h
 ;;
+;; ==============
+;; 0x Commands (other than NOP) are primarily used for informatio.
+;;
+
+; --------------
+; Do Nothing, go IDLE. Don't read another command.
+;
+DCNOP		.equ	080h
+
+; --------------
+; GET the firmware version
+;
+; DC Sends to the data register:
+; 8 BYTES: YYYYMMDD
+;
+DCVER		.equ	081h
 
 ; --------------
 ; GET the complete set of registers (a different command can be used to just
@@ -69,9 +79,8 @@ DCISSBC		.equ	008h
 ; DC Sends to the data register:
 ; 26 BYTES: IE/ID(bit-2),IV,(alts)F',A',C',B',E',D',L',H',
 ;	    (pri)C,B,E,D,L,H,F,A,SP[l/h],PC[l/h],IX[l/h],IY[l/h],
-;     
 ;
-DCGREGALL	.equ	001h
+DCGREGALL	.equ	088h
 
 ; --------------
 ; PUT the complete set of registers (a different command can be used to just
@@ -81,21 +90,21 @@ DCGREGALL	.equ	001h
 ; 26 BYTES: IE/ID(bit-2),IV,(alts)F',A',C',B',E',D',L',H',
 ;	    (pri)C,B,E,D,L,H,F,A,SP[l/h],PC[l/h],IX[l/h],IY[l/h],
 ;
-DCPREGALL	.equ	002h
+DCPREGALL	.equ	089h
 
 ; --------------
 ; Get IE/ID(bit-2) and IV
 ;
 ; DC Sends to the data register
 ; 2 BYTES: IE/ID(bit-2),IV
-DCGIEDV		.equ	004h
+DCGIEDV		.equ	08Ah
 
 ; --------------
 ; Put IE/ID(bit-2) and IV
 ;
 ; DC Reads from the data register
 ; 2 BYTES: IE/ID(bit-2),IV
-DCPIEDV		.equ	005h
+DCPIEDV		.equ	08Bh
 
 ; --------------
 ; GET a (byte) register. The register is encoded in the lower 4 bits (using a
@@ -122,7 +131,7 @@ DCPIEDV		.equ	005h
 ; DM Sends to the data register:
 ; 1 BYTE
 ;
-DCGREG		.equ	010h		; 10..1F
+DCGREG		.equ	090h		; 10..1F
 
 ;
 ; Register mask values for the low 4-bits for DCGREG and DCPREG
@@ -173,7 +182,7 @@ DCRH_M		.equ	0Fh
 ; DC Reads from the data register:
 ; 1 BYTE
 ;
-DCPREG		.equ	020h		; 20..2F
+DCPREG		.equ	0A0h		; 20..2F
 
 ; --------------
 ; GET a 16-bit register. The register is encoded in the lower 2 bits
@@ -186,7 +195,7 @@ DCPREG		.equ	020h		; 20..2F
 ; DC Sends to the data register:
 ; 2 BYTES (L/H)
 ;
-DCGRP		.equ	030h		; 30..33
+DCGRP		.equ	0B0h		; 30..33
 
 ; --------------
 ; PUT a 16-bit register. The register is encoded in the lower 2 bits
@@ -198,7 +207,7 @@ DCGRP		.equ	030h		; 30..33
 ; DC Reads from the data register:
 ; 2 BYTES (L/H)
 ;
-DCPRP		.equ	034h		; 34..37
+DCPRP		.equ	0B4h		; 34..37
 
 ; --------------
 ; GET a byte of memory.
@@ -208,7 +217,7 @@ DCPRP		.equ	034h		; 34..37
 ; DC Sends to the data register:
 ; 1 BYTE: VALUE
 ;
-DCGMB		.equ	038h
+DCGMB		.equ	0B8h
 
 ; --------------
 ; PUT a byte of memory.
@@ -216,7 +225,7 @@ DCGMB		.equ	038h
 ; DC Reads from the data register:
 ; 3 BYTES (L/H): ADDRESS, VALUE
 ;
-DCPMB		.equ	039h
+DCPMB		.equ	0B9h
 
 ; --------------
 ; GET a page of memory.
@@ -226,7 +235,7 @@ DCPMB		.equ	039h
 ; DC Sends to the data register:
 ; 256 BYTES: VALUE0, VALUE1, ..., VALUE255
 ;
-DCGMP		.equ	03Ah
+DCGMP		.equ	0BAh
 
 ; --------------
 ; PUT a page of memory.
@@ -234,7 +243,7 @@ DCGMP		.equ	03Ah
 ; DC Reads from the data register:
 ; 258 BYTES (L/H): ADDRESS, VALUE0, VALUE1, ..., VALUE255
 ;
-DCPMP		.equ	03Bh
+DCPMP		.equ	0BBh
 
 ; --------------
 ; GET a byte from a port.
@@ -244,7 +253,7 @@ DCPMP		.equ	03Bh
 ; DC Sends to the data register:
 ; 1 BYTE: VALUE
 ;
-DCGPB		.equ	03Ch
+DCGPB		.equ	0BCh
 
 ; --------------
 ; PUT a byte to a port.
@@ -252,7 +261,7 @@ DCGPB		.equ	03Ch
 ; DC Reads from the data register:
 ; 3 BYTES (L/H): ADDRESS, VALUE
 ;
-DCPPB		.equ	03Dh
+DCPPB		.equ	0BDh
 
 
 ;; ==============
@@ -270,7 +279,7 @@ DCPPB		.equ	03Dh
 ; DC Sends to the data register:
 ; 1 BYTE: Number
 ;
-DCGBRKCNT	.equ	040h
+DCGBRKCNT	.equ	0C0h
 
 ; --------------
 ; SET Break-1 parameters.
@@ -291,7 +300,7 @@ DCGBRKCNT	.equ	040h
 ; DC Reads from the data register:
 ; 5 BYTES: UA[4]|EN[3]|OP[2..0], ADDR(L/H), DATA, MASK
 ;
-DCPBRKS1	.equ	041h
+DCPBRKS1	.equ	0C1h
 
 DCBRKOP_IF	.equ	01h		; Instruction Fetch
 DCBRKOP_MW	.equ	02h		; Memory Write
@@ -323,7 +332,7 @@ DCBRKUA_M	.equ	00010000b	; Use Address (bit mask)
 ; DC Reads from the data register:
 ; 2 BYTES: ADDR(L/H)
 ;
-DCPBRK2NA	.equ	042h		; 42..4E Break-2..Break-14
+DCPBRK2NA	.equ	0C2h		; 42..4E Break-2..Break-14
 
 ; --------------
 ; SET Break-2..n operation.
@@ -340,11 +349,34 @@ DCPBRK2NA	.equ	042h		; 42..4E Break-2..Break-14
 ; DC Reads from the data register:
 ; 1 BYTE: UA[4]|EN[3]|OP[2..0]
 ;
-DCPBRK2NO	.equ	04Fh
+DCPBRK2NO	.equ	0CFh
 
 
 ;; ==============
 ;;
-;; 5x Commands are tests and board exorcisers.
+;; 5x Commands are GO, STEP, Tests and Board exorcisers.
 ;;
+
+; --------------
+; GO - Run the target from the current PC.
+;
+DCGO		.equ	0D0h
+
+; --------------
+; GO AT - Run the target from a given location.
+;
+; DC Reads from the data register:
+; 2 BYTES: ADDR-L,ADDR-H
+;
+DCGOAT		.equ	0D1h
+
+; --------------
+; STEP - Single-Step the target from the current PC.
+;
+DCSTEP		.equ	0D2h
+
+; --------------
+; STEP AT - Single-Step the target from a given location.
+;
+DCSTEPAT	.equ	0D3h
 

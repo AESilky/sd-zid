@@ -59,18 +59,18 @@ rst38:		.org	boot+38h
 		jp	onrst38
 		
 		.org	boot+40h
-id:		.byte	"SBC Test #1:"	; ID
+id:		.byte	"SBC Test #1:"		; ID
 ver:		.equ	$
 		.input	"version.inc"		; build date/version
+_ver:		.byte	0
 
 nmivec:		.org	boot+66h
 		jp	onnmi
 
 
-		.org	boot+6000h
-runtime:	.equ	$
 		.stitle	"POR Initialization"
-		.eject
+		.org	boot+1000h
+runtime:	.equ	$
 ; ---------------------------------------------------------------------------
 ;	Power-On-Reset Initialization
 ; ---------------------------------------------------------------------------
@@ -87,20 +87,40 @@ onreset:	.equ	$
 imemerr:	ld	(hl),a
 		ld	d,(hl)
 		jr	imemerr
-init2:		; don't fill the ram (some data to look at)
+init2:		; don't fill the ram (ram test leaves some data to look at)
 		;
-		; but clear the two locations we actually use and set the stack
+		; For debugging with ZID/ZED on Breadboard (which doesn't have
+		; the PC Latch, so it uses RST8) set memory block 1 (4000-7FFF)
+		; to RAM so our SP can be in RAM that is also RAM in DEBUG MODE
+		ld	b,MMU_BLK_1
+		ld	c,MMU_BASE
+		ld	a,MEM_RAM_SEL|7	; Map RAM Region-7 into Block-1 (same as DEBUG)
+		out	(c),a
+		; Clear the two locations we actually use and set the stack
 		ld	sp,sbcstk
 		xor	a
 		ld	(do_delay),a
 		ld	(gpio_val),a
+		;
+		; put some interesting values in the ALT registers and IX
+		di
+		ld	a,011h
+		ld	i,a		; No interrupts are used, this just for test
+		exx
+		ld	b,00bh
+		ld	c,00ch
+		ld	d,00dh
+		ld	e,00eh
+		ld	h,'H'
+		ld	l,'L'
+		exx
+		ld	ix,0F00Dh
 		; that's it (the CPLD takes care of most of the init)
 		jp	main
 
 
 
 		.stitle	"NMI and RST Handlers"
-		.eject
 		.org	runtime+100h
 ;; =============
 ;; NMI and Restart Handlers - None of these are expected.
@@ -130,7 +150,6 @@ onrst:		; Halt (will cause the HALT LED to come on if debugging)
 		halt
 
 		.stitle	"Main application"
-		.eject
 		.align	8	; Page boundary
 main:		; Do something interesting...
 		in	a,(BRDCTRL)
@@ -140,7 +159,7 @@ main:		; Do something interesting...
 		ld	(gpio_val),a	; clear our GPIO backing
 		ld	l,a
 		ld	b,a
-		inc	a		; put 1 in our 'do delay' flag
+		dec	a		; put FF in our 'do delay' value
 		ld	(do_delay),a	; debugger can set to 0 to avoid the delay loop
 		ld	c,SBC_GPIO
 m1:		ld	e,l
@@ -149,13 +168,13 @@ m1:		ld	e,l
 		in	a,(c)		; port read (something to test break with)
 		ld	(gpio_val),a	; memory write (something to test break with)
 		ld	h,a
+		inc	l
 		ld	a,(do_delay)	; see if we should delay (also something to test break with)
 		or	a
 		jr	z,m1		; no delay =>
+		ld	b,a		; amount to delay
 		; delay a bit
 m2:		djnz	m2
-m3:		djnz	m3
-		inc	l
 		jr	m1
 
 

@@ -43,8 +43,12 @@ BOOT		.sect	W
 ; ===========================
 ;
 boot:
-		jp	bahdlr			; Reset and Restart Entries
+		nop				; 2 NOPs to allow for forced NOP being executed
+		nop				;  during SPRST
+		jp	bahdlr			; Break & Attn Handler
 rst08:		.org	boot+08h
+		nop
+		nop
 		jp	bar8hdlr		; ! RST8 used in place of SPRST when debugging with ZED
 rst10:		.org	boot+10h
 		jp	onrst10
@@ -64,16 +68,16 @@ id:		.byte	"ZID DEBUG MONITOR:"	; ID
 		.align	2
 ver:		.equ	$
 		.input	"version.inc"		; build date/version
-		.byte	0
+_ver:		.byte	0
 nmivec:		.org	boot+66h
 		jp	dmdocattn		; DOC ATTN when in Debug Mode uses NMI
 
 		.align	4
 		;--------------------------------------------------------------
 		; Break|ATTN handler from RST8 (for debugging with ZED)
-		;  The RST8 gets injected twice when due to ATTN.
 		; ! ZZZ the breadboard doesn't have the PC latch, so
-		; ! we'll get the PC off the stack and then handle like a SPRST
+		; ! we'll (try to) get the PC off the stack and then handle
+		; ! like a SPRST
 		;
 bar8hdlr:	.equ	$
 		ld	(tempsp),sp
@@ -95,8 +99,8 @@ bahdlr:		.equ	$
 		ld	sp,tempsp
 		push	af			; we can now use AF and SP
 dbzent:		in	a,(PCADDR_RD)		; read the PC-b0 and status. this will allow us to see if the
-		ld	(brk_pc_inf),a		; reset is from a BRK or ATTN, or
-		bit	ZIDINITD_B,a		; if the ZID isn't initialized, treat as Full Reset
+		ld	(brk_pc_inf),a		; reset is from a BRK or ATTN. Or,
+		bit	ZIDINITD_B,a		; if the ZID isn't initialized treat as Full Reset
 		jp	z,doinit		;  Do the initialization
 		; Break (hard or soft) or Attention?
 		and	SR_ISHBRK_M|SR_ISSBRK_M|ATTN_ON_M
@@ -131,9 +135,10 @@ brkattn:	; Break or Attention Common
 		; Read in and build up the saved PC
 		ld	a,(zflag)
 		bit	zf_dbzed,a
-		jr	z,sr0		; Special Reset => (not RST8 (ZED/SELF) debugging)
+		; ZZZ For now, always using pushed PC jr	z,sr0		; Special Reset => (not RST8 (ZED/SELF) debugging)
 		;
 		; Debugging using RST8 rather than SPRST (to allow ZED to be used)
+		;  try to get the PC from the stack (pushed by the RST8)
 		;
 		res	zf_dbzed,a	; clear the DB-ZED flag for next BRK/ATTN
 		ld	(zflag),a
@@ -144,17 +149,10 @@ brkattn:	; Break or Attention Common
 		pop	bc		; 'AF' into BC
 		ld	sp,dbmstk	; set our stack (for the calls below)
 		ld	hl,(tempsp)	; get the saved SP into HL
-		; ATTN generates 2 forced RST8 so the PC was the first PC PUSH, then there was a 2nd
-		inc	hl		; remove the 2nd PC push
+		; try to get the PC
+		ld	e,(hl)		; low byte
 		inc	hl
-		; now the pushed PC needs to be read from target memory (for ZED DB we make sure target SP is valid)
-		call	trdbyte		; low byte
-		ld	d,e
-		inc	hl
-		call	trdbyte		; high byte
-		ld	a,e
-		ld	e,d
-		ld	d,a		; now DE has the correct order
+		ld	d,(hl)		; high byte
 		; Since the forced RST8 instruction was executed, the pushed PC is actually 1 too much
 		dec	de		; Now DE has the correct PC
 		inc	hl		; Now HL has correct SP
@@ -240,20 +238,59 @@ onrst:		; Send an error status to DOC and HALT (lights the HALT LED)
 	.stitle	"DOC (Debug Operations Controller) Interaction"
 		.org	boot+400h
 ;; =============
-;; Send DOC our status and then go IDLE
+;; Send DOC our status repeatedly until DOC indicates it is ready
 ;;
 ;; @Params
-;;	A: Status to send
+;;	A: Status to send (SBC bit is or'ed in)
+;; @Used
+;;	B; Counter
+;;	E: Holds status (A)
+;;	D: Holds DOC status
+;;	HL: Counter
 ;; @Return
 ;;	NO - This goes IDLE waiting for wake-up by DOC
 ;;
-docstat:	out	(RPMCTRL),a
+docwrdy:	ld	hl,sflag
+		or	(hl)
+		ld	e,a
+_dwr1:		out	(RPMCTRL),a
+		in	a,(RPMCTRL)
+		ld	d,a
+		cp	DOCREADY
+		jp	z,dmdocattn	; It is ready... Get a command
+		;
+		; DOC isn't ready yet, delay some and try again
+		;
+		xor	a
+		ld	b,a
+_dwr_w1:	dec	a
+		jr	nz,_dwr_w1
+		djnz	_dwr_w1
+		; okay, some time has passed - try DOC again
+		ld	a,e
+		jr	_dwr1		
+
+;; =============
+;; Send DOC our status and then go IDLE
+;;
+;; @Params
+;;	A: Status to send (SBC indicator bit is or'ed in)
+;; @Return
+;;	NO - This goes IDLE waiting for wake-up by DOC
+;;
+;; `doccmddone` sets A to OPERATION DONE OKAY status and falls into `docstat`
+docopdone:	ld	a,DMOPDONE
+docstat:	ld	hl,sflag
+		or	(hl)
+		out	(RPMCTRL),a
 go_idle:	ld	sp,dbmstk
 idle:		jr	idle		; Wait for the DOC to ask us to do something
 
 		.align	4
-doccmdrd:	out	(RPMCTRL),a	; on ATTN this returns quickly. DMBRKHIT takes longer due to waking DOC up.
-		in	a,(RPMDATA)
+doccmdrd:	ld	hl,sflag
+		or	(hl)
+		out	(RPMCTRL),a	; on ATTN this returns quickly. DMBRKHIT takes longer due to waking DOC up.
+		in	a,(RPMCTRL)
 		ld	(doc_cmd),a
 		;
 		; process the DOC command
@@ -261,9 +298,10 @@ doccmdrd:	out	(RPMCTRL),a	; on ATTN this returns quickly. DMBRKHIT takes longer 
 		jp	doccmdprc
 
 		.align	4
-		; DOC wants ATTN and we are already in Debug Mode (so no need to do any register saving)
-dmdocattn:	; We come here from an NMI, but we don't need to return.
-		ld	a,DMOKCMDRD	; sending this to DOC will cause it to turn off ATTN
+		; DOC wants ATTN (or very first interaction) and we are already in Debug Mode
+		; (so no need to do any register saving)
+		; We come here from an NMI (or initial boot), but we don't need to return.
+dmdocattn:	ld	a,DMOKCMDRD	; sending this to DOC will cause it to turn off ATTN
 		jr	doccmdrd
 
 
@@ -276,9 +314,91 @@ dmdocattn:	; We come here from an NMI, but we don't need to return.
 ;; @Used
 ;;	A, C
 ;;
-doccmdprc:	; ZZZ for now, just write it back to the RPM Data port for test and stop
-		out	(RPMDATA),a
-		jp	go_idle
+doccmdprc:	; ZZZ - when we process more commands, maybe use a jump table?
+		cp	DCNOP
+		jp	z,do_nop
+		;
+		cp	DCGREGALL
+		jp	z,do_gregall
+		;
+		cp	DCPREGALL
+		jp	z,do_pregall
+		;
+		cp	DCGO
+		jp	z,do_go
+		;
+		cp	DCGOAT
+		jp	z,do_goat
+		;
+		cp	DCSTEP
+		jp	z,do_step
+		;
+		cp	DCSTEPAT
+		jp	z,do_stepat
+		;
+		cp	DCVER
+		jp	z,do_ver
+		;
+		;
+		; If the DOC just woke up, we might get its ready status
+		; in place of a command, so handle it by just saying
+		; 'okay we are done'.
+		cp	DOCREADY
+		jp	z,docopdone
+		;
+		; Command unknown (or not yet supported)
+		ld	a,DMCMDUK
+		jp	docstat
+
+		.align	2
+do_nop:		; NO OPERATION
+		jp	docopdone
+
+		.align	2
+do_ver:		; Get the Version
+		ld	hl,ver
+		ld	b,_ver-ver
+		ld	c,RPMDATA
+		otir
+		jp	docopdone
+
+		.align	2
+do_goat:	; TARGET GO AT (get a PC value)
+		ld	hl,regpc
+		ld	b,WORDREG
+		ld	c,RPMDATA
+		inir
+		; fall through to GO...
+		;
+do_go:		; TARGET GO (from the current PC)
+		jp	tgtgo
+
+		.align	2
+do_gregall:	; Send all the registers to DOC
+		ld	hl,regied
+		ld	b,ZREGBYTES
+		ld	c,RPMDATA
+		otir
+		jp	docopdone
+
+		.align	2
+do_pregall:	; Receive all the registers from the DOC
+		ld	hl,regied
+		ld	b,ZREGBYTES
+		ld	c,RPMDATA
+		inir
+		jp	docopdone
+
+		.align	2
+do_stepat:	; TARGET STEP AT (get a PC value)
+		ld	hl,regpc
+		ld	b,WORDREG
+		ld	c,RPMDATA
+		inir
+		; fall through to STEP...
+		;
+do_step:	; TARGET STEP (from the current PC)
+		jp	tgtstep
 
 
 	.stitle	"TARGET Operations"
@@ -571,17 +691,25 @@ initbrkc:	; we have the hardware breakpoint count in E
 		ld	a,e
 		ld	(baucnt),a
 		;
+		; see if the target is the SBC (same board)
+		in	a,(PCADDR_RD)
+		and	SBCMODE_M
+		ld	b,SBCMODE_B
+initsbcf:	srl	a		; move the SBC indicator into bit 0
+		djnz	initsbcf
+		ld	(sflag),a	; save it. it is added to our status when we send to DOC.
+		;
 		; that's it (the CPLD takes care of most of the init)
 		; Setting the ZID initialized bit in the CPLD also allows
 		; NMI via the DOC ATTN.
 		;
 		; No need to read and modify, as the SBC can't have run yet.
-		ld	a,ZIDINIT_M|SYNCONLY_M	; also set breaks to SYNC
+		ld	a,ZIDINIT_M	; indicate that we are ready (allows NMI from DOC)
 		out	(BRDCTRL),a
 		; now let DOC know that we've initialized
 		;  and go idle...
 		ld	a,DMINIT
-		jp	docstat	
+		jp	docwrdy	
 
 		.align	2
 		.byte	"!dbmon!"
