@@ -96,8 +96,8 @@ extern "C" {
 #define PIO_BCM_IN_SM           3               // State Machine 3 is used to manually transfer data in
 #define SYSIRQ_PIO_ACTRL        PIO1_IRQ_0      // PIO IRQ 0 used to signal Control Operation Request
 #define SYSIRQ_PIO_ADATA_DR     PIO1_IRQ_1      // PIO IRQ 1 used to signal DATA-RD Data Needed
-#define PIO_BCA_TOHOST_DREQ     DREQ_PIO1_TX2   // TXFIFO for reads from host
-#define PIO_BCA_FROMHOST_DREQ   DREQ_PIO1_RX2   // RXFIFO for writes from host
+#define PIO_BCA_TOHOST_DREQ     DREQ_PIO1_TX1   // TXFIFO for reads from host
+#define PIO_BCA_FROMHOST_DREQ   DREQ_PIO1_RX1   // RXFIFO for writes from host
 #endif
 
 // IRQ Inputs

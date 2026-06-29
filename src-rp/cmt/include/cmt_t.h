@@ -45,6 +45,11 @@ typedef enum MSG_ID_ {
     MSG_DBUS_DREAD_XFER_DONE,
     MSG_DBUS_DWRITE_UNEXPECTED,
     MSG_DBUS_DWRITE_XFER_DONE,
+    MSG_DM_BRKHIT,
+    MSG_DM_CMD_CMPLT,       // DM Command Complete. Data value is CMD.
+    MSG_DM_CMD_UNKNOWN,     // DM indicated it don't know the command. Data value is CMD. 
+    MSG_DM_ERROR,
+    MSG_DM_STATUNKNWN,      // An unknown status was received from the DM
     //
     // Hardware-Runtime (HWRT) messages 0x60 - 0xBF
     MSG_HWRT_NOOP = 0x60,

@@ -11,21 +11,22 @@
 #define PIO_BCA_CTRL 0
 #define PIO_BCA_RDDR 1
 #define PIO_DATA_IRQ 4
+#define PIO_DDONE_IRQ 5
 
 // ------- //
 // cb_msel //
 // ------- //
 
 #define cb_msel_wrap_target 7
-#define cb_msel_wrap 9
+#define cb_msel_wrap 11
 #define cb_msel_pio_version 0
 
 #define cb_msel_offset_start 0u
 
 static const uint16_t cb_msel_program_instructions[] = {
     0xa7e3, //  0: mov    osr, null              [7]
-    0x6788, //  1: out    pindirs, 8             [7]
-    0x300d, //  2: wait   0 gpio, 13      side 0
+    0x7788, //  1: out    pindirs, 8      side 0 [7]
+    0x270d, //  2: wait   0 gpio, 13             [7]
     0x00c9, //  3: jmp    pin, 9
     0xa0c3, //  4: mov    isr, null
     0x4008, //  5: in     pins, 8
@@ -33,14 +34,16 @@ static const uint16_t cb_msel_program_instructions[] = {
             //     .wrap_target
     0x3f8d, //  7: wait   1 gpio, 13      side 1 [7]
     0x0700, //  8: jmp    0                      [7]
-    0xc724, //  9: irq    wait 4                 [7]
+    0xa742, //  9: nop                           [7]
+    0xc004, // 10: irq    nowait 4
+    0x27c5, // 11: wait   1 irq, 5               [7]
             //     .wrap
 };
 
 #if !PICO_NO_HARDWARE
 static const struct pio_program cb_msel_program = {
     .instructions = cb_msel_program_instructions,
-    .length = 10,
+    .length = 12,
     .origin = -1,
     .pio_version = cb_msel_pio_version,
 #if PICO_PIO_VERSION > 0
@@ -68,18 +71,18 @@ static inline pio_sm_config cb_msel_program_get_default_config(uint offset) {
 
 static const uint16_t cb_autodata_program_instructions[] = {
             //     .wrap_target
-    0x2044, //  0: wait   0 irq, 4
-    0x00ca, //  1: jmp    pin, 10
-    0xa0eb, //  2: mov    osr, ~null
-    0x6088, //  3: out    pindirs, 8
+    0x30c4, //  0: wait   1 irq, 4        side 0
+    0x18ca, //  1: jmp    pin, 10         side 1
+    0xb0eb, //  2: mov    osr, ~null      side 0
+    0x6788, //  3: out    pindirs, 8             [7]
     0xa045, //  4: mov    y, status
     0x0067, //  5: jmp    !y, 7
-    0xc021, //  6: irq    wait 1
-    0x80a0, //  7: pull   block
+    0xd821, //  6: irq    wait 1          side 1
+    0x9080, //  7: pull   noblock         side 0
     0x6708, //  8: out    pins, 8                [7]
     0x000b, //  9: jmp    11
     0x4008, // 10: in     pins, 8
-    0x20c4, // 11: wait   1 irq, 4
+    0xd005, // 11: irq    nowait 5        side 0
             //     .wrap
 };
 
@@ -97,6 +100,7 @@ static const struct pio_program cb_autodata_program = {
 static inline pio_sm_config cb_autodata_program_get_default_config(uint offset) {
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_wrap(&c, offset + cb_autodata_wrap_target, offset + cb_autodata_wrap);
+    sm_config_set_sideset(&c, 2, true, false);
     return c;
 }
 #endif
@@ -114,10 +118,10 @@ static inline pio_sm_config cb_autodata_program_get_default_config(uint offset) 
 static const uint16_t cb_m_write_program_instructions[] = {
             //     .wrap_target
     0xc022, //  0: irq    wait 2
-    0xb8eb, //  1: mov    osr, ~null      side 1
+    0xa0eb, //  1: mov    osr, ~null
     0x6788, //  2: out    pindirs, 8             [7]
     0x80a0, //  3: pull   block
-    0x7008, //  4: out    pins, 8         side 0
+    0x6008, //  4: out    pins, 8
             //     .wrap
 };
 
@@ -135,7 +139,6 @@ static const struct pio_program cb_m_write_program = {
 static inline pio_sm_config cb_m_write_program_get_default_config(uint offset) {
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_wrap(&c, offset + cb_m_write_wrap_target, offset + cb_m_write_wrap);
-    sm_config_set_sideset(&c, 2, true, false);
     return c;
 }
 #endif
