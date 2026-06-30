@@ -68,6 +68,7 @@ _autosave*
 *~*.lck
 **/fp-info-cache
 **/fp-info-cache/**
+fp-info-cache*
 
 # CPLD Files that aren't typically needed.
 #  For any that are needed, add an ! include
