@@ -3888,7 +3888,7 @@
 			(uuid "6f4deffe-fead-4f70-8ff5-f6dfdc17d465")
 		)
 		(instances
-			(project ""
+			(project "ZID_POD"
 				(path "/5064845c-49f8-454d-ae5f-d06818afd8fe"
 					(reference "Z80-SKT1")
 					(unit 1)
@@ -3921,7 +3921,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "AES_Library:CviLux_CF25401D0-05-NH_FFC-FPC-AES"
 			(at 105.41 102.87 0)
 			(effects
 				(font
