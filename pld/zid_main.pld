@@ -19,8 +19,8 @@ Property Atmel {TMS_pullup = ON};
 
 
 /* !!! PUT HERE TO BE OBVIOUS !!! */
-/* $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
-$DEFINE ZFOP        'h'CF   /* but, when debugging with ZED a RST8 is forced */
+/*$DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
+$DEFINE ZFOP        'h'CF   /* but, when using ZED a RST8 is forced, as ZED initializes on Reset */
 
 /**
  * ZID (Z80 In-circuit Debugger) Main Logic
@@ -252,7 +252,7 @@ PIN 41 = !twait;        /* Target System WAIT request                   */
 PIN 24 = !sbcmode;      /* We are running as an SBC   (Board-Jumpers)   */
 PIN 76 = !tgt_only;     /* Target System should run immediately (no Debug init) (Board-SW)  */
 PIN 54 = tgt_now;       /* Target-Go counter has reached terminal count */
-PIN 53 = sop_now;       /* Single-Op counter has reached terminal count */
+/*PIN 53 = sop_now;       /* Single-Op counter has reached terminal count */
 PIN 85 = attn;          /* Request from RP2040 Module for attention     */
 PIN  8 = !mwtrq;        /* Wait Request from RP2040 Module              */
 /* */
@@ -319,7 +319,7 @@ PIN 92  = baen_clk;     /* Break Address Enable Clock (WR)                  */
 PIN 94  = !baen_clr;    /* Break Address Enable Clear                       */
 PIN 84  = d7bo;         /* Data bit 7 buffered for use by break hardware    */
 /* */
-PIN 33  = lcl_io;      /* Local I/O Addr Range and Op (ZID or SBC)          */
+PIN 33  = lcl_io;       /* Local I/O Addr Range and Op (ZID or SBC)         */
 /* */
 PIN 81  = !tdbus_en;    /* Target Data Bus Enable                           */
 PIN 61  = !tdbus_in;    /* Target Data Bus Direction                        */
@@ -334,11 +334,10 @@ PIN 36  = !tgtmode_R;   /* Running target (not debug), used to reset OP counter 
 PIN 60  = mem_op_;      /* Memory Op (excluding rfsh), used to clock OP counter (45)*/
 /* */
 PIN 69  = !pc_latch;    /* Latch enable for the external PC Save register   */
+PIN     = !brkpc_rd;    /* PC Saved, BrkHW-Det, ZID, SBC, BrkInfo (RD)      */
 PIN 37  = sync;         /* Break condition detected - SYNC signal on board  */
 /* SBC General Purpose Output Bits (4) */
 PIN [47,46,16,17] = [sbc_gp3..0];
-
-PIN 79 = zsr_req_R;     /* Put on pin for board debugging                   */
 
 
 /************************************************************************/
@@ -354,10 +353,11 @@ PINNODE = [rstSM2..0];      /* Reset state machines */
 
 
 /** Z80 Special Reset */
-/*PINNODE = zsr_req_R;        /* Request to generate a Z80 Special Reset                */
+PINNODE = zsr_req_R;        /* Request to generate a Z80 Special Reset                  */
 PINNODE = zsprst1_R;        /* Special reset generator #1                               */
 PINNODE = zsprst2_R;        /* Special reset generator #2                               */
 PINNODE = zrst_clk;         /* ZReset and CLK                                           */
+PINNODE = zop_force;        /* Force the Z80 Operation (instruction)                    */
 PINNODE = hbrk_dtctd_R;     /* Hard Break detected                                      */
 PINNODE = sbrk_dtctd_R;     /* Soft Break Request: SW Break request or SB-EN and RST38  */
 PINNODE = attn_tms_R;       /* Target Mode state when ATTN occurred                     */
@@ -423,7 +423,6 @@ PINNODE = [b1d7..0];    /* Data for BRK1                                */
 /*PINNODE = [b1dx7..0];   /* Data Don't Care for BRK1                     */
 
 /*  Breakpoint detection                                                */
-PINNODE = brkpc_rd;     /* PC Saved, BrkHW-Det, ZID, SBC, BrkInfo (RD)  */
 PINNODE = rst38det_R;   /* Used for 'SOFT' breakpoints                  */
 PINNODE = b1_det;       /* Breakpoint #1 condition detected             */
 PINNODE = b1_d_eq;      /*  Data equal                                  */
@@ -510,15 +509,15 @@ $DEFINE B2OP_AM     [b2op2..0]:4
 $DEFINE B2OP_PW     [b2op2..0]:5
 $DEFINE B2OP_PR     [b2op2..0]:6
 $DEFINE B2OP_AP     [b2op2..0]:7
-$DEFINE ZOP_FORCE   (zsr_req_R & m1)    /* Force a Z80 Operation to the bus */
 /* Status/data byte for: Special Reset From, HardBRK, SoftBRK, SS, or ATTN  Break2n HW Detect PC-Save bit read */
-FIELD brk_pc_info   = [zid_init_R,sbcmode,!tgtmode_R,attn,sr_frmhbrk_R,sr_frmsbrk_R,brkhw_det,pcrd_b_in];
+FIELD brk_pc_info   = [zid_init_R,sbcmode,tgtmode_R,attn,sr_frmhbrk_R,sr_frmsbrk_R,brkhw_det,pcrd_b_in];
 
 
 /** Data byte for our control bits */
 FIELD ctrl1_info    = [zid_init_R,sngl_step_R,sngl_op_R,softbrk_en_R,sync_only_R,rst_req_R,brk_req_R,sbc_use_R];
 $DEFINE CTRL1_RD    (lcl_io & ioaddr:'b'xxx0011x & rd) /* 06: BD-CTRL RD */
 $DEFINE CTRL1_WR    (lcl_io & ioaddr:'b'xxx0011x & wr) /* 06: BD-CTRL WR */
+$DEFINE ZIDC1_WR    (!tgtmode_R & !tgt_go_R & iorq & ioaddr:'b'0000011x & wr)   /* 06: BD-CTRL ZID ONLY WR */
 
 
 /** MMU */
@@ -583,13 +582,17 @@ zsprst2_R.d     = !m1 & (zsprst1_R # zsprst2_R);
 zrst_R.ck       = !cpu_clk;
 zrst_R.d        = lrst_R                /* Reset to local Z80 is the full reset                     */
                  # (m1 & zsprst2_R);    /*  or special reset                                        */
+/* */
 zrst_clk        = zrst_R & cpu_clk;     /* Z80 Reset and Clock - used by multiple nodes for reset   */
-
+/* Z80 Force Operation during the Special Reset */
+zop_force.ck    = !cpu_clk;
+zop_force.d     = (zsprst2_R & m1) # zop_force;
+zop_force.ar    = rfsh;
 
 /** Local Z80 NMI and INT request generation */
 znmi            = (tgtmode_R & tnmi    /* Target running and it has an NMI (no target NMI in Debug Mode) */
                 & !(sngl_op_R # sngl_step_R)) /* but not during Single-OP/STEP */
-                 # (attn & attn_tms_R);  /* In Debug Mode (not running the target) and RP Module wants attention */
+                 # (attn & !tgtmode_R & !attn_tms_R);  /* In Debug Mode and not running target when RP Module wants attention */
 
 zint            = (tgtmode_R & tint   /* Target INT gated to Z80 only when in Target Mode */
                 & !(sngl_op_R # sngl_step_R)); /* but not during Single-OP/STEP */
@@ -635,7 +638,7 @@ mmu_io          = (lcl_io & ioaddr:'b'xxx0100x);  /* n008: Top 2 bits of 16-bit 
              # (( tgtmode_R & [addr15..14]:4000) & [mapB2..0])
              # (( tgtmode_R & [addr15..14]:8000) & [mapC2..0])
              # (( tgtmode_R & [addr15..14]:C000) & [mapD2..0]);
-rom_sel     = (mreq & !rfsh)
+rom_sel     = (mreq & !rfsh & !zop_force)
              & 
              ( (!tgtmode_R & !addr15 & !addr14)
               # (tgtmode_R & sbcmode
@@ -648,7 +651,7 @@ rom_sel     = (mreq & !rfsh)
                  )
                 )
              );
-ram_sel     = (mreq & !rfsh) 
+ram_sel     = (mreq & !rfsh & !zop_force) 
              &
             ( (!tgtmode_R & (addr15 # addr14))
              #
@@ -680,7 +683,8 @@ lcl_io      = (!tgtmode_R # sbcmode) & iorq & !m1 & ioaddr:'b'000xxxxx; /* Local
 lcl_io.oe   = ON;
 
 /** Target Mode and Single Operation (Mem or I/O RD/WR), and Bus Control */
-to_target   = (tgt_now # (sop_now & sngl_op_R)) & ((mreq & !rfsh) # iorq);
+/*to_target   = (tgt_now # (sop_now & sngl_op_R)) & ((mreq & !rfsh) # iorq);*/
+to_target     = tgt_now & ((mreq & !rfsh) # iorq);
 tgt_go_R.ck   = lcl_io & ioaddr:'b'xxx1000x;         /* 10: TARGET-GO        */
 tgt_go_R.d    = ON;
 tgt_go_R.ar   = tgtmode_R # lrst_R;
@@ -695,13 +699,13 @@ so_done_R.ck  = !mreq & !iorq;
 so_done_R.d   = tgtmode_R;
 so_done_R.ar  = !tgtmode_R;
 /* */
-tdbus_en    = tgtmode_R & !ZOP_FORCE;   /* Enable the Target Data Bus unless forcing an operation.           */
+tdbus_en    = tgtmode_R & !zop_force;   /* Enable the Target Data Bus unless forcing an operation.           */
 /* */
 tdbus_in    = (!zbusack & (m1 # rd)) /* Data Bus direction is IN for M1 (IF or INTACK) or RD.*/
              # (zbusack & wr);       /* or WR from Bus Master to on-board devices           */
 /* */
 tcbus_fsel  = !tgtmode_R        /* Fixed Control signals during Debug Mode                      */
-             # ZOP_FORCE;       /* or when forcing an operation.                                     */
+             # zop_force;       /* or when forcing an operation.                                     */
 
 
 /** Debug Port Decode */
@@ -740,11 +744,11 @@ b1dr_R.ar       = lrst_R;
 
 /** Board Control (06)
 /* SBC Bit - used for anything SBC code wants (b0) */
-sbc_use_R.d       = SBC_USE_B;
-sbc_use_R.ck      = CTRL1_WR;
-sbc_use_R.ar      = lrst_R;
+sbc_use_R.d     = SBC_USE_B;
+sbc_use_R.ck    = CTRL1_WR;
+sbc_use_R.ar    = lrst_R;
 /* Break request (b1) */
-brk_req_R.d	= BREAK_REQ_B;
+brk_req_R.d	    = BREAK_REQ_B;
 brk_req_R.ck	= CTRL1_WR;
 brk_req_R.ar	= zrst_R;
 /* RESET request (b2) */
@@ -752,25 +756,25 @@ rst_req_R.d	= RESET_REQ_B;
 rst_req_R.ck	= CTRL1_WR;
 rst_req_R.ar	= lrst_R;
 /* Sync-Only on Break Detected (b3) */
-sync_only_R.d     = SYNCONLY_B;
-sync_only_R.ck    = CTRL1_WR & !tgtmode_R;
-sync_only_R.ar    = lrst_R;
+sync_only_R.d   = SYNCONLY_B;
+sync_only_R.ck  = ZIDC1_WR;
+sync_only_R.ar  = lrst_R;
 /* Enable breaking when RST38 is detected (b4) */
-softbrk_en_R.d    = SOFTBRKEN_B;
-softbrk_en_R.ck   = CTRL1_WR & !tgtmode_R;
-softbrk_en_R.ar   = lrst_R;
+softbrk_en_R.d  = SOFTBRKEN_B;
+softbrk_en_R.ck = ZIDC1_WR;
+softbrk_en_R.ar = lrst_R;
 /* Single Operation (MW/MR/PW/PR) on Bus (b5) */
-sngl_op_R.d       = SNGL_OP_B;
-sngl_op_R.ck      = CTRL1_WR & !tgtmode_R;
-sngl_op_R.ar      = lrst_R;
+sngl_op_R.d     = SNGL_OP_B;
+sngl_op_R.ck    = ZIDC1_WR;
+sngl_op_R.ar    = lrst_R;
 /* Single-Step for Target Go (b6) */
-sngl_step_R.d     = SNGL_STEP_B;
-sngl_step_R.ck    = CTRL1_WR & !tgtmode_R;
-sngl_step_R.ar    = lrst_R;
+sngl_step_R.d   = SNGL_STEP_B;
+sngl_step_R.ck  = ZIDC1_WR;
+sngl_step_R.ar  = lrst_R;
 /* ZID Initialized (b7) */
-zid_init_R.d      = ZIDINIT_B;
-zid_init_R.ck     = CTRL1_WR & !tgtmode_R;
-zid_init_R.ar     = lrst_R;
+zid_init_R.d    = ZIDINIT_B;
+zid_init_R.ck   = ZIDC1_WR;
+zid_init_R.ar   = lrst_R;
 
 
 /** DBI Detect */
@@ -809,7 +813,7 @@ b1_d3_eq    = !(b1d3 $ d3);
 b1_d2_eq    = !(b1d2 $ d2);
 b1_d1_eq    = !(b1d1 $ d1);
 b1_d0_eq    = !(b1d0 $ d0);
-b1_d_eq     = !b1dr_R # (b1_d7_eq & b1_d6_eq & b1_d5_eq & b1_d4_eq & b1_d3_eq & b1_d2_eq & b1_d1_eq & b1_d0_eq);
+b1_d_eq     = ON; /*!b1dr_R # (b1_d7_eq & b1_d6_eq & b1_d5_eq & b1_d4_eq & b1_d3_eq & b1_d2_eq & b1_d1_eq & b1_d0_eq); */
 
 b1_det      =  (!b1ar_R # brk1_a_eq)
              & (
@@ -852,12 +856,12 @@ sr_frmsbrk_R.ck  = zsr_req_R;
 sr_frmsbrk_R.d   = sbrk_dtctd_R;
 sr_frmsbrk_R.ar  = to_target;
 /* Target Mode state when ATTN occurs. Status for the Debugger (for SPRST handling)             */
-attn_tms_R.d    = !tgtmode_R;
+attn_tms_R.d    = tgtmode_R;
 attn_tms_R.ck   = attn;
 /* */
 sync            = hbrk_dtctd_R # sbrk_dtctd_R;      /* SYNC signal of board                     */
 /* */
-pc_latch   = m1 & (!dbi_if2_R & !zsr_req_R & tgtmode_R);
+pc_latch   = m1 & tgtmode_R & !dbi_if2_R;
 
 
 
@@ -869,7 +873,7 @@ pc_latch   = m1 & (!dbi_if2_R & !zsr_req_R & tgtmode_R);
 
 /** Data Bus takes values from multiple things, so they all need to be here */
 dbus_oe     = (mmu_io & rd)         /* Enable data bits onto the Data Bus for any of those    */
-             # (ZOP_FORCE)
+             # (zop_force)
              # (brkpc_rd)
              # (CTRL1_RD)
              # (SBCGP_RD);
@@ -879,7 +883,7 @@ databus     =  ((mmu_io & rd & [addr15..14]:0000) & maprdAdata)   /* Reading the
              # ((mmu_io & rd & [addr15..14]:4000) & maprdBdata)
              # ((mmu_io & rd & [addr15..14]:8000) & maprdCdata)
              # ((mmu_io & rd & [addr15..14]:C000) & maprdDdata)
-             # (ZOP_FORCE & ZFOP)               /* Forced OP during Special Reset               */
+             # (zop_force & ZFOP)               /* Forced OP during Special Reset               */
              # (brkpc_rd & brk_pc_info)         /* Read of the break info (inc PC-Save bit D0)  */
              # (CTRL1_RD & ctrl1_info)          /* Read of our Control bits                     */
              # (SBCGP_RD & sbc_gpData)          /* Read the SBC General Purpose Bits (4out/4in) */
