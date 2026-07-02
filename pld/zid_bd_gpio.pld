@@ -1,0 +1,183 @@
+/* Header (must be first) */
+NAME     brkdata_gpio_logic;
+PARTNO   2;
+DATE     6/30/2026;
+REVISION 01;
+DESIGNER AESilky;
+COMPANY  None;
+ASSEMBLY None;
+LOCATION ;
+Device   f1504isptqfp44; /* ATF1504AS 44TQFP ISP/JTAG */
+
+/****************************************************************************
+ *
+ * Z80 In-Circuit Debugger (ZID) Breakpoint Data Compare Logic.
+ * ZID TargetGO Counter
+ * SBC GPIO
+ *
+ ****************************************************************************
+ */
+
+/* Configure cupl */
+Property Atmel {security = OFF};
+Property Atmel {power_reset = ON};
+Property Atmel {preassign = KEEP};   /* OFF, TRY, KEEP */
+Property Atmel {TDI_pullup = ON};
+Property Atmel {TMS_pullup = ON};
+
+/* Convenience Names */
+$DEFINE ON  'b'1
+$DEFINE OFF 'b'0
+
+
+/************************************************************************/
+/* Special Inputs                                                       */
+/************************************************************************/
+
+PIN 39 = !lrst;             /* Local Reset                      (GCLR)  */
+PIN 37 = mem_op;            /* Clock used for TGT_GO Counter    (GCLK1) */
+/* JTAG on pins: 1,7,26,32                                              */
+
+
+/************************************************************************/
+/* Inputs                                                               */
+/* (pins required externally will be assigned. Pins not required will   */
+/* be left unassigned. Not making assignments gives the Fitter more     */
+/* flexibility)                                                         */
+/************************************************************************/
+
+PIN [12,13,14,15] = [addr4..1]; /* Address Bus (that we require)        */
+PROPERTY Atmel {pin_keep = on addr4,addr3,addr2,addr1};
+PIN 18 = sbc_io;            /* True when I/O Op is for the SBC          */
+PIN 28 = !rd;               /* Z80 RD-                                  */
+PIN 10 = !wr;               /* Z80 WR-                                  */
+PIN 27 = !tgtmode;          /* Target Mode clears the TGT_GO Counter    */
+PIN 34 = tgt_go;            /* Enable the TGT_GO Count                  */ 
+
+
+/************************************************************************/
+/* Input/Output                                                         */
+/************************************************************************/
+
+PIN [5,3,6,23,25,22,20,21] = [d7..0];    /* Data I/O */
+PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
+PIN [31,30,33,35,2,44,42,43] = [gp7..0]; /* GP Input[7..4] Output[3..0] */
+
+
+/************************************************************************/
+/* Outputs                                                              */
+/* (pins required externally will be assigned. Pins not required will   */
+/* be left unassigned. Not making assignments gives the Fitter more     */
+/* flexibility)                                                         */
+/************************************************************************/
+
+PIN  8 = brk_deq;           /* Break Data Equal (or Don't-Care)         */
+PIN 19 = tgt_now;           /* TGT_GO Counter has reached terminal count*/
+
+/************************************************************************/
+/* Internal Nodes, Registers and Intermediate Variable Definitions      */
+/************************************************************************/
+
+PINNODE = [tgc3..0];        /* TGT_GO Counter Bit 3..0                  */
+PINNODE = tgc_en;           /* TGT_GO Counter Enable                    */
+PINNODE = [bd7..0];         /* Breakpoint Data desired                  */
+PINNODE = [bdx7..0];        /* Breakpoint Data Don't Care               */
+PINNODE = [bdeq7..0];       /*   data bits equal                        */
+
+/************************************************************************/
+/* Fields and Convenience/Clarity Definitions                           */
+/*                                                                      */
+/* NOTE: $DEFINE value cannot use a prior $DEFINE.                      */
+/*   Learned through lots of time spent tracking down compile errors!   */
+/*   Telltale error is:                                                 */
+/*     [0018ca] intermediate var not assigned an expression: xyz        */
+/*                                                                      */
+/*   Of course, that error could also, legitimately, mean that it       */
+/*   hasn't been assigned, but if you get it, and you believe you've    */
+/*   assigned it, look for a case of a $DEFINE that contains a $DEFINE. */
+/*                                                                      */
+/************************************************************************/
+
+FIELD databus       = [d7..0];
+FIELD ioaddr        = [addr4..1];	/* A7..5 handled by sbc_io, A0 not used */
+
+/** Board and Breakpoint Control    */
+FIELD brkdata       = [bd7..0];
+FIELD brkdx         = [bdx7..0];
+$DEFINE B1DV_SEL    (sbc_io & !tgtmode & ioaddr:'b'0000x & wr)   /* 00: BRK1 Data Value      */
+$DEFINE B1DX_SEL    (sbc_io & !tgtmode & ioaddr:'b'0001x & wr)   /* 02: BRK1 Data Don't-Care */
+
+/** SBC General Purpose I/O Bits    */
+FIELD gpData        = [gp7..0];
+$DEFINE GPIN_DATA    [d7..4]
+$DEFINE GPOUT_DATA   [d3..0]
+$DEFINE GPIN_BITS    [gp7..4]
+$DEFINE GPOUT_BITS   [gp3..0]
+$DEFINE GP_RD       (sbc_io & ioaddr:'b'0101x & rd) /* 0A: SBC Gen-Purpose RD */
+$DEFINE GP_WR       (sbc_io & ioaddr:'b'0101x & wr) /* 0A: SBC Gen-Purpose WR */
+
+/** Target Go Counter               */
+FIELD tgc           = [tgc3..0];
+
+
+/************************************************************************/
+/* Logic                                                                */
+/************************************************************************/
+
+brkdata.d  = databus;       /* Breakpoint1 Data                         */
+brkdata.ck = B1DV_SEL;
+brkdata.ar = lrst;
+brkdx.d    = databus;       /* Breakpoint1 Data'X' (don't care)         */
+brkdx.ck   = B1DX_SEL;
+brkdx.ar   = lrst;
+
+/*
+ Had to break Data into 8 bits to keep CUPL from crashing and also to
+ significantly reduce the number of logic terms needed to check the data.
+
+ The CUPL error was specifically CUPLc getting a file read error due to
+ CUPLn not finishing correctly. Or, CUPLm getting a disk write error.
+*/
+bdeq7    = !(bd7 $ d7);
+bdeq6    = !(bd6 $ d6);
+bdeq5    = !(bd5 $ d5);
+bdeq4    = !(bd4 $ d4);
+bdeq3    = !(bd3 $ d3);
+bdeq2    = !(bd2 $ d2);
+bdeq1    = !(bd1 $ d1);
+bdeq0    = !(bd0 $ d0);
+brk_deq  = (
+            (bdx7 # bdeq7)
+          & (bdx6 # bdeq6)  
+          & (bdx5 # bdeq5)  
+          & (bdx4 # bdeq4)  
+          & (bdx3 # bdeq3)  
+          & (bdx2 # bdeq2)  
+          & (bdx1 # bdeq1)  
+          & (bdx0 # bdeq0)  
+);
+
+
+/** Target Go Counter               */
+tgc_en      = tgt_go & !tgt_now;
+/* */
+tgc0.t      = ON;
+tgc1.t      = tgc0;
+tgc2.t      = tgc0 & tgc1;
+tgc3.t      = tgc0 & tgc1 & tgc2;
+tgc.ck      = mem_op;
+tgc.ce      = tgc_en;
+tgc.ar      = tgtmode # lrst;
+tgt_now     = tgc:'b'1111;
+
+
+/** SBC General Purpose Output Bits */
+GPOUT_BITS.d     = GPOUT_DATA;
+GPOUT_BITS.ck    = GP_WR;
+GPOUT_BITS.ar    = lrst;
+
+/*  GPIO Read */
+databus     =  
+            GP_RD & gpData      /* Read the General Purpose Input Bits */
+            ;
+databus.oe  = GP_RD;
