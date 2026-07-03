@@ -252,12 +252,11 @@ PIN 41 = !twait;        /* Target System WAIT request                   */
 PIN 24 = !sbcmode;      /* We are running as an SBC   (Board-Jumpers)   */
 PIN 76 = !tgt_only;     /* Target System should run immediately (no Debug init) (Board-SW)  */
 PIN 54 = tgt_now;       /* Target-Go counter has reached terminal count */
-/*PIN 53 = sop_now;       /* Single-Op counter has reached terminal count */
 PIN 85 = attn;          /* Request from RP2040 Module for attention     */
 PIN  8 = !mwtrq;        /* Wait Request from RP2040 Module              */
 /* */
 PIN 64 = !brk1_a_eq;    /* Address match for breakpoint 1               */
-PIN  = brk_d_eq;      /*  Data equal                                  */
+PIN 46 = brk_deq;       /*  Data equal (input from 1504)                */
 PIN 40 = !brkn_a_eq;    /* Breakpoint 2..n Address match                */
 PIN 23 = !brkhw_det;    /* Signal from external breakpoint boards.      */
                         /* Provided as a port read bit to the cpu for   */
@@ -665,7 +664,6 @@ zid_io      = !tgtmode_R & !tgt_go_R & iorq & ioaddr:'b'000xxxxx; /* Local I/O o
 zid_io.oe   = ON;
 
 /** Target Mode and Single Operation (Mem or I/O RD/WR), and Bus Control */
-/*to_target   = (tgt_now # (sop_now & sngl_op_R)) & ((mreq & !rfsh) # iorq);*/
 to_target     = tgt_now & ((mreq & !rfsh) # iorq);
 tgt_go_R.ck   = zid_io & ioaddr:'b'xxx1000x;         /* 10: TARGET-GO        */
 tgt_go_R.d    = ON;
@@ -775,12 +773,12 @@ rst38det_R.ap = OFF;
 b1_det      =  (!b1ar_R # brk1_a_eq)
              & (
                  (B1OP_IF & ZIF_1)              /* Data isn't checked for IF (it's too late) */
-               # (B1OP_MW & MEM_WR) /* & brk_d_eq) */
-               # (B1OP_MR & MEM_RD) /* & brk_d_eq) */
-               # (B1OP_AM & !mem_op_) /* & brk_d_eq) */
-               # (B1OP_PW & !m1 & iorq & wr) /* & brk_d_eq) */
-               # (B1OP_PR & !m1 & iorq & rd) /* & brk_d_eq) */
-               # (B1OP_AP & !m1 & iorq) /* & brk_d_eq) */
+               # (B1OP_MW & MEM_WR & brk_deq)
+               # (B1OP_MR & MEM_RD & brk_deq)
+               # (B1OP_AM & !mem_op_ & brk_deq)
+               # (B1OP_PW & !m1 & iorq & wr & brk_deq)
+               # (B1OP_PR & !m1 & iorq & rd & brk_deq)
+               # (B1OP_AP & !m1 & iorq & brk_deq)
              );
 
 b2_det      =  (!b2ar_R # brkn_a_eq)

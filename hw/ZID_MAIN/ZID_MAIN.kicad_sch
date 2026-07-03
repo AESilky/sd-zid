@@ -21641,6 +21641,10 @@
 		(uuid "1daaddcd-c7e0-4c3b-a322-0f98678b6c8c")
 	)
 	(no_connect
+		(at 132.08 236.22)
+		(uuid "23961dda-ca2d-417d-92a9-c0b9462b65b5")
+	)
+	(no_connect
 		(at 55.88 299.72)
 		(uuid "2e38f509-16b8-4d4d-9178-14223204ba46")
 	)
@@ -21667,6 +21671,10 @@
 	(no_connect
 		(at 373.38 590.55)
 		(uuid "7aa2187b-21f0-43c1-aefa-aad2e4957e9e")
+	)
+	(no_connect
+		(at 132.08 241.3)
+		(uuid "8197ecc0-5928-4f97-9ef9-15285397f9ea")
 	)
 	(no_connect
 		(at 363.22 590.55)
@@ -35786,6 +35794,16 @@
 	)
 	(wire
 		(pts
+			(xy 119.38 261.62) (xy 132.08 261.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "be9bcaee-2dbb-4b03-bb97-cc210c2dec57")
+	)
+	(wire
+		(pts
 			(xy 101.6 601.98) (xy 101.6 609.6)
 		)
 		(stroke
@@ -39046,7 +39064,7 @@
 	)
 	(wire
 		(pts
-			(xy 19.05 228.6) (xy 33.02 228.6)
+			(xy 20.32 228.6) (xy 33.02 228.6)
 		)
 		(stroke
 			(width 0)
@@ -40813,6 +40831,16 @@
 			(justify left bottom)
 		)
 		(uuid "1b5619cc-cf49-4e0c-adc1-cba61cee87e3")
+	)
+	(label "IOBD24"
+		(at 120.65 261.62 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1bddd6c0-6c90-42c1-aaec-c553bf18c462")
 	)
 	(label "BA_CLK"
 		(at 30.48 424.18 0)
@@ -43786,16 +43814,6 @@
 		)
 		(uuid "81b1a499-64aa-4533-8e26-8d08b6488d75")
 	)
-	(label "SBC_GPO2"
-		(at 20.32 251.46 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "82c1d476-1221-49a1-8a25-489a9d1ca093")
-	)
 	(label "ZD[0..7]"
 		(at 130.81 95.25 180)
 		(effects
@@ -44385,6 +44403,16 @@
 			(justify left bottom)
 		)
 		(uuid "9496c6e1-e9b7-4637-80cf-04ed9c0606a2")
+	)
+	(label "BRK_DEQ"
+		(at 20.32 251.46 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "94f1e954-507d-4514-90c0-339730670548")
 	)
 	(label "ZM1-"
 		(at 25.4 97.79 0)
@@ -46506,7 +46534,7 @@
 		)
 		(uuid "e2dde2f4-9f4c-4a89-abd3-87b5e1a9a010")
 	)
-	(label "LCL_IO"
+	(label "SBC_IO"
 		(at 20.32 228.6 0)
 		(effects
 			(font
@@ -49116,7 +49144,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0fa9e179-ab76-408b-ba36-2141050d11c5")
-		(property "Reference" "R30"
+		(property "Reference" "R31"
 			(at 344.17 267.208 90)
 			(effects
 				(font
@@ -49169,7 +49197,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "R30")
+					(reference "R31")
 					(unit 1)
 				)
 			)
@@ -49264,7 +49292,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "110ff22d-290a-4313-8251-580e126820c2")
-		(property "Reference" "U23"
+		(property "Reference" "U24"
 			(at 358.14 274.32 0)
 			(effects
 				(font
@@ -49352,7 +49380,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "U23")
+					(reference "U24")
 					(unit 2)
 				)
 			)
@@ -49879,7 +49907,7 @@
 				)
 			)
 		)
-		(property "Footprint" "AES_Library:AES-SW_PUSH_SMD_1P1T_NO_6x6mm"
+		(property "Footprint" "AES_Library:AES-SW_PUSH_SMD_1P1T_NO_45x45mm-CK"
 			(at 17.78 53.34 0)
 			(effects
 				(font
@@ -50154,7 +50182,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "175283e6-a1a6-4d18-b586-d1540d096363")
-		(property "Reference" "R39"
+		(property "Reference" "R38"
 			(at 242.316 305.054 0)
 			(effects
 				(font
@@ -50207,7 +50235,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "R39")
+					(reference "R38")
 					(unit 1)
 				)
 			)
@@ -51910,7 +51938,7 @@
 				)
 			)
 		)
-		(property "Value" "AES-Option_A-B_2mm"
+		(property "Value" "pin header 1x03 0.1\""
 			(at 295.91 276.86 0)
 			(effects
 				(font
@@ -51919,7 +51947,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.00mm:PinHeader_1x03_P2.00mm_Vertical"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 			(at 295.91 276.86 0)
 			(effects
 				(font
@@ -56569,7 +56597,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "53a006f5-52f8-4017-ba13-e71aab509496")
-		(property "Reference" "#PWR084"
+		(property "Reference" "#PWR083"
 			(at 243.84 306.07 0)
 			(effects
 				(font
@@ -56619,7 +56647,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR084")
+					(reference "#PWR083")
 					(unit 1)
 				)
 			)
@@ -56652,7 +56680,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_SO:SOIC-16W_7.5x10.3mm_P1.27mm"
+		(property "Footprint" "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm"
 			(at 294.64 208.28 0)
 			(effects
 				(font
@@ -58079,7 +58107,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "60822aba-d570-41bb-8698-e2024d86e0ab")
-		(property "Reference" "#PWR078"
+		(property "Reference" "#PWR077"
 			(at 196.85 284.48 0)
 			(effects
 				(font
@@ -58130,7 +58158,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR078")
+					(reference "#PWR077")
 					(unit 1)
 				)
 			)
@@ -58562,7 +58590,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "63ae4ae3-fc8c-478b-9a9d-471e942127fe")
-		(property "Reference" "#PWR085"
+		(property "Reference" "#PWR087"
 			(at 386.08 320.04 0)
 			(effects
 				(font
@@ -58613,7 +58641,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR085")
+					(reference "#PWR087")
 					(unit 1)
 				)
 			)
@@ -59844,7 +59872,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6e1baaef-0665-405e-81c1-149d868bf6c9")
-		(property "Reference" "R35"
+		(property "Reference" "R36"
 			(at 382.524 295.91 90)
 			(effects
 				(font
@@ -59923,7 +59951,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "R35")
+					(reference "R36")
 					(unit 1)
 				)
 			)
@@ -61872,7 +61900,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7ca81e32-6cae-4bbb-97e4-ba0bf1591757")
-		(property "Reference" "TP6"
+		(property "Reference" "TP5"
 			(at 82.804 248.92 90)
 			(effects
 				(font
@@ -61932,7 +61960,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "TP6")
+					(reference "TP5")
 					(unit 1)
 				)
 			)
@@ -62314,7 +62342,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "80e0b687-c47b-4d91-96c9-94359011e488")
-		(property "Reference" "#PWR075"
+		(property "Reference" "#PWR074"
 			(at 302.26 267.97 0)
 			(effects
 				(font
@@ -62364,7 +62392,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR075")
+					(reference "#PWR074")
 					(unit 1)
 				)
 			)
@@ -63771,7 +63799,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8d9dbc36-21ca-45d0-8790-e906d7d155d8")
-		(property "Reference" "R38"
+		(property "Reference" "R40"
 			(at 382.524 308.61 90)
 			(effects
 				(font
@@ -63850,7 +63878,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "R38")
+					(reference "R40")
 					(unit 1)
 				)
 			)
@@ -63866,7 +63894,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8ec0615d-b42b-44b7-8a8c-8130a33ce127")
-		(property "Reference" "#PWR076"
+		(property "Reference" "#PWR078"
 			(at 342.9 281.94 0)
 			(effects
 				(font
@@ -63916,7 +63944,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR076")
+					(reference "#PWR078")
 					(unit 1)
 				)
 			)
@@ -63931,7 +63959,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "917f004e-2773-4bb8-875c-cc438bbf1964")
-		(property "Reference" "#PWR083"
+		(property "Reference" "#PWR084"
 			(at 363.22 312.42 0)
 			(effects
 				(font
@@ -63981,7 +64009,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR083")
+					(reference "#PWR084")
 					(unit 1)
 				)
 			)
@@ -64610,7 +64638,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9801d34b-d425-42ba-bd0a-00c3e54c63cf")
-		(property "Reference" "U23"
+		(property "Reference" "U24"
 			(at 357.886 263.144 0)
 			(effects
 				(font
@@ -64698,7 +64726,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "U23")
+					(reference "U24")
 					(unit 1)
 				)
 			)
@@ -65041,7 +65069,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9d92023c-bd74-4715-9c38-bcf98cbc7f88")
-		(property "Reference" "TP8"
+		(property "Reference" "TP9"
 			(at 390.652 310.388 90)
 			(effects
 				(font
@@ -65100,7 +65128,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "TP8")
+					(reference "TP9")
 					(unit 1)
 				)
 			)
@@ -65192,7 +65220,7 @@
 				)
 			)
 		)
-		(property "Value" "AES-Option_A-B"
+		(property "Value" "pin header 1x03 0.1\""
 			(at 295.91 299.72 0)
 			(effects
 				(font
@@ -65282,7 +65310,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9f351d8b-6b4e-4f6e-b33c-b92230cc10ec")
-		(property "Reference" "U23"
+		(property "Reference" "U24"
 			(at 236.22 619.76 0)
 			(effects
 				(font
@@ -65372,7 +65400,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "U23")
+					(reference "U24")
 					(unit 5)
 				)
 			)
@@ -66685,7 +66713,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ab74fe9f-4b38-485c-92a7-f9d1a55bd857")
-		(property "Reference" "U24"
+		(property "Reference" "U23"
 			(at 155.194 221.996 0)
 			(effects
 				(font
@@ -66880,7 +66908,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "U24")
+					(reference "U23")
 					(unit 1)
 				)
 			)
@@ -68087,7 +68115,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b801a93d-b0ee-4fa3-9a76-90c7901aae6e")
-		(property "Reference" "U23"
+		(property "Reference" "U24"
 			(at 357.886 285.75 0)
 			(effects
 				(font
@@ -68175,7 +68203,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "U23")
+					(reference "U24")
 					(unit 3)
 				)
 			)
@@ -68394,7 +68422,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "bb70b49e-076e-4adf-b6a6-3e4866c67933")
-		(property "Reference" "TP9"
+		(property "Reference" "TP8"
 			(at 235.966 304.8 0)
 			(effects
 				(font
@@ -68453,7 +68481,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "TP9")
+					(reference "TP8")
 					(unit 1)
 				)
 			)
@@ -69767,7 +69795,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ca8bf623-caf0-4d0d-8acd-c36581fe3822")
-		(property "Reference" "R32"
+		(property "Reference" "R30"
 			(at 301.752 265.684 0)
 			(effects
 				(font
@@ -69821,7 +69849,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "R32")
+					(reference "R30")
 					(unit 1)
 				)
 			)
@@ -70512,7 +70540,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d34b46c1-2f20-4e75-ba47-1bb785a67d3a")
-		(property "Reference" "R31"
+		(property "Reference" "R32"
 			(at 382.524 273.05 90)
 			(effects
 				(font
@@ -70591,7 +70619,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "R31")
+					(reference "R32")
 					(unit 1)
 				)
 			)
@@ -70964,7 +70992,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d5905feb-5dae-40d9-8172-40189624a256")
-		(property "Reference" "#PWR074"
+		(property "Reference" "#PWR075"
 			(at 342.9 270.51 0)
 			(effects
 				(font
@@ -71014,7 +71042,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR074")
+					(reference "#PWR075")
 					(unit 1)
 				)
 			)
@@ -71671,7 +71699,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d92bfc3c-fe33-4f3f-8f1a-be15b4ec20fc")
-		(property "Reference" "R36"
+		(property "Reference" "R35"
 			(at 277.622 291.084 90)
 			(effects
 				(font
@@ -71724,7 +71752,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "R36")
+					(reference "R35")
 					(unit 1)
 				)
 			)
@@ -71805,7 +71833,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "da67538c-f6db-487b-b828-1e767f46e400")
-		(property "Reference" "#PWR086"
+		(property "Reference" "#PWR085"
 			(at 140.97 317.5 0)
 			(effects
 				(font
@@ -71856,7 +71884,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR086")
+					(reference "#PWR085")
 					(unit 1)
 				)
 			)
@@ -72235,7 +72263,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "de02f9c9-ddce-408e-bfb4-9aa61e97a676")
-		(property "Reference" "#PWR087"
+		(property "Reference" "#PWR086"
 			(at 54.61 320.04 0)
 			(effects
 				(font
@@ -72286,7 +72314,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR087")
+					(reference "#PWR086")
 					(unit 1)
 				)
 			)
@@ -72385,7 +72413,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_LCC:PLCC-44"
+		(property "Footprint" "Package_LCC:PLCC-44_THT-Socket"
 			(at 85.09 130.048 0)
 			(effects
 				(font
@@ -73644,7 +73672,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "eb5d6651-ebfe-4127-b8a7-ffd86fda68c4")
-		(property "Reference" "U23"
+		(property "Reference" "U24"
 			(at 357.886 297.18 0)
 			(effects
 				(font
@@ -73732,7 +73760,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "U23")
+					(reference "U24")
 					(unit 4)
 				)
 			)
@@ -74448,6 +74476,81 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 119.38 261.62 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f22306dc-756e-4916-95b4-b56c8a34beff")
+		(property "Reference" "TP6"
+			(at 115.316 261.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 116.078 259.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
+			(at 119.38 256.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 119.38 256.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 119.38 261.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Function" "IO1"
+			(at 119.38 261.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "da38875d-0285-43d4-88cd-d4beb259d819")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
+					(reference "TP6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 143.51 130.81 0)
 		(unit 1)
@@ -74857,7 +74960,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f42da51a-f16c-488f-8695-27987bbb79ff")
-		(property "Reference" "R40"
+		(property "Reference" "R39"
 			(at 249.428 307.594 90)
 			(effects
 				(font
@@ -74910,7 +75013,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "R40")
+					(reference "R39")
 					(unit 1)
 				)
 			)
@@ -75311,7 +75414,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "fa3a3edb-9555-4cfb-a12b-09592c038f71")
-		(property "Reference" "#PWR077"
+		(property "Reference" "#PWR076"
 			(at 102.87 279.4 0)
 			(effects
 				(font
@@ -75362,7 +75465,7 @@
 		(instances
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "#PWR077")
+					(reference "#PWR076")
 					(unit 1)
 				)
 			)
@@ -75588,80 +75691,6 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
 					(reference "#PWR061")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 19.05 228.6 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "fc41f212-094f-4867-88f2-827dbcd22f50")
-		(property "Reference" "TP5"
-			(at 15.748 226.568 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TestPoint"
-			(at 15.748 226.06 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
-			(at 19.05 223.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 19.05 223.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "test point"
-			(at 19.05 228.6 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Function" "IO1"
-			(at 19.05 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c5a3df1a-2485-454d-9826-28907a63d28b")
-		)
-		(instances
-			(project "ZID_MAIN"
-				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "TP5")
 					(unit 1)
 				)
 			)
