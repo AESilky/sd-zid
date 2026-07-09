@@ -32,10 +32,10 @@ $DEFINE OFF 'b'0
 /* Special Inputs                                                       */
 /************************************************************************/
 
-PIN 37 = ba_clk;            /* Break Address CLK (on GCLK1)         */
 PIN 40 = baen_clk;          /* Address Enable CLK (on GCLK2)        */
 PIN 39 = !baen_clr;         /* Address Enable CLR (on GCLR)         */
 PIN 38 = ae_data_in;        /* Address Enable Data Bit (on in-only) */
+PIN 37 = ba_clk;            /* Break Address CLK (on GCLK1)         */
 PIN 35 = !ba_clr;           /* Address CLR (on GCLK3)               */
 /* JTAG on pins: 1,7,26,32                                          */
 
