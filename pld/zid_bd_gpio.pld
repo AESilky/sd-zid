@@ -34,7 +34,9 @@ $DEFINE OFF 'b'0
 /* Special Inputs                                                       */
 /************************************************************************/
 
+PIN 40 = !rd;               /* Z80 RD (on input only pin)               */
 PIN 39 = !lrst;             /* Local Reset                      (GCLR)  */
+PIN 38 = !wr;               /* Z80 WR (on input only pin)               */
 PIN 37 = mem_op;            /* Clock used for TGT_GO Counter    (GCLK1) */
 /* JTAG on pins: 1,7,26,32                                              */
 
@@ -49,8 +51,6 @@ PIN 37 = mem_op;            /* Clock used for TGT_GO Counter    (GCLK1) */
 PIN [12,13,14,15] = [addr4..1]; /* Address Bus (that we require)        */
 PROPERTY Atmel {pin_keep = on addr4,addr3,addr2,addr1};
 PIN 18 = sbc_io;            /* True when I/O Op is for the SBC          */
-PIN 28 = !rd;               /* Z80 RD-                                  */
-PIN 10 = !wr;               /* Z80 WR-                                  */
 PIN 27 = !tgtmode;          /* Target Mode clears the TGT_GO Counter    */
 PIN 34 = tgt_go;            /* Enable the TGT_GO Count                  */ 
 

@@ -4,12 +4,16 @@
 #
 .PHONY: all clean
 
-PLD_MAIN	:= zid_main
-PLD_BRK2X	:= zid_brk2x_ctrl
-PLD_BRKADDR	:= zid_ba
-PLD_BDATA_GPIO := zid_bd_gpio
+PLD_MAIN			:= zid_main
+PLD_BRK2X			:= zid_brk2x_ctrl
+INC_LOGIC_BA		:= zid_logic_ba.pld
+INC_LOGIC_PCLSR		:= zid_logic_pclsr.pld
+PLD_BA_PCH			:= zid_ba_pch
+PLD_BA_PCL			:= zid_ba_pcl
+PLD_BA				:= zid_ba
+PLD_BDATA_GPIO 		:= zid_bd_gpio
 
-JEDECS		:= $(PLD_BRKADDR).jed $(PLD_BDATA_GPIO).jed $(PLD_MAIN).jed
+JEDECS		:= $(PLD_BA).jed $(PLD_BA_PCH).jed $(PLD_BA_PCL).jed $(PLD_BDATA_GPIO).jed $(PLD_MAIN).jed
 
 CUPL		:= cupl.exe
 FIT1502		:= fit1502.exe
@@ -40,12 +44,24 @@ $(PLD_MAIN).jed: $(PLD_MAIN).tt2 makefile
 $(PLD_BDATA_GPIO).jed: $(PLD_BDATA_GPIO).tt2 makefile
 	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
 
-$(PLD_BRKADDR).jed: $(PLD_BRKADDR).tt2 makefile
+$(PLD_BA).jed: $(PLD_BA).tt2 makefile $(INC_LOGIC_BA)
+	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
+
+$(PLD_BA_PCH).jed: $(PLD_BA_PCH).tt2 $(INC_LOGIC_BA) $(INC_LOGIC_PCLSR) makefile
+	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
+
+$(PLD_BA_PCL).jed: $(PLD_BA_PCL).tt2 $(INC_LOGIC_BA) $(INC_LOGIC_PCLSR) makefile
 	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
 
 # The BRK2X is no longer used on the board
 $(PLD_BRK2X).jed: $(PLD_BRK2X).pld
 	$(CUPL) $(CUPLOPTS) $<
+
+# Test for Microchip Issue
+ATF1504FIT_TEST.jed: ATF1504FIT_TEST.tt2 makefile
+	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
+
+
 
 clean:
 	rm -f *.abs *.doc *.fit *.io *.jed *.log *.lst *.oed *.pin *.pla *.sim *.tt2 *.tt3
