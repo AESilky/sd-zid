@@ -1,7 +1,7 @@
 /* Header (must be first) */
 NAME     brkdata_gpio_logic;
-PARTNO   2;
-DATE     6/30/2026;
+PARTNO   3;
+DATE     7/14/2026;
 REVISION 01;
 DESIGNER AESilky;
 COMPANY  None;
@@ -48,20 +48,21 @@ PIN 37 = mem_op;            /* Clock used for TGT_GO Counter    (GCLK1) */
 /* flexibility)                                                         */
 /************************************************************************/
 
-PIN [12,13,14,15] = [addr4..1]; /* Address Bus (that we require)        */
-PROPERTY Atmel {pin_keep = on addr4,addr3,addr2,addr1};
-PIN 18 = sbc_io;            /* True when I/O Op is for the SBC          */
-PIN 27 = !tgtmode;          /* Target Mode clears the TGT_GO Counter    */
-PIN 34 = tgt_go;            /* Enable the TGT_GO Count                  */ 
+PIN [14,15,12,13] = [addr3..0]; /* Address Bus (that we require)        */
+PROPERTY Atmel {pin_keep = on addr3,addr2,addr1,addr0};
+PIN 10 = sbc_io;            /* True when I/O Op is for the SBC          */
+PIN 11 = zid_io;
+PIN 31 = !tgtmode;          /* Target Mode clears the TGT_GO Counter    */
+PIN 33 = tgt_go;            /* Enable the TGT_GO Count                  */ 
 
 
 /************************************************************************/
 /* Input/Output                                                         */
 /************************************************************************/
 
-PIN [5,3,6,23,25,22,20,21] = [d7..0];    /* Data I/O */
+PIN [5,3,23,6,22,25,20,21] = [d7..0];    /* Data I/O */
 PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
-PIN [31,30,33,35,2,44,42,43] = [gp7..0]; /* GP Input[7..4] Output[3..0] */
+PIN [28,27,34,30,2,43,42,44] = [gp7..0]; /* GP Input[7..4] Output[3..0] */
 
 
 /************************************************************************/
@@ -99,13 +100,13 @@ PINNODE = [bdeq7..0];       /*   data bits equal                        */
 /************************************************************************/
 
 FIELD databus       = [d7..0];
-FIELD ioaddr        = [addr4..1];	/* A7..5 handled by sbc_io, A0 not used */
+FIELD ioaddr        = [addr3..0];	/* A7..4 handled by sbc_io          */
 
 /** Board and Breakpoint Control    */
 FIELD brkdata       = [bd7..0];
 FIELD brkdx         = [bdx7..0];
-$DEFINE B1DV_SEL    (sbc_io & !tgtmode & ioaddr:'b'0000x & wr)   /* 00: BRK1 Data Value      */
-$DEFINE B1DX_SEL    (sbc_io & !tgtmode & ioaddr:'b'0001x & wr)   /* 02: BRK1 Data Don't-Care */
+$DEFINE B1DV_WR     (zid_io & ioaddr:'b'1000 & wr)  /* 05: BRK1 Data Value  */
+$DEFINE B1DX_WR     (zid_io & ioaddr:'b'1001 & wr)  /* 05: BRK1 Don't-Care  */
 
 /** SBC General Purpose I/O Bits    */
 FIELD gpData        = [gp7..0];
@@ -113,11 +114,12 @@ $DEFINE GPIN_DATA    [d7..4]
 $DEFINE GPOUT_DATA   [d3..0]
 $DEFINE GPIN_BITS    [gp7..4]
 $DEFINE GPOUT_BITS   [gp3..0]
-$DEFINE GP_RD       (sbc_io & ioaddr:'b'0101x & rd) /* 0A: SBC Gen-Purpose RD */
-$DEFINE GP_WR       (sbc_io & ioaddr:'b'0101x & wr) /* 0A: SBC Gen-Purpose WR */
+$DEFINE GP_RD       (sbc_io & ioaddr:'b'11xx & rd)  /* 08: SBC Gen-Purpose RD   */
+$DEFINE GP_WR       (sbc_io & ioaddr:'b'11xx & wr)  /* 08: SBC Gen-Purpose WR   */
 
 /** Target Go Counter               */
 FIELD tgc           = [tgc3..0];
+$DEFINE TGTGO_WR    (zid_io & ioaddr:'b'0111 & wr)  /* 07: Target GO    */
 
 
 /************************************************************************/
@@ -125,10 +127,10 @@ FIELD tgc           = [tgc3..0];
 /************************************************************************/
 
 brkdata.d  = databus;       /* Breakpoint1 Data                         */
-brkdata.ck = B1DV_SEL;
+brkdata.ck = B1DV_WR;
 brkdata.ar = lrst;
 brkdx.d    = databus;       /* Breakpoint1 Data'X' (don't care)         */
-brkdx.ck   = B1DX_SEL;
+brkdx.ck   = B1DX_WR;
 brkdx.ar   = lrst;
 
 /*
@@ -169,7 +171,6 @@ tgc.ck      = mem_op;
 tgc.ce      = tgc_en;
 tgc.ar      = tgtmode # lrst;
 tgt_now     = tgc:'b'1111;
-
 
 /** SBC General Purpose Output Bits */
 GPOUT_BITS.d     = GPOUT_DATA;

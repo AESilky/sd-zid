@@ -1,0 +1,281 @@
+/* Header (must be first) */
+NAME     secondary_logic;
+PARTNO   2;
+DATE     7/14/2026;
+REVISION 01;
+DESIGNER AESilky;
+COMPANY  None;
+ASSEMBLY None;
+LOCATION ;
+Device   f1508isptqfp100; /* ATF1508AS 100TQFP ISP/JTAG */
+
+/****************************************************************************
+ *
+ * Z80 In-Circuit Debugger (ZID) secondary logic:
+ * Breakpoint Address 1..4
+ * Breakpoint Address Control (2-bits per BPA)
+ * PC Latch and Read
+ *
+ * Uses ZID_IO to decode down to 0..F
+ * See ZID MAIN for full list of ports and addresses
+ *
+ ****************************************************************************
+ */
+
+/* Configure cupl */
+Property Atmel {security = OFF};
+Property Atmel {power_reset = ON};
+Property Atmel {preassign = TRY};   /* OFF, TRY, KEEP */
+Property Atmel {xor_synthesis = ON};
+Property Atmel {TDI_pullup = ON};
+Property Atmel {TMS_pullup = ON};
+
+/* Convenience Names */
+$DEFINE ON  'b'1
+$DEFINE OFF 'b'0
+
+
+/************************************************************************/
+/* Special Inputs                                                       */
+/************************************************************************/
+
+PIN  87 = !pc_latch;        /* PC Address Latch                (GCLK2)  */              
+/* JTAG on pins: 1,7,26,32                                              */
+
+
+/************************************************************************/
+/* Inputs                                                               */
+/************************************************************************/
+
+PIN [46,45,44,42,41,40,28,47,53,52,49,48,5,6,93,94] = [addr15..0]; /* Address Bus  */
+PROPERTY Atmel {pin_keep = on addr15, addr14, addr13, addr12, addr11, addr10, addr9, addr8};
+PROPERTY Atmel {pin_keep = on addr7, addr6, addr5, addr4, addr3, addr2, addr1 addr0};
+PIN 17 = !rd;
+PIN 14 = !wr;
+PIN 68 = zid_io;            /* True when I/O Op is for the ZID (only)   */
+
+
+/************************************************************************/
+/* Input/Output                                                         */
+/************************************************************************/
+
+PIN [92,96,98,97,99,1,100,2] = [d7..0];    /* Data I/O */
+PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
+
+
+/************************************************************************/
+/* Outputs                                                              */
+/************************************************************************/
+
+PIN  8 = b1_aeq;         /* Break-1 Address Equal                    */
+PIN  7 = bn_aeq;         /* Break-n Address Equal (other than BRK-1) */
+
+
+/************************************************************************/
+/* Internal Nodes, Registers and Intermediate Variable Definitions      */
+/************************************************************************/
+
+PINNODE = [pc15..0];        /* SR PC latch                              */
+
+PINNODE = b1ahen;           /* Break #1 Address High Enable             */
+PINNODE = b1alen;           /* Break #1 Address Low Enable              */
+PINNODE = [b1al7..0];       /* Breakpoint #1 address low bits (target)  */
+PINNODE = [b1ah7..0];       /* Breakpoint #1 address high bits (target) */
+PINNODE = b1aheq;
+PINNODE = b1aleq;
+
+PINNODE = b2ahen;
+PINNODE = b2alen;
+PINNODE = [b2al7..0];
+PINNODE = [b2ah7..0];
+PINNODE = b2aheq;
+PINNODE = b2aleq;
+
+
+PINNODE = b3alen;
+PINNODE = b3ahen;
+PINNODE = [b3al7..0];
+PINNODE = [b3ah7..0];
+PINNODE = b3aheq;
+PINNODE = b3aleq;
+
+PINNODE = b4alen;
+PINNODE = b4ahen;
+PINNODE = [b4al7..0];
+PINNODE = [b4ah7..0];
+PINNODE = b4aheq;
+PINNODE = b4aleq;
+
+
+/************************************************************************/
+/* Fields and Convenience/Clarity Definitions                           */
+/*                                                                      */
+/* NOTE: $DEFINE value cannot use a prior $DEFINE.                      */
+/*   Learned through lots of time spent tracking down compile errors!   */
+/*   Telltale error is:                                                 */
+/*     [0018ca] intermediate var not assigned an expression: xyz        */
+/*                                                                      */
+/*   Of course, that error could also, legitimately, mean that it       */
+/*   hasn't been assigned, but if you get it, and you believe you've    */
+/*   assigned it, look for a case of a $DEFINE that contains a $DEFINE. */
+/*                                                                      */
+/************************************************************************/
+
+FIELD databus       = [d7..0];
+FIELD addrbus       = [addr15..0];
+FIELD ioaddr        = [addr3..0];	/* A7..4 handled by zid_io */
+
+/** Board and Breakpoint Control    */
+FIELD brkaen        = [b4ahen,b4alen,b3ahen,b3alen,b2ahen,b2alen,b1ahen,b1alen];
+$DEFINE B1ADDR_WR   (zid_io & ioaddr:'b'0000 & wr)  /* 00: BRK1 Address H/L (High on upper addr) */
+$DEFINE B2ADDR_WR   (zid_io & ioaddr:'b'0001 & wr)  /* 01: BRK2 Address H/L (High on upper addr) */
+$DEFINE B3ADDR_WR   (zid_io & ioaddr:'b'0010 & wr)  /* 02: BRK3 Address H/L (High on upper addr) */
+$DEFINE B4ADDR_WR   (zid_io & ioaddr:'b'0011 & wr)  /* 03: BRK4 Address H/L (High on upper addr) */
+$DEFINE BRKAEN_WR   (zid_io & ioaddr:'b'0100 & wr)  /* 04: BRK Address Enable (2 bits per break)*/
+
+/** Special Reset PC Latch          */
+FIELD srpc          = [pc15..0];
+$DEFINE SRPCH       (pc15..8)
+$DEFINE SRPCL       (pc7..0)
+$DEFINE SRPCL_RD    (zid_io & ioaddr:'b'0101 & rd)  /* 08: Special Reset PC Low RD  */
+$DEFINE SRPCH_RD    (zid_io & ioaddr:'b'0110 & rd)  /* 09: Special Reset PC High RD */
+
+
+/************************************************************************/
+/* Logic                                                                */
+/************************************************************************/
+
+/** Break Address Registers High/Low for Break #1..4 : High is read from Upper Address          */
+[b1ah7..0].d   = [addr15..8];
+[b1ah7..0].ck  = B1ADDR_WR;
+[b1al7..0].d   = databus;
+[b1al7..0].ck  = B1ADDR_WR;
+[b2ah7..0].d   = [addr15..8];
+[b2ah7..0].ck  = B2ADDR_WR;
+[b2al7..0].d   = databus;
+[b2al7..0].ck  = B2ADDR_WR;
+[b3ah7..0].d   = [addr15..8];
+[b3ah7..0].ck  = B3ADDR_WR;
+[b3al7..0].d   = databus;
+[b3al7..0].ck  = B3ADDR_WR;
+[b4ah7..0].d   = [addr15..8];
+[b4ah7..0].ck  = B4ADDR_WR;
+[b4al7..0].d   = databus;
+[b4al7..0].ck  = B4ADDR_WR;
+brkaen.d       = [d7..0];
+brkaen.ck      = BRKAEN_WR;
+
+/** Break Address Compare */
+/* High Address is equal if disabled */
+/* BRK1 */
+b1aheq      = !b1ahen
+             # (
+                !(addr15 $ b1ah7)
+              & !(addr14 $ b1ah6)
+              & !(addr13 $ b1ah5)
+              & !(addr12 $ b1ah4)
+              & !(addr11 $ b1ah3)
+              & !(addr10 $ b1ah2)
+              & !(addr9 $ b1ah1)
+              & !(addr8 $ b1ah0)
+             );
+b1aleq      = b1alen
+              & !(addr7 $ b1al7)
+              & !(addr6 $ b1al6)
+              & !(addr5 $ b1al5)
+              & !(addr4 $ b1al4)
+              & !(addr3 $ b1al3)
+              & !(addr2 $ b1al2)
+              & !(addr1 $ b1al1)
+              & !(addr0 $ b1al0)
+             ;
+b1_aeq       = b1aheq & b1aleq;
+
+/* BRK2 */
+b2aheq      = !b2ahen
+             # (
+                !(addr15 $ b2ah7)
+              & !(addr14 $ b2ah6)
+              & !(addr13 $ b2ah5)
+              & !(addr12 $ b2ah4)
+              & !(addr11 $ b2ah3)
+              & !(addr10 $ b2ah2)
+              & !(addr9 $ b2ah1)
+              & !(addr8 $ b2ah0)
+             );
+b2aleq      = b2alen
+              & !(addr7 $ b2al7)
+              & !(addr6 $ b2al6)
+              & !(addr5 $ b2al5)
+              & !(addr4 $ b2al4)
+              & !(addr3 $ b2al3)
+              & !(addr2 $ b2al2)
+              & !(addr1 $ b2al1)
+              & !(addr0 $ b2al0)
+             ;
+b2aeq       = b2aheq & b2aleq;
+
+/* BRK3 */
+b3aheq      = !b3ahen
+             # (
+                !(addr15 $ b3ah7)
+              & !(addr14 $ b3ah6)
+              & !(addr13 $ b3ah5)
+              & !(addr12 $ b3ah4)
+              & !(addr11 $ b3ah3)
+              & !(addr10 $ b3ah2)
+              & !(addr9 $ b3ah1)
+              & !(addr8 $ b3ah0)
+             );
+b3aleq      = b3alen
+              & !(addr7 $ b3al7)
+              & !(addr6 $ b3al6)
+              & !(addr5 $ b3al5)
+              & !(addr4 $ b3al4)
+              & !(addr3 $ b3al3)
+              & !(addr2 $ b3al2)
+              & !(addr1 $ b3al1)
+              & !(addr0 $ b3al0)
+             ;
+b3aeq       = b3aheq & b3aleq;
+
+/* BRK4 */
+b4aheq      = !b4ahen
+             # (
+                !(addr15 $ b4ah7)
+              & !(addr14 $ b4ah6)
+              & !(addr13 $ b4ah5)
+              & !(addr12 $ b4ah4)
+              & !(addr11 $ b4ah3)
+              & !(addr10 $ b4ah2)
+              & !(addr9 $ b4ah1)
+              & !(addr8 $ b4ah0)
+             );
+b4aleq      = b4alen
+              & !(addr7 $ b4al7)
+              & !(addr6 $ b4al6)
+              & !(addr5 $ b4al5)
+              & !(addr4 $ b4al4)
+              & !(addr3 $ b4al3)
+              & !(addr2 $ b4al2)
+              & !(addr1 $ b4al1)
+              & !(addr0 $ b4al0)
+             ;
+b4aeq       = b4aheq & b4aleq;
+/* BRKn */
+bn_aeq    = b2aeq # b3aeq # b4aeq;
+
+
+/** Special Reset PC Latch          */
+srpc.d  = addrbus;
+srpc.ck = pc_latch;
+
+
+/*  SR PC                           */
+
+databus     =  SRPCH_RD & SRPCH     /* Read the Special Reset PC HIGH value                     */
+             # SRPCL_RD & SRPCL     /* Read the Special Reset PC LOW value                      */
+            ;
+
+/* Enable data bits for PC Read HIGH/LOW    */
+databus.oe  = (SRPCH_RD) # (SRPCL_RD);

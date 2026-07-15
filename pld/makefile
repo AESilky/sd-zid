@@ -5,6 +5,7 @@
 .PHONY: all clean
 
 PLD_MAIN			:= zid_main
+PLD_BRKPCL			:= zid_brkpcl
 PLD_BRK2X			:= zid_brk2x_ctrl
 INC_LOGIC_BA		:= zid_logic_ba.pld
 INC_LOGIC_PCLSR		:= zid_logic_pclsr.pld
@@ -13,7 +14,8 @@ PLD_BA_PCL			:= zid_ba_pcl
 PLD_BA				:= zid_ba
 PLD_BDATA_GPIO 		:= zid_bd_gpio
 
-JEDECS		:= $(PLD_BA).jed $(PLD_BA_PCH).jed $(PLD_BA_PCL).jed $(PLD_BDATA_GPIO).jed $(PLD_MAIN).jed
+JEDECS		:= $(PLD_BRKPCL).jed $(PLD_BDATA_GPIO).jed $(PLD_MAIN).jed
+			# $(PLD_BA).jed $(PLD_BA_PCH).jed $(PLD_BA_PCL).jed $(PLD_BDATA_GPIO).jed $(PLD_MAIN).jed
 
 CUPL		:= cupl.exe
 FIT1502		:= fit1502.exe
@@ -21,7 +23,7 @@ FIT1504		:= fit1504.exe
 FIT1508		:= fit1508.exe		# C:/Wincupl/WinCupl/Fitters/fit1508.exe
 
 CUPLOPTS		:= -kbm2nlxj	# 22Vxx, 16Vxx: Quine-McCluskey minimization
-CUPLOPTS15XX	:= -ksm3nlxj  	# ATF15xx: Optimize product term usage (-ks)
+CUPLOPTS15XX	:= -ksm4lj  	# ATF15xx: Optimize product term usage (-ks)
 								#  Don't expand XOR (-kx let fitter use XOR gate),
 								#  m4 Espresso minimization (Good for fitter designs)
 
@@ -39,6 +41,9 @@ FITOPTS_TQFP100	:= -device TQFP100
 all:	$(JEDECS)
 
 $(PLD_MAIN).jed: $(PLD_MAIN).tt2 makefile
+	$(FIT1508) -i $< $(FITOPTS_1508) $(FITOPTS_TQFP100) $(FITOPTS_CMN)
+
+$(PLD_BRKPCL).jed: $(PLD_BRKPCL).tt2 makefile
 	$(FIT1508) -i $< $(FITOPTS_1508) $(FITOPTS_TQFP100) $(FITOPTS_CMN)
 
 $(PLD_BDATA_GPIO).jed: $(PLD_BDATA_GPIO).tt2 makefile

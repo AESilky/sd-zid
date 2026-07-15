@@ -1,7 +1,7 @@
 /* Header (must be first) */
 NAME     main_db_logic;
 PARTNO   1;
-DATE     4/02/2026;
+DATE     7/12/2026;
 REVISION 01;
 DESIGNER AESilky;
 COMPANY  None;
@@ -32,9 +32,7 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  *  - Double-Byte Instruction Detect
  *  - RST38 Detect
  *  - Break #1 and #2n Control
- *  - Break #1 Data and Don't-Care registers
  *  - Break #1 & #2n Detect
- *  - D7 output (buffered) for use by other break hardware
  *  - Single Board Computer (SBC) Capability
  *
  *
@@ -57,7 +55,7 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  * external PC Save register.
  *
  * ==========
- * MMU (nnxx 08)
+ * MMU (nxxx 08)
  * ----------
  * Treats the 16-bit/64KB memory space as 4 16KB blocks. It treats the ROM
  * and RAM as 16 16KB regions (8 ROM and 8 RAM, 256KB total, 128KB each).
@@ -84,45 +82,50 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  * ----------
  * The board uses a number of I/O devices. Some are internal to this
  * component, while some are external. The I/O space is fully decoded to
- * allow 224 address for external devices. The 'sbc_io' signal is provided
- * on a pin to make it easier to decode added device ports.
+ * allow 224 addresses for external devices. The 'sbc_io' and 'zid_io'
+ * signals are provided on pins to make it easier for other devices on
+ * the board and expansion to decode their addresses.
  *
- * The defined devices and number of addresses needed are:
- * 1. Board Control (1). See separate section for bit description.
- * 2. MMU Select (1). The MMU has 4 registers, but the upper address is used
+ * The on-board devices are:
+ * 1. Board Control. See separate section for bit description.
+ * 2. MMU Select. The MMU has 4 registers, but the upper address is used
  *      to select the register while writing/reading a single port.
- * 3. Target-Go (1). This only uses an access (any op) to start the countdown
- *      to transfer to the target system.
- * 4. PC Read (1). This is used to read the Program Counter value
- *      that is saved. The thought is to use a shift register and read it
- *      using 16 reads. This port also provides status bits:
- * 5. RP2040-Module (4). The Module is used for all communication, access to a
+ * 3. Target-Go. This uses an access (any op) to start the countdown
+ *      to transfer to the target system. The data isn't used, and it
+ *      doesn't even need to be a write.
+ * 4. PC Read. This is used to read the Program Counter value
+ *      that is saved on Special Reset.
+ * 5. Special Reset reason.
+ * 5. Break Address registers.
+ * 6. Break Address Enable registers.
+ * 7. SBC GPIO
+ * 8. RP2040-Module (4). The Module is used for all communication, access to a
  *      EEPROM for saving configuration, and possibly other functions.
- * 6. Break Address CLK (1). This is used to clock a data bit to the Break
- *      Address shift registers.
- * 7. Break Address Enable CLK (1). This is used to clock a data bit to the
- *      Break Enable shift registers.
- * 8. Break Address Enable Read. Same as 7. but to read the Enable bit back.
- * 9. Break Address Enable Clear (1). Any operation to this port clears the
- *      Break Enable shift registers to 0.
  *
- * 2 ports are allocated to each device. This reserves 224 port addresses for
- * use by external devices when running as an SBC...
+ * There are 224 port addresses for use by external devices for the SBC...
+ *
+ * The SBC GPIO, the MMU, and the Break and Reset request bits of the Control
+ * Register are available to the SBC (and the ZID), the rest of the
+ * devices are only accessible to the ZID.
  *
  * Port Allocations:
- *      00..01: Break1 Data (internal) - Write Only
- *      02..03: Break1 Data Required (internal D:0) - Write Only
- *      04..05: Break 1&2n Control (internal) - Write Only
- *      06..07: Board Control (internal)
- *      08..09: MMU Registers (internal)
- *      0A..0B: SBC General Purpose Bits (4 out / 4 in - pins on device)
- *      10..11: Target-Go - Write Only (data doesn't matter)
- *      16..17: Break Address CLK - Write Only
- *      18..19: Break Address Enable CLK - Write Only
- *      1A..1B: Break Address Enable CLR - Write Only (data doesn't matter)
- *      1C..1D: PC Saved Bit Read, Break Address Enable Detect,Break Status, SBC-Mode (RD)
- *      1E..1F: RP2040-Module
+ *      : On 2nd Logic Device
+ *      00..03: Break Address 1..4 Upper address bits used as upper data - WO
+ *      04:     Break Address 1..4 Upper&Lower Enable (2 bits per breakpoint) - WO
+ *      05:     Break1 Data & Don't-Care (on upper address) - WO
+ *      06:     Target-Go (data doesn't matter) - WO
+ *      07:     SR PC Read (upper address selects L/H) - RO
+ *      08..0F: SBC General Purpose Bits (4 out / 4 in - pins on device) - R/W (b0..3 DC)
+ * - - - - - - -
+ *      : On Main Logic Device
+ *      10..11: MMU Registers Upper address b15..14 select block - R/W (b0 DC)
+ *      12..13: Board Control - R/W (b0 DC)
+ *      14..15: Break 1&2n Control - WO (b0 DC)
+ *      16..17: SR Reason, ZID init'ed, SBC-Mode ind - RO (b0 DC)
+ *      1E..1F: RP2040-Module - External (b0 CTRL/DATA)
+ * - - - - - - -
  *      20..FF: Reserved for External Devices (224 ports)
+ *
  *
  * ==========
  * DBI Detect
@@ -160,7 +163,7 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  * Breakpoint #1 Control
  * Breakpoint #2..n Control
  * Breakpoint #1 and #2-n Address Equal input for breakpoint check
- * Breakpoint #1 Data (00) w/Mask (02) Compare for breakpoint check
+ * Breakpoint #1 Data Equal input for breakpoint check
  * ----------
  * This holds the control for the 1st breakpoint. It provides the ability to
  * break on any one of the seven different memory and port (I/O)
@@ -168,14 +171,16 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  * 'break1 address match' coming from an input pin. Breakpoint 1 also includes
  * checking for a specific data value with optional don't-care bits.
  *
- * This also holds the control for the 2nd-nth breakpoint. The control
+ * This also holds the control for the 2nd-4th breakpoint. The control
  * identifies which of the seven different memory or port operations should be
- * checked (plus disabled). The 2nd-nth breakpoint address logic is external
- * with 'break2n address match' coming from an input pin. Breakpoints 2-n all
+ * checked (plus disabled). The 2nd-4th breakpoint address logic is external
+ * with 'break2n address match' coming from an input pin. Breakpoints 2-4 all
  * use the same (2nd) condition.
  *
  * The address match logic (external) allows specifying a 16-bit, 8-bit, or
  * ANY address.
+ *
+ * The data match logic (external) allows specifying a data value w/Don't-Care
  *
  * The PINNODE and Defines section has some more information about the
  * breakpoints.
@@ -183,11 +188,10 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  * ==========
  * Board Control and Status
  * ----------
- * Board Control (06) bits are:
- *  0: Bit for SBC code to use as desired (SBS_USE_B)
- *  1: Break Request. Used in SBC mode to break out of Target Mode (BREAK_REQ_B)
- *  2: Reset Request. Used in Debug or SBC mode to do a hard reset (RESET_REQ_B)
- *  3: Sync-Only, use the breakpoint logic to generate a SYNC pulse (SYNCONLY_B)
+ * Board Control (12) bits are:
+ *  0: Break Request. Used in SBC mode to break out of Target Mode (BREAK_REQ_B)
+ *  1: Reset Request. Used in Debug or SBC mode to do a hard reset (RESET_REQ_B)
+ *  2: Sync-Only, use the breakpoint logic to generate a SYNC pulse (SYNCONLY_B)
  *  4: Enable 'Soft Break' (RST38) detection (SOFTBRKEN_B)
  *  5: Perform a single operation; MR/MW/PR/PW (SNGL_OP_B)
  *  6: Do a Single Step on the Target when Target Mode is triggered (SNGL_STEP_B)
@@ -232,7 +236,6 @@ PIN 87 = cpu_clk;       /* CPU CLK (on GCLK1) */
 
 PIN [94,98] = [addr15..14]; /* Address inputs                            */
 PIN [75,65,64,99,100,1,2] = [addr7..1];     /* addr0 is not used        */
-PROPERTY Atmel {pin_keep = on addr7,addr6,addr5,addr4,addr3,addr2,addr1};
 PIN 90 = !zm1;
 PIN  6 = !zrd;
 PROPERTY Atmel {pin_keep = on zrd};
@@ -258,19 +261,18 @@ PIN 24 = !mwtrq;        /* Wait Request from RP2040 Module              */
 PIN 13 = !brk1_a_eq;    /* Address match for breakpoint 1               */
 PIN 14 = brk_deq;       /*  Data equal (input from 1504)                */
 PIN 12 = !brkn_a_eq;    /* Breakpoint 2..n Address match                */
-PIN 76 = !brkhw_det;    /* Signal from external breakpoint boards.      */
+/*PIN 76 = !brkhw_det;    /* Signal from external breakpoint boards.      */
                         /* Provided as a port read bit to the cpu for   */
                         /* its use. (1C-b2: BRK-INFO RD)                */
 PIN 78 = !extbrkrq;     /* External input to request Break              */
 /* */
-PIN 77 = pcrd_b_in;    /* Input bit from the PC Save shift register     */
+/*PIN 77 = pcrd_b_in;    /* Input bit from the PC Save shift register     */
 
 /************************************************************************/
 /* Input/Output                                                         */
 /************************************************************************/
 
 PIN [97,7,9,8,96,93,92,5] = [d7..0];   /* Data I/O */
-PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
 
 
 /************************************************************************/
@@ -306,12 +308,13 @@ PROPERTY Atmel {open_collector = on zwait}; /* ZZZ needed on breadboard */
 PIN 69  = !zbreq;     /* To the Z80 */
 PIN 19  = !mod_sel;     /* RP2040 Module Select                             */
 /* */
-PIN 55  = ba_clk;       /* Break Address Clock                              */
-PIN 58  = !ba_clr;      /* Break Address Clear                              */ 
-PIN 57  = baen_clk;     /* Break Address Enable Clock (WR)                  */
-PIN 56  = !baen_clr;    /* Break Address Enable Clear                       */
+/*PIN 55  = ba_clk;       /* Break Address Clock                              */
+/*PIN 58  = !ba_clr;      /* Break Address Clear                              */ 
+/*PIN 57  = baen_clk;     /* Break Address Enable Clock (WR)                  */
+/*PIN 56  = !baen_clr;    /* Break Address Enable Clear                       */
 /* */
-PIN 45  = sbc_io;       /* Local I/O Addr Range and Op (SBC)         */
+PIN 45  = sbc_io;       /* Local I/O Addr Range and Op (SBC and ZID)        */
+PIN     = zid_io;       /* Local I/O Addr Range and Op (ZID only)           */
 /* */
 PIN 41  = !tdbus_en;    /* Target Data Bus Enable                           */
 PIN 17  = !tdbus_in;    /* Target Data Bus Direction                        */
@@ -322,20 +325,17 @@ PIN 70  = !znmi;        /* NMI to Z80 */
 PIN 68  = !zint;        /* INT to Z80 */
 PIN 21  = rfmr_;        /* RFSH gated MREQ (for the target during debug)(low=true) */
 /* */
-PIN 61  = tgt_go_R;     /* Start the bus operation countdown                */
+/*PIN 61  = tgt_go_R;     /* Start the bus operation countdown                */
 PIN 84  = !tgtmode_R;   /* Running target (not debug), used to reset OP counter */
 PIN 16  = mem_op_;      /* Memory Op (excluding zrfsh), used to clock OP counter (45)*/
 /* */
 PIN 20  = !pc_latch;    /* Latch enable for the external PC Save register   */
-PIN 60  = !brkpc_rd;    /* PC Saved, BrkHW-Det, ZID, SBC, BrkInfo (RD)      */
+/*PIN 60  = !brkpc_rd;    /* PC Saved, BrkHW-Det, ZID, SBC, BrkInfo (RD)      */
 PIN 67  = sync;         /* Break condition detected - SYNC signal on board  */
 
 /************************************************************************/
 /* Internal Nodes, Registers and Intermediate Variable Definitions      */
 /************************************************************************/
-
-/** Data Bus output enable term */
-PINNODE = dbus_oe;
 
 /** Boot/Reboot and Requested Reset  */
 PINNODE = mrst_req;         /* Master reset: brd_rst # rst_req_R */
@@ -356,9 +356,6 @@ PINNODE = attn_tms_R;       /* Target Mode state when ATTN occurred             
 PINNODE = dbi_if2_R;        /* Double-Byte IF2 (not needed on a pin)                    */
 PINNODE = dbi_R;            /* Double-Byte Instruction Detected                         */
 
-/** ZID I/O */
-PINNODE = zid_io;
-
 /** MMU */
 PINNODE = mmu_io;           /* MMU I/O Operation                  */
 /*  MMU Registers                                                 */
@@ -373,9 +370,9 @@ PINNODE = wait_ho_R;
 
 
 /** Board/Operation Control */
-PINNODE = sbc_use_R;        /* Bit for SBC to use as desired (d0 CTRL)                          */
-PINNODE = brk_req_R;        /* Programmable Break request (d1 CTRL)                             */
-PINNODE = rst_req_R;        /* Programmable Reset request (d2 CTRL)                             */
+PINNODE = rst_req_R;        /* Programmable Reset request (d0 CTRL)                             */
+PINNODE = b1ud_R;           /* Breakpoint1 Use Data+DC (d1 CTRL)                                */
+PINNODE = b2ud_R;           /* Breakpoint2n Use Data+DC (d2 CTRL)                               */
 PINNODE = sync_only_R;      /* Break Detect should only provide SYNC, not stop target (d3 CTRL) */
 PINNODE = softbrk_en_R;     /* Enable detecting soft breakpoint - rst38 (d4 CTRL)               */
 PINNODE = sngl_op_R;        /* Enable the target bus for a single bus operation (d5 CTRL)       */
@@ -391,8 +388,8 @@ PINNODE = to_target;
 
 /**
  * Breakpoint Operations #1 and #2..n
- *  Breakpoint #1 condition, address equal input, data (if required)
- *  Breakpoint #2..n condition, address equal input (no data capability)
+ *  Breakpoint #1 condition, address equal input, data (if enabled)
+ *  Breakpoint #2..n condition, address equal input, data (if enabled)
  *
  *  Breakpoint Condition:
  *   0: None (disabled)
@@ -404,12 +401,14 @@ PINNODE = to_target;
  *   6: Port (I/O) Read (PR)
  *   7: Any Port (I/O) operation (AP)
  *
- *   8: OR'd with Condition indicates Address Required
+ *   8: OR'd with Condition indicates 'Require Address'
  */
 PINNODE = [b1op2..0];   /* Breakpoint1 Operation                        */
 PINNODE = b1ar_R;       /* Breakpoint1 Require Address                  */
 PINNODE = [b2op2..0];   /* Breakpoint2..n Operation                     */
 PINNODE = b2ar_R;       /* Breakpoint2..n Require Address               */
+PINNODE = b1_ddc;       /* Detects Data+Don't Care if enabled           */
+PINNODE = b2_ddc;       /* Detects Data+Don't Care if enabled           */
 
 /*  Breakpoint detection                                                */
 PINNODE = rst38det_R;   /* Used for 'SOFT' breakpoints                  */
@@ -446,7 +445,7 @@ FIELD databus       = [d7..0];
 FIELD ioaddr        = [addr7..1];	/* A0 is not connected */
 
 /** Board and Breakpoint Control */
-$DEFINE BRKOP_SEL   (zid_io & ioaddr:'b'xxx0010x)   /* 04: BRK1 & 2n Operation  */
+$DEFINE BRKOP_SEL   (zid_io & ioaddr:'b'xxx1010x)   /* 14: BRK1 & 2n Operation  */
 $DEFINE B1_OP_DATA      [d2..0]     /* BP1 Operation (Break Operation (0)) */
 $DEFINE B1_OP_RQADDR    [d3]        /* BP1 Require Address */
 $DEFINE B2_OP_DATA      [d6..4]     /* BP2 Operation (Break Operation (0)) */
@@ -486,15 +485,15 @@ $DEFINE B2OP_AM     [b2op2..0]:4
 $DEFINE B2OP_PW     [b2op2..0]:5
 $DEFINE B2OP_PR     [b2op2..0]:6
 $DEFINE B2OP_AP     [b2op2..0]:7
-/* Status/data byte for: Special Reset From, HardBRK, SoftBRK, SS, or ATTN  Break2n HW Detect PC-Save bit read */
-FIELD brk_pc_info   = [zid_init_R,sbcmode,tgtmode_R,attn,sr_frmhbrk_R,sr_frmsbrk_R,brkhw_det,pcrd_b_in];
+/* Status/data byte for: Special Reset From, HardBRK, SoftBRK, SS, or ATTN */
+FIELD brk_pc_info   = [zid_init_R,sbcmode,tgtmode_R,attn,sr_frmhbrk_R,sr_frmsbrk_R];
 
 
 /** Data byte for our control bits */
-FIELD ctrl1_info    = [zid_init_R,sngl_step_R,sngl_op_R,softbrk_en_R,sync_only_R,rst_req_R,brk_req_R,sbc_use_R];
-$DEFINE CTRL1_RD    (sbc_io & ioaddr:'b'xxx0011x & zrd) /* 06: BD-CTRL RD */
-$DEFINE CTRL1_WR    (sbc_io & ioaddr:'b'xxx0011x & zwr) /* 06: BD-CTRL WR */
-$DEFINE ZIDC1_WR    (zid_io & ioaddr:'b'0000011x & zwr) /* 06: BD-CTRL ZID ONLY WR */
+FIELD ctrl1_info    = [zid_init_R,sngl_step_R,sngl_op_R,softbrk_en_R,sync_only_R,b2ud_R,b1ud_R,rst_req_R];
+$DEFINE CTRL1_RD    (sbc_io & ioaddr:'b'xxx1001x & zrd) /* 12: BD-CTRL RD */
+$DEFINE CTRL1_WR    (sbc_io & ioaddr:'b'xxx1001x & zwr) /* 12: BD-CTRL WR */
+$DEFINE ZIDC1_WR    (zid_io & ioaddr:'b'xxx1001x & zwr) /* 12: BD-CTRL ZID ONLY WR */
 
 
 /** MMU */
@@ -578,7 +577,7 @@ mem_op_     = !(zmreq & (zrd # zwr));   /* Used to clock Operation Counter  */
 mem_op_.oe  = ON;
 
 /** MMU Register Init/Write */
-mmu_io          = (sbc_io & ioaddr:'b'xxx0100x);  /* n008: Top 2 bits of 16-bit address select register */
+mmu_io          = (sbc_io & ioaddr:'b'xxx1011x);  /* n016: Top 2 bits of 16-bit address select register */
 /* */
 [mapA3..0].ap   =  [d3..0] & [addr15..14]:0000 & mmu_io & zwr;
 [mapA3..0].ar   = ![d3..0] & [addr15..14]:0000 & mmu_io & zwr;
@@ -647,14 +646,14 @@ wait_ho_R.ar  = !zmreq;
 /* 'Local' Port Address Qualifier */
 sbc_io      = (!tgtmode_R # sbcmode) & ziorq & ioaddr:'b'000xxxxx; /* Local I/O operation, ZID or SBC  */
 sbc_io.oe   = ON;
-zid_io      = !tgtmode_R & !tgt_go_R & ziorq & ioaddr:'b'000xxxxx; /* Local I/O operation, ZID ONLY  */
+zid_io      = !tgtmode_R & /*!tgt_go_R & */ ziorq & ioaddr:'b'000xxxxx; /* Local I/O operation, ZID ONLY  */
 zid_io.oe   = ON;
 
 /** Target Mode and Single Operation (Mem or I/O RD/WR), and Bus Control */
 to_target     = tgt_now & ((zmreq & !zrfsh) # ziorq);
-tgt_go_R.ck   = zid_io & ioaddr:'b'xxx1000x;         /* 10: TARGET-GO        */
-tgt_go_R.d    = ON;
-tgt_go_R.ar   = tgtmode_R # lrst_R;
+/*tgt_go_R.ck   = zid_io & ioaddr:'b'xxx1100x;         /* 18: TARGET-GO        */
+/*tgt_go_R.d    = ON;                                  /*                      */
+/*tgt_go_R.ar   = tgtmode_R # lrst_R;                  /*                      */
 tgtmode_R.ck  = to_target;            /* The Operation Counter is done, enter Target Mode */
 tgtmode_R.d   = ON;
 tgtmode_R.ap  = tgt_only;             /* If Target Only, ALWAYS in Target Mode                    */
@@ -679,12 +678,6 @@ tcbus_fen   = !zback            /* Not during Z80 BusAck                        
               # zop_force);     /* or when forcing an operation.                            */
 
 
-/** Break Unit Operation Port Decode */
-ba_clk      = zid_io & ioaddr:'b'xxx1010x;         /* 14: BRK-ADDR CLK    */
-ba_clr      = zid_io & ioaddr:'b'xxx1011x;         /* 16: BRK-ADDR CLR    */
-baen_clk    = zid_io & ioaddr:'b'xxx1100x;         /* 18: BRK-ADDREN CLK  */
-baen_clr    = zid_io & ioaddr:'b'xxx1101x;         /* 1A: BRK-ADDREN CLR  */
-brkpc_rd    = zid_io & ioaddr:'b'xxx1110x & zrd;    /* 1C: BRK-INFO RD     */
 /** RP Module Decode */
 mod_sel     = sbc_io & ioaddr:'b'xxx1111x & (zwr # zrd);     /* 1E/1F: RP Mod CTRL/DATA */
 
@@ -705,18 +698,18 @@ b2ar_R.ar       = lrst_R;
 
 
 /** Board Control (06)
-/* SBC Bit - used for anything SBC code wants (b0) */
-sbc_use_R.d     = SBC_USE_B;
-sbc_use_R.ck    = CTRL1_WR;
-sbc_use_R.ar    = lrst_R;
-/* Break request (b1) */
-brk_req_R.d	    = BREAK_REQ_B;
-brk_req_R.ck	= CTRL1_WR;
-brk_req_R.ar	= zrst_R;
-/* RESET request (b2) */
+/* RESET request - Available to SBC (b0) */
 rst_req_R.d	= RESET_REQ_B;
 rst_req_R.ck	= CTRL1_WR;
 rst_req_R.ar	= lrst_R;
+/* Use Data on BRK-1 (b1) */
+b1ud_R.d     = SBC_USE_B;
+b1ud_R.ck    = ZIDC1_WR;
+b1ud_R.ar    = lrst_R;
+/* Use Data on BRK-2n (b2) */
+b2ud_R.d	    = BREAK_REQ_B;
+b2ud_R.ck	= ZIDC1_WR;
+b2ud_R.ar	= lrst_R;
 /* Sync-Only on Break Detected (b3) */
 sync_only_R.d   = SYNCONLY_B;
 sync_only_R.ck  = ZIDC1_WR;
@@ -760,30 +753,33 @@ rst38det_R.ap = OFF;
 
 
 /** Breakpoint Detection, PC Capture (Z-OPeration Force is in the Data Bus section) */
+b1_ddc      = !b1ud_R # brk_deq;
+
+b2_ddc      = !b2ud_R # brk_deq;
 
 b1_det      =  (!b1ar_R # brk1_a_eq)
              & (
                  (B1OP_IF & ZIF_1)              /* Data isn't checked for IF (it's too late) */
-               # (B1OP_MW & MEM_WR & brk_deq)
-               # (B1OP_MR & MEM_RD & brk_deq)
-               # (B1OP_AM & !mem_op_ & brk_deq)
-               # (B1OP_PW & !zm1 & ziorq & zwr & brk_deq)
-               # (B1OP_PR & !zm1 & ziorq & zrd & brk_deq)
-               # (B1OP_AP & !zm1 & ziorq & brk_deq)
+               # (B1OP_MW & MEM_WR & b1_ddc)
+               # (B1OP_MR & MEM_RD & b1_ddc)
+               # (B1OP_AM & !mem_op_ & b1_ddc)
+               # (B1OP_PW & !zm1 & ziorq & zwr & b1_ddc)
+               # (B1OP_PR & !zm1 & ziorq & zrd & b1_ddc)
+               # (B1OP_AP & !zm1 & ziorq & b1_ddc)
              );
 
 b2_det      =  (!b2ar_R # brkn_a_eq)
              & (
                  (B2OP_IF & ZIF_1)
-               # (B2OP_MW & MEM_WR)
-               # (B2OP_MR & MEM_RD)
-               # (B2OP_AM & !mem_op_)
-               # (B2OP_PW & !zm1 & ziorq & zwr)
-               # (B2OP_PR & !zm1 & ziorq & zrd)
-               # (B2OP_AP & !zm1 & ziorq)
+               # (B2OP_MW & MEM_WR & b2_ddc)
+               # (B2OP_MR & MEM_RD & b2_ddc)
+               # (B2OP_AM & !mem_op_ & b2_ddc)
+               # (B2OP_PW & !zm1 & ziorq & zwr & b2_ddc)
+               # (B2OP_PR & !zm1 & ziorq & zrd & b2_ddc)
+               # (B2OP_AP & !zm1 & ziorq & b2_ddc)
              );
 
-sbrk_dtctd_R.ck  = (brk_req_R # (softbrk_en_R & rst38det_R));
+sbrk_dtctd_R.ck  = (b2ud_R # (softbrk_en_R & rst38det_R));
 sbrk_dtctd_R.d   = ON;
 sbrk_dtctd_R.ar  = zrst_clk  /* Clear the detected flag after Special Reset is generated,       */
                   # (sbrk_dtctd_R & sync_only_R & zrfsh); /* or the next refresh for SYNC ONLY   */
@@ -810,20 +806,15 @@ sync            = hbrk_dtctd_R # sbrk_dtctd_R;      /* SYNC signal of board     
 pc_latch   = zm1 & tgtmode_R & !dbi_if2_R;
 
 
-/** Data Bus takes values from multiple things, so they all need to be here */
-dbus_oe     = (mmu_io & zrd)         /* Enable data bits onto the Data Bus for any of those    */
-             # (zop_force)
-             # (brkpc_rd)
-             # (CTRL1_RD)
-            ;
-
 /*  MMU Register Read, Z80 NOP Force, Break2-n Detect read, PC Save SR-bit read */
 databus     =  ((mmu_io & zrd & [addr15..14]:0000) & maprdAdata)   /* Reading the Memory Map Reg      */
              # ((mmu_io & zrd & [addr15..14]:4000) & maprdBdata)
              # ((mmu_io & zrd & [addr15..14]:8000) & maprdCdata)
              # ((mmu_io & zrd & [addr15..14]:C000) & maprdDdata)
              # (zop_force & ZFOP)               /* Forced OP during Special Reset               */
-             # (brkpc_rd & brk_pc_info)         /* Read of the break info (inc PC-Save bit D0)  */
              # (CTRL1_RD & ctrl1_info)          /* Read of our Control bits                     */
             ;
-databus.oe  = dbus_oe;                /* Enable data bits onto the Data Bus for any of those    */
+databus.oe  = (mmu_io & zrd)
+             # (zop_force)
+             # (CTRL1_RD)
+            ;                           /* Enable data bits onto the Data Bus for any of those    */
