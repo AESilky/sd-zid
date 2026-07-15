@@ -93,7 +93,9 @@ b1_ah_eq    = !b1_ah_en
               & !(addr9 $ b1_addr_h1)
               & !(addr8 $ b1_addr_h0)
              );
-brk1_aeq    = b1_al_en & b1_ah_eq
+brk1_aeq    = !b1_al_en
+             # (
+                b1_ah_eq
                 & !(addr7 $ b1_addr_l7)
                 & !(addr6 $ b1_addr_l6)
                 & !(addr5 $ b1_addr_l5)
@@ -102,6 +104,7 @@ brk1_aeq    = b1_al_en & b1_ah_eq
                 & !(addr2 $ b1_addr_l2)
                 & !(addr1 $ b1_addr_l1)
                 & !(addr0 $ b1_addr_l0)
+             )
             ;
 
 
@@ -151,14 +154,15 @@ b2_ah_eq    = !b2_ah_en
               & !(addr9 $ b2_addr_h1)
               & !(addr8 $ b2_addr_h0)
              );
-brk2_aeq    = b2_al_en & b2_ah_eq 
-                & !(addr7 $ b2_addr_l7)
-                & !(addr6 $ b2_addr_l6)
-                & !(addr5 $ b2_addr_l5)
-                & !(addr4 $ b2_addr_l4)
-                & !(addr3 $ b2_addr_l3)
-                & !(addr2 $ b2_addr_l2)
-                & !(addr1 $ b2_addr_l1)
-                & !(addr0 $ b2_addr_l0)
-            ;
+brk2_aeq    = !b2_al_en
+             # ( b2_ah_eq 
+              & !(addr7 $ b2_addr_l7)
+              & !(addr6 $ b2_addr_l6)
+              & !(addr5 $ b2_addr_l5)
+              & !(addr4 $ b2_addr_l4)
+              & !(addr3 $ b2_addr_l3)
+              & !(addr2 $ b2_addr_l2)
+              & !(addr1 $ b2_addr_l1)
+              & !(addr0 $ b2_addr_l0)
+             );
 
