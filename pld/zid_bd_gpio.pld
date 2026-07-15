@@ -22,6 +22,7 @@ Device   f1504isptqfp44; /* ATF1504AS 44TQFP ISP/JTAG */
 Property Atmel {security = OFF};
 Property Atmel {power_reset = ON};
 Property Atmel {preassign = KEEP};   /* OFF, TRY, KEEP */
+Property Atmel {xor_synthesis = ON};
 Property Atmel {TDI_pullup = ON};
 Property Atmel {TMS_pullup = ON};
 
@@ -43,17 +44,12 @@ PIN 37 = mem_op;            /* Clock used for TGT_GO Counter    (GCLK1) */
 
 /************************************************************************/
 /* Inputs                                                               */
-/* (pins required externally will be assigned. Pins not required will   */
-/* be left unassigned. Not making assignments gives the Fitter more     */
-/* flexibility)                                                         */
 /************************************************************************/
 
 PIN [14,15,12,13] = [addr3..0]; /* Address Bus (that we require)        */
-PROPERTY Atmel {pin_keep = on addr3,addr2,addr1,addr0};
 PIN 10 = sbc_io;            /* True when I/O Op is for the SBC          */
 PIN 11 = zid_io;
 PIN 31 = !tgtmode;          /* Target Mode clears the TGT_GO Counter    */
-PIN 33 = tgt_go;            /* Enable the TGT_GO Count                  */ 
 
 
 /************************************************************************/
@@ -67,9 +63,6 @@ PIN [28,27,34,30,2,43,42,44] = [gp7..0]; /* GP Input[7..4] Output[3..0] */
 
 /************************************************************************/
 /* Outputs                                                              */
-/* (pins required externally will be assigned. Pins not required will   */
-/* be left unassigned. Not making assignments gives the Fitter more     */
-/* flexibility)                                                         */
 /************************************************************************/
 
 PIN  8 = brk_deq;           /* Break Data Equal (or Don't-Care)         */
@@ -79,6 +72,7 @@ PIN 19 = tgt_now;           /* TGT_GO Counter has reached terminal count*/
 /* Internal Nodes, Registers and Intermediate Variable Definitions      */
 /************************************************************************/
 
+PINNODE = tgt_go_R;         /* TGT_GO register                          */
 PINNODE = [tgc3..0];        /* TGT_GO Counter Bit 3..0                  */
 PINNODE = tgc_en;           /* TGT_GO Counter Enable                    */
 PINNODE = [bd7..0];         /* Breakpoint Data desired                  */
@@ -161,7 +155,11 @@ brk_deq  = (
 
 
 /** Target Go Counter               */
-tgc_en      = tgt_go & !tgt_now;
+tgt_go_R.ck   = TGTGO_WR;               /* 07: TARGET-GO        */
+tgt_go_R.d    = ON;                     /*                      */
+tgt_go_R.ar   = tgtmode # lrst;         /*                      */
+
+tgc_en      = tgt_go_R & !tgt_now;
 /* */
 tgc0.t      = ON;
 tgc1.t      = tgc0;

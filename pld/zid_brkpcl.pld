@@ -67,8 +67,8 @@ PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
 /* Outputs                                                              */
 /************************************************************************/
 
-PIN  8 = b1_aeq;         /* Break-1 Address Equal                    */
-PIN  7 = bn_aeq;         /* Break-n Address Equal (other than BRK-1) */
+PIN  8 = b1_aeq;         /* Break-1 Address Equal                       */
+PIN  7 = bn_aeq;         /* Break-n Address Equal (other than BRK-1)    */
 
 
 /************************************************************************/
