@@ -325,7 +325,7 @@ PIN 68  = !zint;        /* INT to Z80 */
 PIN 21  = rfmr_;        /* RFSH gated MREQ (for the target during debug)(low=true) */
 /* */
 PIN 84  = !tgtmode_R;   /* Running target (not debug), used to reset OP counter */
-PIN 16  = mem_op_;      /* Memory Op (excluding zrfsh), used to clock OP counter (45)*/
+PIN 16  = mem_op;      /* Memory Op (excluding zrfsh), used to clock OP counter (45)*/
 /* */
 PIN 20  = !pc_latch;    /* Latch enable for the external PC Save register   */
 PIN 67  = sync;         /* Break condition detected - SYNC signal on board  */
@@ -570,8 +570,8 @@ zbreq     = tbreq & tgtmode_R & !sngl_op_R & !sngl_step_R; /* BUSREQ only when i
 
 
 /** Memory Operation, excluding Refresh */
-mem_op_     = !(zmreq & (zrd # zwr));   /* Used to clock Operation Counter  */
-mem_op_.oe  = ON;
+mem_op     = zmreq & (zrd # zwr);   /* Used to clock Operation Counter  */
+mem_op.oe  = ON;
 
 /** MMU Register Init/Write */
 mmu_io          = (sbc_io & ioaddr:'b'xxx1011x);  /* n016: Top 2 bits of 16-bit address select register */
@@ -756,7 +756,7 @@ b1_det      =  (!b1ar_R # b1_aeq)
                  (B1OP_IF & ZIF_1)              /* Data isn't checked for IF (it's too late) */
                # (B1OP_MW & MEM_WR & b1_ddc)
                # (B1OP_MR & MEM_RD & b1_ddc)
-               # (B1OP_AM & !mem_op_ & b1_ddc)
+               # (B1OP_AM & !mem_op & b1_ddc)
                # (B1OP_PW & !zm1 & ziorq & zwr & b1_ddc)
                # (B1OP_PR & !zm1 & ziorq & zrd & b1_ddc)
                # (B1OP_AP & !zm1 & ziorq & b1_ddc)
@@ -767,7 +767,7 @@ b2_det      =  (!b2ar_R # bn_aeq)
                  (B2OP_IF & ZIF_1)
                # (B2OP_MW & MEM_WR & b2_ddc)
                # (B2OP_MR & MEM_RD & b2_ddc)
-               # (B2OP_AM & !mem_op_ & b2_ddc)
+               # (B2OP_AM & !mem_op & b2_ddc)
                # (B2OP_PW & !zm1 & ziorq & zwr & b2_ddc)
                # (B2OP_PR & !zm1 & ziorq & zrd & b2_ddc)
                # (B2OP_AP & !zm1 & ziorq & b2_ddc)
