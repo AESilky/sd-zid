@@ -473,6 +473,36 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
+      },
+      {
+        "clearance": 0.2,
+        "name": "Power",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.3,
+        "via_diameter": 0.65,
+        "via_drill": 0.4
+      },
+      {
+        "clearance": 0.25,
+        "name": "SHIELD",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.8,
+        "via_diameter": 1.25,
+        "via_drill": 0.8
+      },
+      {
+        "clearance": 0.2,
+        "name": "VBUS",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.4,
+        "via_diameter": 0.65,
+        "via_drill": 0.4
       }
     ],
     "meta": {
@@ -480,7 +510,28 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "Power",
+        "pattern": "+*V"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "GND"
+      },
+      {
+        "netclass": "SHIELD",
+        "pattern": "*(*SHLD)"
+      },
+      {
+        "netclass": "SHIELD",
+        "pattern": "*SHIELD*"
+      },
+      {
+        "netclass": "VBUS",
+        "pattern": "*VBUS*"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
@@ -597,7 +648,7 @@
       "version": 1
     },
     "net_format_name": "",
-    "page_layout_descr_file": "kicad-embed://AES_1275_1650.kicad_wks",
+    "page_layout_descr_file": "kicad-embed://AES_1445_1870-1_7.kicad_wks",
     "plot_directory": "schm-plots/",
     "space_save_all_events": true,
     "spice_current_sheet_as_root": false,

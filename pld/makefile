@@ -6,12 +6,6 @@
 
 PLD_MAIN			:= zid_main
 PLD_BRKPCL			:= zid_brkpcl
-PLD_BRK2X			:= zid_brk2x_ctrl
-INC_LOGIC_BA		:= zid_logic_ba.pld
-INC_LOGIC_PCLSR		:= zid_logic_pclsr.pld
-PLD_BA_PCH			:= zid_ba_pch
-PLD_BA_PCL			:= zid_ba_pcl
-PLD_BA				:= zid_ba
 PLD_BDATA_GPIO 		:= zid_bd_gpio
 
 JEDECS		:= $(PLD_BRKPCL).jed $(PLD_BDATA_GPIO).jed $(PLD_MAIN).jed
