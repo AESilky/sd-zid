@@ -57,7 +57,6 @@ PIN 31 = !tgtmode;          /* Target Mode clears the TGT_GO Counter    */
 /************************************************************************/
 
 PIN [5,3,23,6,22,25,20,21] = [d7..0];    /* Data I/O */
-PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
 PIN [28,27,34,30,2,43,42,44] = [gp7..0]; /* GP Input[7..4] Output[3..0] */
 
 
