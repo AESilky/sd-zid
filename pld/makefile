@@ -9,7 +9,6 @@ PLD_BRKPCL			:= zid_brkpcl
 PLD_BDATA_GPIO 		:= zid_bd_gpio
 
 JEDECS		:= $(PLD_BRKPCL).jed $(PLD_BDATA_GPIO).jed $(PLD_MAIN).jed
-			# $(PLD_BA).jed $(PLD_BA_PCH).jed $(PLD_BA_PCL).jed $(PLD_BDATA_GPIO).jed $(PLD_MAIN).jed
 
 CUPL		:= cupl.exe
 FIT1502		:= fit1502.exe
@@ -42,24 +41,6 @@ $(PLD_BRKPCL).jed: $(PLD_BRKPCL).tt2 makefile
 
 $(PLD_BDATA_GPIO).jed: $(PLD_BDATA_GPIO).tt2 makefile
 	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
-
-$(PLD_BA).jed: $(PLD_BA).tt2 makefile $(INC_LOGIC_BA)
-	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
-
-$(PLD_BA_PCH).jed: $(PLD_BA_PCH).tt2 $(INC_LOGIC_BA) $(INC_LOGIC_PCLSR) makefile
-	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
-
-$(PLD_BA_PCL).jed: $(PLD_BA_PCL).tt2 $(INC_LOGIC_BA) $(INC_LOGIC_PCLSR) makefile
-	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
-
-# The BRK2X is no longer used on the board
-$(PLD_BRK2X).jed: $(PLD_BRK2X).pld
-	$(CUPL) $(CUPLOPTS) $<
-
-# Test for Microchip Issue
-ATF1504FIT_TEST.jed: ATF1504FIT_TEST.tt2 makefile
-	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
-
 
 
 clean:
