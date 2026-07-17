@@ -25,7 +25,7 @@ Device   f1508isptqfp100; /* ATF1508AS 100TQFP ISP/JTAG */
 /* Configure cupl */
 Property Atmel {security = OFF};
 Property Atmel {power_reset = ON};
-Property Atmel {preassign = TRY};   /* OFF, TRY, KEEP */
+Property Atmel {preassign = KEEP};   /* OFF, TRY, KEEP */
 Property Atmel {xor_synthesis = ON};
 Property Atmel {TDI_pullup = ON};
 Property Atmel {TMS_pullup = ON};
@@ -39,7 +39,7 @@ $DEFINE OFF 'b'0
 /* Special Inputs                                                       */
 /************************************************************************/
 
-PIN  87 = !pc_latch;        /* PC Address Latch                (GCLK2)  */              
+PIN 87 = !pc_latch;        /* PC Address Latch                (GCLK2)  */              
 PIN 88 = !rd;
 PIN 90 = !wr;
 PIN 89 = !lrst;             /* Local reset (if needed)                  */
@@ -50,24 +50,21 @@ PIN 89 = !lrst;             /* Local reset (if needed)                  */
 /* Inputs                                                               */
 /************************************************************************/
 
-PIN [46,45,44,42,41,40,28,47,53,52,49,48,5,6,93,94] = [addr15..0]; /* Address Bus  */
-PIN 68 = zid_io;            /* True when I/O Op is for the ZID (only)   */
-
+PIN [46,49,13,47,98,57,10,60,99,2,1,100,9,6,7,96] = [addr15..0]; /* Address Bus  */
+PIN 28 = zid_io;            /* True when I/O Op is for the ZID (only)   */
 
 /************************************************************************/
 /* Input/Output                                                         */
 /************************************************************************/
 
-PIN [92,96,98,97,99,1,100,2] = [d7..0];    /* Data I/O */
-
+PIN [16,17,19,20,21,22,23,24] = [d7..0];    /* Data I/O */
 
 /************************************************************************/
 /* Outputs                                                              */
 /************************************************************************/
 
-PIN  8 = b1_aeq;         /* Break-1 Address Equal                       */
-PIN  7 = bn_aeq;         /* Break-n Address Equal (other than BRK-1)    */
-
+PIN 93 = b1_aeq;         /* Break-1 Address Equal                       */
+PIN 92 = bn_aeq;         /* Break-n Address Equal (other than BRK-1)    */
 
 /************************************************************************/
 /* Internal Nodes, Registers and Intermediate Variable Definitions      */
