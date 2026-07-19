@@ -4,9 +4,9 @@ PARTNO   3;
 DATE     7/14/2026;
 REVISION 01;
 DESIGNER AESilky;
-COMPANY  None;
-ASSEMBLY None;
-LOCATION ;
+COMPANY  SilkyDESIGN;
+ASSEMBLY ZID;
+LOCATION U22;
 Device   f1504isptqfp44; /* ATF1504AS 44TQFP ISP/JTAG */
 
 /****************************************************************************

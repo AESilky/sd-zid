@@ -4,9 +4,9 @@ PARTNO   1;
 DATE     7/12/2026;
 REVISION 01;
 DESIGNER AESilky;
-COMPANY  None;
-ASSEMBLY None;
-LOCATION ;
+COMPANY  SilkyDESIGN;
+ASSEMBLY ZID;
+LOCATION U18;
 Device   f1508isptqfp100; /* ATF1508AS 100TQFP ISP/JTAG */
 
 /* Configure cupl */
@@ -271,6 +271,7 @@ PIN 13 = b1_aeq;        /* Address match for breakpoint 1               */
 PIN 14 = brk_deq;       /*  Data equal (input from 1504)                */
 PIN 12 = bn_aeq;        /* Breakpoint 2..n Address match                */
 PIN 78 = !extbrkrq;     /* External input to request Break              */
+PIN 30 = pcrd_din;        /* PC Latched data bit in                     */
 
 /************************************************************************/
 /* Input/Output                                                         */
@@ -484,8 +485,8 @@ $DEFINE B2OP_PW     [b2op2..0]:5
 $DEFINE B2OP_PR     [b2op2..0]:6
 $DEFINE B2OP_AP     [b2op2..0]:7
 /* Status/data byte for: Special Reset From, HardBRK, SoftBRK, SS, or ATTN */
-FIELD brk_pc_info   = [zid_init_R,sbcmode,tgtmode_R,attn,sr_frmhbrk_R,sr_frmsbrk_R];
-
+FIELD brk_pc_info   = [zid_init_R,sbcmode,tgtmode_R,attn,sr_frmhbrk_R,sr_frmsbrk_R,'b'0,pcrd_din];
+$DEFINE BRKPC_RD    (zid_io & ioaddr:'b'xxx1011x & zrd) /* 16: Break Reason, Saved PC bit RD */
 
 /** Data byte for our control bits */
 FIELD ctrl1_info    = [zid_init_R,sngl_step_R,sngl_op_R,softbrk_en_R,sync_only_R,b2ud_R,b1ud_R,rst_req_R];
@@ -807,9 +808,11 @@ databus     =  ((mmu_io & zrd & [addr15..14]:0000) & maprdAdata)   /* Reading th
              # ((mmu_io & zrd & [addr15..14]:8000) & maprdCdata)
              # ((mmu_io & zrd & [addr15..14]:C000) & maprdDdata)
              # (zop_force & ZFOP)               /* Forced OP during Special Reset               */
+             # (BRKPC_RD & brk_pc_info)                /* Break/ATTN information                       */
              # (CTRL1_RD & ctrl1_info)          /* Read of our Control bits                     */
             ;
 databus.oe  = (mmu_io & zrd)
              # (zop_force)
+             # (BRKPC_RD)
              # (CTRL1_RD)
             ;                           /* Enable data bits onto the Data Bus for any of those    */

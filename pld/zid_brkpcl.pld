@@ -4,9 +4,9 @@ PARTNO   2;
 DATE     7/14/2026;
 REVISION 01;
 DESIGNER AESilky;
-COMPANY  None;
-ASSEMBLY None;
-LOCATION ;
+COMPANY  SilkyDESIGN;
+ASSEMBLY ZID;
+LOCATION U15;
 Device   f1508isptqfp100; /* ATF1508AS 100TQFP ISP/JTAG */
 
 /****************************************************************************
@@ -162,7 +162,7 @@ brkaen.ck      = BRKAEN_WR;
 
 /** Break Address Compare */
 /* High Address is equal if disabled */
-/* BRK1 */
+/* BRK1 - Allows checking the High Address only, to break on a Page RD/WR */
 b1aheq      = !b1ahen
              # (
                 !(addr15 $ b1ah7)
@@ -184,7 +184,8 @@ b1aleq      = b1alen
               & !(addr1 $ b1al1)
               & !(addr0 $ b1al0)
              ;
-b1_aeq       = b1aheq & b1aleq;
+b1_aeq       = (b1aheq & b1aleq)
+              # (!b1alen & b1ahen & b1aheq);
 
 /* BRK2 */
 b2aheq      = !b2ahen

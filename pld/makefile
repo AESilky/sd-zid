@@ -4,11 +4,14 @@
 #
 .PHONY: all clean
 
-PLD_MAIN			:= zid_main
-PLD_BRKPCL			:= zid_brkpcl
-PLD_BDATA_GPIO 		:= zid_bd_gpio
+ZID_MAIN			:= zid_main
+ZID_BRKPCL			:= zid_brkpcl
+ZID_BDATA_GPIO 		:= zid_bd_gpio
 
-JEDECS		:= $(PLD_BRKPCL).jed $(PLD_BDATA_GPIO).jed $(PLD_MAIN).jed
+BPEXP_DISPKBD		:= dispkbd
+
+
+JEDECS		:= $(ZID_BRKPCL).jed $(ZID_BDATA_GPIO).jed $(ZID_MAIN).jed $(BPEXP_DISPKBD).jed
 
 CUPL		:= cupl.exe
 FIT1502		:= fit1502.exe
@@ -33,15 +36,17 @@ FITOPTS_TQFP100	:= -device TQFP100
 
 all:	$(JEDECS)
 
-$(PLD_MAIN).jed: $(PLD_MAIN).tt2 makefile
+$(ZID_MAIN).jed: $(ZID_MAIN).tt2 makefile
 	$(FIT1508) -i $< $(FITOPTS_1508) $(FITOPTS_TQFP100) $(FITOPTS_CMN)
 
-$(PLD_BRKPCL).jed: $(PLD_BRKPCL).tt2 makefile
+$(ZID_BRKPCL).jed: $(ZID_BRKPCL).tt2 makefile
 	$(FIT1508) -i $< $(FITOPTS_1508) $(FITOPTS_TQFP100) $(FITOPTS_CMN)
 
-$(PLD_BDATA_GPIO).jed: $(PLD_BDATA_GPIO).tt2 makefile
+$(ZID_BDATA_GPIO).jed: $(ZID_BDATA_GPIO).tt2 makefile
 	$(FIT1504) -i $< $(FITOPTS_1504) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
 
+$(BPEXP_DISPKBD).jed: $(BPEXP_DISPKBD).tt2 makefile
+	$(FIT1502) -i $< $(FITOPTS_1502) $(FITOPTS_TQFP44) $(FITOPTS_CMN)
 
 clean:
 	rm -f *.abs *.doc *.fit *.io *.jed *.log *.lst *.oed *.pin *.pla *.sim *.tt2 *.tt3
