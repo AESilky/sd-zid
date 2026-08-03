@@ -611,12 +611,258 @@
           "label": "Datasheet",
           "name": "Datasheet",
           "show": true
+        },
+        {
+          "group_by": false,
+          "label": "Addr1",
+          "name": "Addr1",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Addr2",
+          "name": "Addr2",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Alternate",
+          "name": "Alternate",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "CPU",
+          "name": "CPU",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Desc",
+          "name": "Desc",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Freq",
+          "name": "Freq",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Func2",
+          "name": "Func2",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Function",
+          "name": "Function",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "ISP_CN",
+          "name": "ISP_CN",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Ind",
+          "name": "Ind",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Note",
+          "name": "Note",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "O1324",
+          "name": "O1324",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "O3546",
+          "name": "O3546",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "OP-A",
+          "name": "OP-A",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "OP-B",
+          "name": "OP-B",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "OP1-2",
+          "name": "OP1-2",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "OP2-3",
+          "name": "OP2-3",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "OPT-A",
+          "name": "OPT-A",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "OPT-B",
+          "name": "OPT-B",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P1",
+          "name": "P1",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P1B",
+          "name": "P1B",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P2",
+          "name": "P2",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P2B",
+          "name": "P2B",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P3",
+          "name": "P3",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P4",
+          "name": "P4",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P5",
+          "name": "P5",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P6",
+          "name": "P6",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P7",
+          "name": "P7",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "P8",
+          "name": "P8",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "POS4",
+          "name": "POS4",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Part",
+          "name": "Part",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Region",
+          "name": "Region",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "S1",
+          "name": "S1",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "S2",
+          "name": "S2",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Sim.Pins",
+          "name": "Sim.Pins",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Spec",
+          "name": "Spec",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "addr-1",
+          "name": "addr-1",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "addr-2",
+          "name": "addr-2",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Addr",
+          "name": "Addr",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Description",
+          "name": "Description",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "#",
+          "name": "${ITEM_NUMBER}",
+          "show": false
         }
       ],
       "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": true,
-      "name": "Default Editing",
+      "name": "",
       "sort_asc": true,
       "sort_field": "Reference"
     },
