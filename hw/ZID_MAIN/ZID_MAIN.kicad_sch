@@ -21337,6 +21337,10 @@
 		(uuid "cb8019a2-ac03-43d8-a73b-3c1a834dcc50")
 	)
 	(no_connect
+		(at 27.94 162.56)
+		(uuid "cd603c46-f712-4c62-b1d6-fa237909f7f1")
+	)
+	(no_connect
 		(at 158.75 262.89)
 		(uuid "d82143bb-bf12-4a9d-a31f-993a54ea9189")
 	)
@@ -26345,16 +26349,6 @@
 			(type default)
 		)
 		(uuid "434171d5-e9ee-44be-a132-0ad1d888789b")
-	)
-	(wire
-		(pts
-			(xy 13.97 162.56) (xy 27.94 162.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4358eae0-7e06-499f-a47b-43adde73fd25")
 	)
 	(wire
 		(pts
@@ -41141,16 +41135,6 @@
 		)
 		(uuid "d751f533-f10f-43c5-8639-ecb313611df9")
 	)
-	(label "IOE1"
-		(at 15.24 162.56 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d7f3876c-0edd-43e8-bcb8-9ae33f935e7c")
-	)
 	(label "ZA3"
 		(at 132.08 78.74 180)
 		(effects
@@ -45968,7 +45952,7 @@
 				(hide yes)
 			)
 		)
-		(property "OP-A" "P-WAIT"
+		(property "OP-A" "YES"
 			(at 347.98 243.84 0)
 			(effects
 				(font
@@ -55168,7 +55152,7 @@
 				(hide yes)
 			)
 		)
-		(property "Function" "DB RST"
+		(property "Function" "RST(ZDB)"
 			(at 61.722 121.666 0)
 			(effects
 				(font
@@ -55178,7 +55162,7 @@
 				(hide yes)
 			)
 		)
-		(property "OP1-2" "S"
+		(property "OP1-2" "STD"
 			(at 65.024 124.46 0)
 			(effects
 				(font
@@ -55187,7 +55171,7 @@
 				(justify left)
 			)
 		)
-		(property "OP2-3" "D"
+		(property "OP2-3" "DZ"
 			(at 65.024 119.126 0)
 			(effects
 				(font
@@ -58535,80 +58519,6 @@
 			(project "ZID_MAIN"
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
 					(reference "OP3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 13.97 162.56 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp yes)
-		(uuid "a1078b27-843a-4c13-9947-3a6300b08f80")
-		(property "Reference" "TP2"
-			(at 10.668 160.528 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TestPoint"
-			(at 10.668 160.02 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Footprint" "TestPoint:TestPoint_THTPad_D1.0mm_Drill0.5mm"
-			(at 13.97 157.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 13.97 157.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "test point"
-			(at 13.97 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Function" "IO1"
-			(at 13.97 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "b7888bdc-1015-4acb-b8ef-d3a142f8ef09")
-		)
-		(instances
-			(project "ZID_MAIN"
-				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
-					(reference "TP2")
 					(unit 1)
 				)
 			)
