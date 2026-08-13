@@ -20797,7 +20797,7 @@
 		(uuid "d908cc19-d025-430d-be3f-1875b3ae582a")
 	)
 	(junction
-		(at 241.3 327.66)
+		(at 396.24 245.11)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d9a82175-bbaf-4490-bbcb-78fe595c890f")
@@ -23522,7 +23522,7 @@
 	)
 	(wire
 		(pts
-			(xy 241.3 327.66) (xy 241.3 330.2)
+			(xy 396.24 245.11) (xy 396.24 247.65)
 		)
 		(stroke
 			(width 0)
@@ -24382,7 +24382,7 @@
 	)
 	(wire
 		(pts
-			(xy 219.71 325.12) (xy 228.6 325.12)
+			(xy 374.65 242.57) (xy 383.54 242.57)
 		)
 		(stroke
 			(width 0)
@@ -25742,7 +25742,7 @@
 	)
 	(wire
 		(pts
-			(xy 238.76 313.69) (xy 241.3 313.69)
+			(xy 393.7 231.14) (xy 396.24 231.14)
 		)
 		(stroke
 			(width 0)
@@ -28142,7 +28142,7 @@
 	)
 	(wire
 		(pts
-			(xy 219.71 311.15) (xy 228.6 311.15)
+			(xy 374.65 228.6) (xy 383.54 228.6)
 		)
 		(stroke
 			(width 0)
@@ -30183,7 +30183,7 @@
 	)
 	(wire
 		(pts
-			(xy 241.3 313.69) (xy 241.3 327.66)
+			(xy 396.24 231.14) (xy 396.24 245.11)
 		)
 		(stroke
 			(width 0)
@@ -31983,7 +31983,7 @@
 	)
 	(wire
 		(pts
-			(xy 238.76 327.66) (xy 241.3 327.66)
+			(xy 393.7 245.11) (xy 396.24 245.11)
 		)
 		(stroke
 			(width 0)
@@ -33304,7 +33304,7 @@
 	)
 	(wire
 		(pts
-			(xy 219.71 316.23) (xy 228.6 316.23)
+			(xy 374.65 233.68) (xy 383.54 233.68)
 		)
 		(stroke
 			(width 0)
@@ -36334,7 +36334,7 @@
 	)
 	(wire
 		(pts
-			(xy 219.71 330.2) (xy 228.6 330.2)
+			(xy 374.65 247.65) (xy 383.54 247.65)
 		)
 		(stroke
 			(width 0)
@@ -37113,7 +37113,7 @@
 		(uuid "1897a8bc-3d85-4a51-85c3-fc70df898e8c")
 	)
 	(label "ZRFSH-"
-		(at 219.71 330.2 0)
+		(at 374.65 247.65 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -37805,7 +37805,7 @@
 		(uuid "3672daee-928b-4646-83a3-4935e1546fd0")
 	)
 	(label "CLK"
-		(at 219.71 311.15 0)
+		(at 374.65 228.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -41266,7 +41266,7 @@
 		(uuid "e04b6c94-7edf-4e97-8786-4a6b0597e509")
 	)
 	(label "ZBACK-"
-		(at 219.71 316.23 0)
+		(at 374.65 233.68 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -41686,7 +41686,7 @@
 		(uuid "f87322df-8b5e-4ff5-a6ce-47d9cba8527f")
 	)
 	(label "TRST-"
-		(at 219.71 325.12 0)
+		(at 374.65 242.57 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -52897,7 +52897,7 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:ESDA5V3L")
-		(at 233.68 327.66 90)
+		(at 388.62 245.11 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -52906,7 +52906,7 @@
 		(dnp no)
 		(uuid "6c413749-7cd8-4e68-8cd3-85255d0a801a")
 		(property "Reference" "D4"
-			(at 233.68 322.072 90)
+			(at 388.62 239.522 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -52914,7 +52914,7 @@
 			)
 		)
 		(property "Value" "PESD5V0L2U"
-			(at 233.68 334.01 90)
+			(at 388.62 251.46 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -52922,7 +52922,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
-			(at 243.84 312.42 0)
+			(at 398.78 229.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -52932,7 +52932,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.st.com/resource/en/datasheet/esdal.pdf"
-			(at 248.92 327.66 0)
+			(at 403.86 245.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -52941,7 +52941,7 @@
 			)
 		)
 		(property "Description" "TVS Diode Array, 5.5V Standoff, 2 Channels, SOT23"
-			(at 246.38 327.66 0)
+			(at 401.32 245.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54044,7 +54044,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 241.3 330.2 0)
+		(at 396.24 247.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -54052,7 +54052,7 @@
 		(dnp no)
 		(uuid "71f0a0ee-4ea6-4541-88ac-92676a856602")
 		(property "Reference" "#PWR0101"
-			(at 241.3 336.55 0)
+			(at 396.24 254 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54061,7 +54061,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 243.84 332.994 0)
+			(at 398.78 250.444 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54070,7 +54070,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 241.3 330.2 0)
+			(at 396.24 247.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54079,7 +54079,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 241.3 330.2 0)
+			(at 396.24 247.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54088,7 +54088,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 241.3 330.2 0)
+			(at 396.24 247.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54550,7 +54550,7 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:ESDA5V3L")
-		(at 233.68 313.69 90)
+		(at 388.62 231.14 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -54559,7 +54559,7 @@
 		(dnp no)
 		(uuid "7581ce71-2224-48ba-bde4-5683eb77e7ea")
 		(property "Reference" "D3"
-			(at 233.68 307.848 90)
+			(at 388.62 225.298 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54567,7 +54567,7 @@
 			)
 		)
 		(property "Value" "PESD5V0L2U"
-			(at 233.68 320.04 90)
+			(at 388.62 237.49 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54575,7 +54575,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
-			(at 243.84 298.45 0)
+			(at 398.78 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54585,7 +54585,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.st.com/resource/en/datasheet/esdal.pdf"
-			(at 248.92 313.69 0)
+			(at 403.86 231.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -54594,7 +54594,7 @@
 			)
 		)
 		(property "Description" "TVS Diode Array, 5.5V Standoff, 2 Channels, SOT23"
-			(at 246.38 313.69 0)
+			(at 401.32 231.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -65735,7 +65735,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_THTPad_D1.0mm_Drill0.5mm"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
 			(at 374.65 256.54 0)
 			(effects
 				(font
