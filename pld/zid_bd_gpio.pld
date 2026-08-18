@@ -23,8 +23,8 @@ Property Atmel {security = OFF};
 Property Atmel {power_reset = ON};
 Property Atmel {preassign = KEEP};   /* OFF, TRY, KEEP */
 Property Atmel {xor_synthesis = ON};
-Property Atmel {TDI_pullup = ON};
-Property Atmel {TMS_pullup = ON};
+Property Atmel {TDI_pullup = OFF};
+Property Atmel {TMS_pullup = OFF};
 
 /* Convenience Names */
 $DEFINE ON  'b'1

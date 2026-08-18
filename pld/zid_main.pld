@@ -247,9 +247,7 @@ PIN [94,98] = [addr15..14]; /* Address inputs                            */
 PIN [75,65,64,99,100,1,2] = [addr7..1];     /* addr0 is not used        */
 PIN 90 = !zm1;
 PIN  6 = !zrd;
-PROPERTY Atmel {pin_keep = on zrd};
 PIN 25 = !zwr;
-PROPERTY Atmel {pin_keep = on zwr};
 PIN 63 = !ziorq;
 PROPERTY Atmel {pin_keep = on ziorq};
 PIN 23 = !zmreq;
@@ -278,7 +276,6 @@ PIN 30 = pcrd_din;        /* PC Latched data bit in                     */
 /************************************************************************/
 
 PIN [97,7,9,8,96,93,92,5] = [d7..0];   /* Data I/O */
-PROPERTY Atmel {pin_keep = on d7,d6,d5,d4,d3,d2,d1,d0};
 
 
 /************************************************************************/
