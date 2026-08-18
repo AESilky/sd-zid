@@ -118,6 +118,7 @@
             "DCRSTEXEC",
             "DCTGTGO",
             "Ddata",
+            "dispkbd",
             "dlatch",
             "dmask",
             "DMBRKHIT",

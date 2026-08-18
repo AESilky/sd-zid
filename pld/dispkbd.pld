@@ -1,0 +1,178 @@
+Name            dispkbd;
+Partno          1;
+Revision        01;
+Date            7/17/2026;
+Designer        AESilky;
+Company         SilkyDESIGN;
+Assembly        EXP-BP;
+Location        U?;
+Device          f1502isptqfp44; /* ATF1502AS 100TQFP ISP/JTAG */
+
+/****************************************************************************
+ *
+ * Display and Keyboard I/O Decode and Keyboard Data Input.
+ *
+ ****************************************************************************
+ */
+
+/* Configure cupl */
+Property Atmel {security = OFF};
+Property Atmel {power_reset = ON};
+Property Atmel {preassign = KEEP};   /* OFF, TRY, KEEP */
+Property Atmel {xor_synthesis = ON};
+Property Atmel {TDI_pullup = ON};
+Property Atmel {TMS_pullup = ON};
+
+/* Convenience Names */
+$DEFINE ON  'b'1
+$DEFINE OFF 'b'0
+
+
+/************************************************************************/
+/* Special Inputs                                                       */
+/************************************************************************/
+
+PIN 39 = !brst;
+PIN 40 = !iorq;         /* I/O Request                         (GLCK2)  */
+PIN 37 = kbdclk;        /* Keyboard Data Clock                 (GCLK1)  */              
+PIN 38 = !rd;
+PIN 35 = !wr;
+
+/************************************************************************/
+/* Inputs                                                               */
+/************************************************************************/
+
+PIN [43,42,34,33,31,30,28] = [a7..1];   /* I/O Address Bus (A0 not used)*/
+PIN [27,25,23,22,21] = [asel7..3];
+PIN 20 = kbdin;                     /* Serial DATA-IN, and !HOST-READY  */
+
+
+/************************************************************************/
+/* Input/Output                                                         */
+/************************************************************************/
+
+PIN [2,6,8,10,11,14,15,19] = [d7..0];
+
+
+/************************************************************************/
+/* Outputs                                                              */
+/************************************************************************/
+
+PIN 44 = !dispsel;      /* Display device select (address match)        */
+PIN  3 = !dbklght;      /* Display Backlight Enable                     */
+PIN 12 = dfont1;        /* Display Font 1 select (H=F1 / L=F0)          */
+PIN  5 = kbdout;        /* Keyboard Data Out (OC) tied to 'kbdin' hold  */
+PROPERTY Atmel {open_collector = on kbdout};
+
+PIN 18 = kbdrdy;        /* Keyboard Data Ready (output of start bit)    */
+PIN 13 = kdclko;        /* Kwyboard Data Clock Out (OC) tied to kbdclk  */
+PROPERTY Atmel {open_collector = on kbclko};
+
+/************************************************************************/
+/* Buried Logic                                                         */
+/************************************************************************/
+
+PINNODE = basesel;      /* Base I/O address select logic                */
+PINNODE = kbdclr;       /* Clear the keyboard data (and interrupt)      */
+PINNODE = [kbd7..0];    /* Keyboard data shift in                       */
+PINNODE = kdoe;         /* Keyboard data output enable                  */
+
+
+/************************************************************************/
+/* Fields and Convenience/Clarity Definitions                           */
+/*                                                                      */
+/* !!! NOTE: $DEFINE value cannot use a prior $DEFINE.              !!! */
+/*   Learned through lots of time spent tracking down compile errors!   */
+/*   Telltale error is:                                                 */
+/*     [0018ca] intermediate var not assigned an expression: xyz        */
+/*                                                                      */
+/*   Of course, that error could also, legitimately, mean that it       */
+/*   hasn't been assigned, but if you get it, and you believe you've    */
+/*   assigned it, look for a case of a $DEFINE that contains a $DEFINE. */
+/*                                                                      */
+/************************************************************************/
+
+/** General */
+FIELD databus       = [d7..0];
+
+/** I/O Port Decode */
+FIELD ioaddr        = [a7..1];	/* A0 is not connected */
+FIELD addrsel       = [asel7..3];   /* Address Select (base), devices use 2..0      */
+
+$DEFINE DISP_SEL    (iorq & basesel & ioaddr:'b'00x)    /* Display is x0 and x1     */
+$DEFINE DCTRL_SEL   (iorq & basesel & ioaddr:'b'01x)    /* Display Control          */
+$DEFINE DCTRL_RD    (iorq & basesel & ioaddr:'b'01x & rd)
+$DEFINE DCTRL_WR    (iorq & basesel & ioaddr:'b'01x & wr)
+$DEFINE KB_SEL      (iorq & basesel & ioaddr:'b'1xx)    /* Keyboard is x2 and x3    */
+$DEFINE KBD_RD      (iorq & basesel & ioaddr:'b'10x & rd) /* Keyboard rd            */
+/* Keyboard data can't be parallel written                                          */
+$DEFINE KB_CTRL_RD  (iorq & basesel & ioaddr:'b'11x & rd) /* Keyboard Control read  */
+$DEFINE KB_CTRL_WR  (iorq & basesel & ioaddr:'b'11x & wr) /* Keyboard Control write */
+
+/** Display Control */
+FIELD dctrl         = [OFF,OFF,OFF,OFF,OFF,OFF,dfont1,dbklght];
+
+/** Keyboard */
+FIELD kbctrl        = [OFF,OFF,kbdin,kbdclk,OFF,kbdclr,kbdout,kdclko];
+FIELD kbdata        = [kbd7..0];
+
+/************************************************************************/
+/* Logic                                                                */
+/************************************************************************/
+
+/** I/O Decode                                          */
+basesel =  !(a7 $ asel7)
+         & !(a6 $ asel6)
+         & !(a5 $ asel5)
+         & !(a4 $ asel4)
+         & !(a3 $ asel3)
+        ;
+
+/** Display Select is x0 and x1                         */
+dispsel = DISP_SEL;
+
+dbklght.d   = d0;
+dbklght.ck  = DCTRL_WR;
+dbklght.ap  = brst;
+/* */
+dfont1.d    = d1;
+dfont1.ck   = DCTRL_WR;
+dfont1.ap   = brst;
+
+
+/** Keyboard Control                                    */
+kbdclr.d    = d2;
+kbdout.d    = d1;
+kbclko.d    = d0;
+kbdclr.ck   = KB_CTRL_WR;
+kbdout.ck   = KB_CTRL_WR;
+kbclko.ck   = KB_CTRL_WR;
+kbdclr.ar   = brst;
+kbdout.ap   = brst;
+kbclko.ap   = brst;
+
+/** Keyboard Data In (serial to parallel)               */
+kbd0.d      = kbdin;
+kbd1.d      = kbd0;
+kbd2.d      = kbd1;
+kbd3.d      = kbd2;
+kbd4.d      = kbd3;
+kbd5.d      = kbd4;
+kbd6.d      = kbd5;
+kbd7.d      = kbd6;
+kbdrdy.d    = kbd7;
+
+kbdata.ar   = kbdclr;
+kbdrdy.ar   = kbdclr;
+
+kbdata.ck   = kbdclk;
+kbdrdy.ck   = kbdclk;
+
+
+/** Keyboard Data Read (parallel data onto data bus)    */
+databus     =  (KBD_RD & kbdata)
+             # (KB_CTRL_RD & kbctrl)
+             # (DCTRL_RD & dctrl)
+            ;
+/* */
+databus.oe  = KB_CTRL_RD # KBD_RD # DCTRL_RD;

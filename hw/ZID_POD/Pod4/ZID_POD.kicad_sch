@@ -6,7 +6,7 @@
 	(paper "A")
 	(title_block
 		(title "ZID POD (4)")
-		(date "2026-04-21")
+		(date "2026-08-16")
 		(rev "PR1.0")
 		(company "SilkyDESIGN")
 		(comment 1 "Copyright 2026 AESilky")
@@ -2062,7 +2062,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text_box "NOTE: The ZID uses a FFC/FPC cable to connect to the POD. The Z80 signals are 1:1 on the ZID. Since the FFC cable is single side, it means the signal to pin on the POD connector are 1:40/40:1.\nThe Z80 Socket/Pins are 1:1. So, Pin-1 on the POD connector goes to Pin-40 on the Z80 Socket."
+	(text_box "NOTE: The ZID uses a FFC/FPC cable to connect to the POD. The Z80 signals are (mostly) 1:1 on the ZID. Since the FFC cable is single side, it means the signal to pin on the POD connector are 1:40/40:1.\n\nThe Z80 Socket/Pins are 1:1. So, Pin-1 on the POD connector goes to Pin-40 on the Z80 Socket."
 		(exclude_from_sim no)
 		(at 121.92 139.7 0)
 		(size 73.66 15.24)
@@ -3888,7 +3888,7 @@
 			(uuid "6f4deffe-fead-4f70-8ff5-f6dfdc17d465")
 		)
 		(instances
-			(project ""
+			(project "ZID_POD"
 				(path "/5064845c-49f8-454d-ae5f-d06818afd8fe"
 					(reference "Z80-SKT1")
 					(unit 1)
@@ -3921,7 +3921,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "AES_Library:CviLux_CF20401V_NH_FFC-FPC-AES"
 			(at 104.14 102.87 0)
 			(effects
 				(font

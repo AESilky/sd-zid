@@ -6,7 +6,7 @@
 	(paper "A")
 	(title_block
 		(title "ZID POD (1)")
-		(date "2026-04-21")
+		(date "2026-08-16")
 		(rev "PR1.0")
 		(company "SilkyDESIGN")
 		(comment 1 "Copyright 2026 AESilky")
@@ -2062,7 +2062,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text_box "NOTE: The ZID uses a FFC/FPC cable to connect to the POD. The Z80 signals are 1:1 on the ZID. Since the FFC cable is single side, it means the signal to pin on the POD connector are 1:40/40:1.\nThe Z80 Socket/Pins are 1:1. So, Pin-1 on the POD connector goes to Pin-40 on the Z80 Socket."
+	(text_box "NOTE: The ZID uses a FFC/FPC cable to connect to the POD. The Z80 signals are (mostly) 1:1 on the ZID. Since the FFC cable is single side, it means the signal to pin on the POD connector are 1:40/40:1.\n\nThe Z80 Socket/Pins are 1:1. So, Pin-1 on the POD connector goes to Pin-40 on the Z80 Socket."
 		(exclude_from_sim no)
 		(at 124.46 139.7 0)
 		(size 73.66 15.24)

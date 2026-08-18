@@ -1,0 +1,184 @@
+Info: <br/><br/>Front Footprints<br/>*********** Sort on Footprint Coordinates ***********<br/>1 H1 X, Y: 2.4524 in, 5.5600 in; rounded X, Y: 2.0000 in, 6.0000 in<br/>2 LED9 X, Y: 2.9274 in, 5.5900 in; rounded X, Y: 3.0000 in, 6.0000 in<br/>3 LED7 X, Y: 3.1774 in, 5.5900 in; rounded X, Y: 3.0000 in, 6.0000 in<br/>4 LED10 X, Y: 2.6774 in, 5.5900 in; rounded X, Y: 3.0000 in, 6.0000 in<br/>5 LED6 X, Y: 2.8024 in, 5.5900 in; rounded X, Y: 3.0000 in, 6.0000 in<br/>6 LED8 X, Y: 3.0524 in, 5.5900 in; rounded X, Y: 3.0000 in, 6.0000 in<br/>7 C20 X, Y: 3.6967 in, 5.6221 in; rounded X, Y: 4.0000 in, 6.0000 in<br/>8 LED3 X, Y: 5.8524 in, 5.5900 in; rounded X, Y: 6.0000 in, 6.0000 in<br/>9 LED4 X, Y: 5.7274 in, 5.5900 in; rounded X, Y: 6.0000 in, 6.0000 in<br/>10 LED5 X, Y: 5.6024 in, 5.5900 in; rounded X, Y: 6.0000 in, 6.0000 in<br/>11 LED2 X, Y: 5.9774 in, 5.5900 in; rounded X, Y: 6.0000 in, 6.0000 in<br/>12 LED1 X, Y: 6.1024 in, 5.5900 in; rounded X, Y: 6.0000 in, 6.0000 in<br/>13 SD1 X, Y: 6.5324 in, 5.6100 in; rounded X, Y: 7.0000 in, 6.0000 in<br/>14 H4 X, Y: 7.1724 in, 5.5600 in; rounded X, Y: 7.0000 in, 6.0000 in<br/>15 C5 X, Y: 3.2230 in, 5.2300 in; rounded X, Y: 3.0000 in, 5.0000 in<br/>16 SPARE1 X, Y: 3.4624 in, 4.9600 in; rounded X, Y: 3.0000 in, 5.0000 in<br/>17 R41 X, Y: 2.6774 in, 5.3400 in; rounded X, Y: 3.0000 in, 5.0000 in<br/>18 R35 X, Y: 3.0524 in, 5.3400 in; rounded X, Y: 3.0000 in, 5.0000 in<br/>19 U23 X, Y: 3.4224 in, 5.4800 in; rounded X, Y: 3.0000 in, 5.0000 in<br/>20 C31 X, Y: 2.6364 in, 5.1656 in; rounded X, Y: 3.0000 in, 5.0000 in<br/>21 R37 X, Y: 2.9274 in, 5.3400 in; rounded X, Y: 3.0000 in, 5.0000 in<br/>22 R33 X, Y: 3.1774 in, 5.3400 in; rounded X, Y: 3.0000 in, 5.0000 in<br/>23 R30 X, Y: 2.8024 in, 5.3400 in; rounded X, Y: 3.0000 in, 5.0000 in<br/>24 C23 X, Y: 4.0103 in, 5.1630 in; rounded X, Y: 4.0000 in, 5.0000 in<br/>25 C21 X, Y: 3.9571 in, 5.4642 in; rounded X, Y: 4.0000 in, 5.0000 in<br/>26 C22 X, Y: 4.3824 in, 5.3872 in; rounded X, Y: 4.0000 in, 5.0000 in<br/>27 G*** X, Y: 4.3394 in, 5.1947 in; rounded X, Y: 4.0000 in, 5.0000 in<br/>28 C27 X, Y: 4.7587 in, 4.9111 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>29 C40 X, Y: 5.2135 in, 4.8531 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>30 C25 X, Y: 5.3097 in, 5.2709 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>31 C24 X, Y: 5.0798 in, 5.4744 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>32 C26 X, Y: 5.2626 in, 5.1640 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>33 C49 X, Y: 6.1830 in, 5.0900 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>34 C1 X, Y: 6.3224 in, 4.6500 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>35 R1 X, Y: 6.2824 in, 4.8500 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>36 R11 X, Y: 6.1024 in, 5.3359 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>37 R15 X, Y: 5.8524 in, 5.3359 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>38 R17 X, Y: 5.7274 in, 5.3359 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>39 JP2 X, Y: 6.2824 in, 4.9400 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>40 R13 X, Y: 5.9774 in, 5.3359 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>41 C2 X, Y: 6.4224 in, 4.9300 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>42 U12 X, Y: 5.8524 in, 4.9700 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>43 R2 X, Y: 6.4624 in, 4.5100 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>44 R18 X, Y: 5.6024 in, 5.3359 in; rounded X, Y: 6.0000 in, 5.0000 in<br/>45 J3 X, Y: 7.1874 in, 5.0300 in; rounded X, Y: 7.0000 in, 5.0000 in<br/>46 U4 X, Y: 7.1324 in, 4.7450 in; rounded X, Y: 7.0000 in, 5.0000 in<br/>47 SW1 X, Y: 7.1324 in, 5.2600 in; rounded X, Y: 7.0000 in, 5.0000 in<br/>48 J1 X, Y: 6.9100 in, 4.9650 in; rounded X, Y: 7.0000 in, 5.0000 in<br/>49 R10 X, Y: 6.9774 in, 5.4600 in; rounded X, Y: 7.0000 in, 5.0000 in<br/>50 C50 X, Y: 6.7224 in, 5.0100 in; rounded X, Y: 7.0000 in, 5.0000 in<br/>51 R6 X, Y: 6.5524 in, 4.9600 in; rounded X, Y: 7.0000 in, 5.0000 in<br/>52 U3 X, Y: 6.5024 in, 4.7100 in; rounded X, Y: 7.0000 in, 5.0000 in<br/>53 R3 X, Y: 6.6124 in, 4.5100 in; rounded X, Y: 7.0000 in, 5.0000 in<br/>54 RN1 X, Y: 2.5774 in, 3.8600 in; rounded X, Y: 3.0000 in, 4.0000 in<br/>55 RN2 X, Y: 3.4774 in, 3.5600 in; rounded X, Y: 3.0000 in, 4.0000 in<br/>56 U5 X, Y: 2.7274 in, 3.5600 in; rounded X, Y: 3.0000 in, 4.0000 in<br/>57 U14 X, Y: 3.8774 in, 4.1700 in; rounded X, Y: 4.0000 in, 4.0000 in<br/>58 C34 X, Y: 5.3939 in, 3.9338 in; rounded X, Y: 5.0000 in, 4.0000 in<br/>59 R31 X, Y: 5.1144 in, 3.5420 in; rounded X, Y: 5.0000 in, 4.0000 in<br/>60 DBOPT1 X, Y: 5.2594 in, 4.1073 in; rounded X, Y: 5.0000 in, 4.0000 in<br/>61 U9 X, Y: 4.7274 in, 3.8350 in; rounded X, Y: 5.0000 in, 4.0000 in<br/>62 R26 X, Y: 5.7824 in, 3.9338 in; rounded X, Y: 6.0000 in, 4.0000 in<br/>63 J11 X, Y: 5.5124 in, 4.1000 in; rounded X, Y: 6.0000 in, 4.0000 in<br/>64 R29 X, Y: 5.7824 in, 3.6838 in; rounded X, Y: 6.0000 in, 4.0000 in<br/>65 R27 X, Y: 5.7824 in, 4.0588 in; rounded X, Y: 6.0000 in, 4.0000 in<br/>66 C46 X, Y: 6.3231 in, 3.7421 in; rounded X, Y: 6.0000 in, 4.0000 in<br/>67 R28 X, Y: 5.7824 in, 3.8088 in; rounded X, Y: 6.0000 in, 4.0000 in<br/>68 C33 X, Y: 7.0336 in, 3.6655 in; rounded X, Y: 7.0000 in, 4.0000 in<br/>69 C42 X, Y: 6.8790 in, 4.0786 in; rounded X, Y: 7.0000 in, 4.0000 in<br/>70 C32 X, Y: 6.7511 in, 3.5126 in; rounded X, Y: 7.0000 in, 4.0000 in<br/>71 C45 X, Y: 6.5858 in, 4.0404 in; rounded X, Y: 7.0000 in, 4.0000 in<br/>72 C43 X, Y: 6.8074 in, 4.2393 in; rounded X, Y: 7.0000 in, 4.0000 in<br/>73 C41 X, Y: 6.9627 in, 3.9760 in; rounded X, Y: 7.0000 in, 4.0000 in<br/>74 SBC2 X, Y: 2.4113 in, 2.7300 in; rounded X, Y: 2.0000 in, 3.0000 in<br/>75 SBC1 X, Y: 2.4100 in, 2.6100 in; rounded X, Y: 2.0000 in, 3.0000 in<br/>76 SBC3 X, Y: 2.4100 in, 2.8500 in; rounded X, Y: 2.0000 in, 3.0000 in<br/>77 TP12 X, Y: 2.4494 in, 3.3530 in; rounded X, Y: 2.0000 in, 3.0000 in<br/>78 JP3 X, Y: 2.8350 in, 2.8500 in; rounded X, Y: 3.0000 in, 3.0000 in<br/>79 R16 X, Y: 2.5600 in, 3.0100 in; rounded X, Y: 3.0000 in, 3.0000 in<br/>80 TP1 X, Y: 2.7124 in, 3.0100 in; rounded X, Y: 3.0000 in, 3.0000 in<br/>81 JP1 X, Y: 2.8350 in, 2.7300 in; rounded X, Y: 3.0000 in, 3.0000 in<br/>82 U17 X, Y: 3.0924 in, 3.2750 in; rounded X, Y: 3.0000 in, 3.0000 in<br/>83 J5 X, Y: 3.1024 in, 3.0100 in; rounded X, Y: 3.0000 in, 3.0000 in<br/>84 C29 X, Y: 2.9059 in, 3.0170 in; rounded X, Y: 3.0000 in, 3.0000 in<br/>85 U7 X, Y: 4.3774 in, 2.6100 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>86 U8 X, Y: 4.4024 in, 3.0324 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>87 R14 X, Y: 4.2104 in, 2.7830 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>88 OP1 X, Y: 4.1024 in, 2.8813 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>89 C7 X, Y: 4.1436 in, 3.4589 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>90 TP3 X, Y: 4.3279 in, 2.8398 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>91 C30 X, Y: 3.5574 in, 3.3534 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>92 U1 X, Y: 3.8124 in, 2.5200 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>93 TP7 X, Y: 4.4038 in, 2.8349 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>94 U19 X, Y: 3.8284 in, 3.2750 in; rounded X, Y: 4.0000 in, 3.0000 in<br/>95 U13 X, Y: 5.3274 in, 2.6100 in; rounded X, Y: 5.0000 in, 3.0000 in<br/>96 C39 X, Y: 5.0751 in, 3.0220 in; rounded X, Y: 5.0000 in, 3.0000 in<br/>97 U20 X, Y: 4.8524 in, 3.0350 in; rounded X, Y: 5.0000 in, 3.0000 in<br/>98 OP2 X, Y: 5.2924 in, 3.4850 in; rounded X, Y: 5.0000 in, 3.0000 in<br/>99 R24 X, Y: 4.9624 in, 3.3400 in; rounded X, Y: 5.0000 in, 3.0000 in<br/>100 C6 X, Y: 4.6274 in, 3.3326 in; rounded X, Y: 5.0000 in, 3.0000 in<br/>101 U24 X, Y: 5.3274 in, 3.0350 in; rounded X, Y: 5.0000 in, 3.0000 in<br/>102 U2 X, Y: 4.8524 in, 2.6100 in; rounded X, Y: 5.0000 in, 3.0000 in<br/>103 C8 X, Y: 5.4490 in, 3.4941 in; rounded X, Y: 5.0000 in, 3.0000 in<br/>104 R12 X, Y: 5.7774 in, 2.8350 in; rounded X, Y: 6.0000 in, 3.0000 in<br/>105 U10 X, Y: 6.3274 in, 2.9600 in; rounded X, Y: 6.0000 in, 3.0000 in<br/>106 C9 X, Y: 5.5560 in, 2.7058 in; rounded X, Y: 6.0000 in, 3.0000 in<br/>107 U21 X, Y: 6.4530 in, 3.2480 in; rounded X, Y: 6.0000 in, 3.0000 in<br/>108 C48 X, Y: 5.7124 in, 3.1800 in; rounded X, Y: 6.0000 in, 3.0000 in<br/>109 U6 X, Y: 6.0274 in, 3.2737 in; rounded X, Y: 6.0000 in, 3.0000 in<br/>110 C47 X, Y: 6.6384 in, 2.5620 in; rounded X, Y: 7.0000 in, 3.0000 in<br/>111 U11 X, Y: 6.6254 in, 3.2458 in; rounded X, Y: 7.0000 in, 3.0000 in<br/>112 R5 X, Y: 6.8465 in, 3.0100 in; rounded X, Y: 7.0000 in, 3.0000 in<br/>113 R32 X, Y: 7.1594 in, 2.5740 in; rounded X, Y: 7.0000 in, 3.0000 in<br/>114 R4 X, Y: 6.8465 in, 2.8100 in; rounded X, Y: 7.0000 in, 3.0000 in<br/>115 J2 X, Y: 7.0524 in, 3.1162 in; rounded X, Y: 7.0000 in, 3.0000 in<br/>116 R7 X, Y: 6.8465 in, 2.9100 in; rounded X, Y: 7.0000 in, 3.0000 in<br/>117 J4 X, Y: 6.6424 in, 2.8100 in; rounded X, Y: 7.0000 in, 3.0000 in<br/>118 SW2 X, Y: 2.4049 in, 2.2105 in; rounded X, Y: 2.0000 in, 2.0000 in<br/>119 H2 X, Y: 2.4524 in, 1.8400 in; rounded X, Y: 2.0000 in, 2.0000 in<br/>120 TP14 X, Y: 2.8100 in, 1.7600 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>121 R36 X, Y: 3.0800 in, 2.0200 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>122 R9 X, Y: 2.6724 in, 2.4800 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>123 C28 X, Y: 3.1024 in, 2.5000 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>124 R38 X, Y: 3.0800 in, 2.3200 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>125 TP15 X, Y: 2.6600 in, 1.7600 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>126 R39 X, Y: 3.0800 in, 2.2200 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>127 R8 X, Y: 3.0814 in, 2.3990 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>128 R40 X, Y: 3.0800 in, 2.1200 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>129 C4 X, Y: 3.3820 in, 2.0993 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>130 J7 X, Y: 3.2100 in, 1.9100 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>131 OP3 X, Y: 2.9300 in, 2.2700 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>132 TP16 X, Y: 2.9600 in, 1.7600 in; rounded X, Y: 3.0000 in, 2.0000 in<br/>133 J8 X, Y: 3.6100 in, 1.9100 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>134 C11 X, Y: 4.0744 in, 2.4476 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>135 R34 X, Y: 3.9774 in, 2.1850 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>136 R19 X, Y: 4.3253 in, 2.0600 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>137 JP6 X, Y: 4.2106 in, 2.1700 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>138 R42 X, Y: 4.0774 in, 2.1850 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>139 R23 X, Y: 3.8774 in, 2.1850 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>140 J9 X, Y: 3.8100 in, 1.9100 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>141 U16 X, Y: 3.6024 in, 2.2600 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>142 D4 X, Y: 4.2322 in, 1.8448 in; rounded X, Y: 4.0000 in, 2.0000 in<br/>143 R20 X, Y: 4.8824 in, 2.1000 in; rounded X, Y: 5.0000 in, 2.0000 in<br/>144 C10 X, Y: 4.6835 in, 2.4003 in; rounded X, Y: 5.0000 in, 2.0000 in<br/>145 R22 X, Y: 4.6924 in, 2.1000 in; rounded X, Y: 5.0000 in, 2.0000 in<br/>146 C44 X, Y: 5.1911 in, 2.3779 in; rounded X, Y: 5.0000 in, 2.0000 in<br/>147 R21 X, Y: 4.7724 in, 2.1000 in; rounded X, Y: 5.0000 in, 2.0000 in<br/>148 J10 X, Y: 4.8124 in, 1.8772 in; rounded X, Y: 5.0000 in, 2.0000 in<br/>149 JP4 X, Y: 5.4224 in, 1.8294 in; rounded X, Y: 5.0000 in, 2.0000 in<br/>150 D3 X, Y: 5.4187 in, 2.0499 in; rounded X, Y: 5.0000 in, 2.0000 in<br/>151 D1 X, Y: 5.5724 in, 1.7500 in; rounded X, Y: 6.0000 in, 2.0000 in<br/>152 J6 X, Y: 5.5824 in, 1.8600 in; rounded X, Y: 6.0000 in, 2.0000 in<br/>153 M1 X, Y: 6.1024 in, 2.4200 in; rounded X, Y: 6.0000 in, 2.0000 in<br/>154 R44 X, Y: 7.1524 in, 2.0800 in; rounded X, Y: 7.0000 in, 2.0000 in<br/>155 D2 X, Y: 6.8824 in, 2.2400 in; rounded X, Y: 7.0000 in, 2.0000 in<br/>156 J14 X, Y: 6.8224 in, 1.8000 in; rounded X, Y: 7.0000 in, 2.0000 in<br/>157 JP7 X, Y: 6.7274 in, 2.0810 in; rounded X, Y: 7.0000 in, 2.0000 in<br/>158 C3 X, Y: 6.8824 in, 2.4700 in; rounded X, Y: 7.0000 in, 2.0000 in<br/>159 H3 X, Y: 7.1724 in, 1.8400 in; rounded X, Y: 7.0000 in, 2.0000 in
+Info: <br/><br/>Back Footprints<br/>*********** Sort on Footprint Coordinates ***********<br/>1 TP17 X, Y: 4.8584 in, 5.6360 in; rounded X, Y: 5.0000 in, 6.0000 in<br/>2 TP6 X, Y: 5.2722 in, 5.6089 in; rounded X, Y: 5.0000 in, 6.0000 in<br/>3 TP25 X, Y: 4.8294 in, 4.8190 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>4 TP19 X, Y: 4.7164 in, 5.0030 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>5 TP18 X, Y: 5.4554 in, 5.3540 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>6 U15 X, Y: 5.0622 in, 5.2089 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>7 TP24 X, Y: 5.2722 in, 4.7889 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>8 TP23 X, Y: 4.5822 in, 5.2789 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>9 TP21 X, Y: 5.4622 in, 4.9589 in; rounded X, Y: 5.0000 in, 5.0000 in<br/>10 TP13 X, Y: 4.4569 in, 5.0733 in; rounded X, Y: 4.0000 in, 5.0000 in<br/>11 TP22 X, Y: 3.7229 in, 5.2866 in; rounded X, Y: 4.0000 in, 5.0000 in<br/>12 U22 X, Y: 4.0324 in, 5.3200 in; rounded X, Y: 4.0000 in, 5.0000 in<br/>13 TP20 X, Y: 4.2534 in, 5.0600 in; rounded X, Y: 4.0000 in, 5.0000 in<br/>14 TP5 X, Y: 7.2224 in, 4.0800 in; rounded X, Y: 7.0000 in, 4.0000 in<br/>15 TP4 X, Y: 7.2224 in, 4.1900 in; rounded X, Y: 7.0000 in, 4.0000 in<br/>16 U18 X, Y: 6.7424 in, 3.9400 in; rounded X, Y: 7.0000 in, 4.0000 in<br/>17 TP8 X, Y: 6.1524 in, 3.7100 in; rounded X, Y: 6.0000 in, 4.0000 in<br/>18 TP9 X, Y: 6.1994 in, 3.6410 in; rounded X, Y: 6.0000 in, 4.0000 in<br/>19 TP11 X, Y: 6.9844 in, 3.4270 in; rounded X, Y: 7.0000 in, 3.0000 in<br/>20 TP10 X, Y: 7.0644 in, 3.4280 in; rounded X, Y: 7.0000 in, 3.0000 in
+Info: <br/>There are 18 reference designator prefixes in use<br/>**********************************************************<br/>TP U H LED C SD SPARE R G*** JP J SW RN DBOPT SBC OP<br/>D M <br/><br/>Change Array
+Info: ***********************<br/>C1 -> C13   
+Info: C2 -> C14   
+Info: C3 -> C38   
+Info: C4 -> C34   
+Info: C5 -> C2   
+Info: C6 -> C28   
+Info: C7 -> C25   
+Info: C8 -> C29   
+Info: C9 -> C30   
+Info: C10 -> C36   
+Info: C11 -> C35   
+Info: C20 -> C1   
+Info: C21 -> C5   
+Info: C22 -> C6   
+Info: C23 -> C4   
+Info: C24 -> C10   
+Info: C25 -> C9   
+Info: C26 -> C11   
+Info: C27 -> C7   
+Info: C28 -> C33   
+Info: C29 -> C24   
+Info: C30 -> C26   
+Info: C31 -> C3   
+Info: C32 -> C20   
+Info: C33 -> C18   
+Info: C34 -> C16   
+Info: C39 -> C27   
+Info: C40 -> C8   
+Info: C41 -> C23   
+Info: C42 -> C19   
+Info: C43 -> C22   
+Info: C44 -> C37   
+Info: C45 -> C21   
+Info: C46 -> C17   
+Info: C47 -> C32   
+Info: C48 -> C31   
+Info: C49 -> C12   
+Info: C50 -> C15   
+Info: D1 -> D3   
+Info: D2 -> D4   
+Info: D3 -> D2   
+Info: D4 -> D1   
+Info: DBOPT1 -> DBOPT1   
+Info: G*** -> G***1   
+Info: H1 -> H1   
+Info: H2 -> H3   
+Info: H3 -> H4   
+Info: H4 -> H2   
+Info: J1 -> J2   
+Info: J2 -> J5   
+Info: J3 -> J1   
+Info: J4 -> J6   
+Info: J5 -> J4   
+Info: J6 -> J11   
+Info: J7 -> J7   
+Info: J8 -> J8   
+Info: J9 -> J9   
+Info: J10 -> J10   
+Info: J11 -> J3   
+Info: J14 -> J12   
+Info: JP1 -> JP3   
+Info: JP2 -> JP1   
+Info: JP3 -> JP2   
+Info: JP4 -> JP5   
+Info: JP6 -> JP4   
+Info: JP7 -> JP6   
+Info: LED1 -> LED10   
+Info: LED2 -> LED9   
+Info: LED3 -> LED6   
+Info: LED4 -> LED7   
+Info: LED5 -> LED8   
+Info: LED6 -> LED4   
+Info: LED7 -> LED2   
+Info: LED8 -> LED5   
+Info: LED9 -> LED1   
+Info: LED10 -> LED3   
+Info: M1 -> M1   
+Info: OP1 -> OP1   
+Info: OP2 -> OP2   
+Info: OP3 -> OP3   
+Info: R1 -> R6   
+Info: R2 -> R11   
+Info: R3 -> R15   
+Info: R4 -> R27   
+Info: R5 -> R25   
+Info: R6 -> R14   
+Info: R7 -> R28   
+Info: R8 -> R33   
+Info: R9 -> R30   
+Info: R10 -> R13   
+Info: R11 -> R7   
+Info: R12 -> R24   
+Info: R13 -> R10   
+Info: R14 -> R22   
+Info: R15 -> R8   
+Info: R16 -> R21   
+Info: R17 -> R9   
+Info: R18 -> R12   
+Info: R19 -> R36   
+Info: R20 -> R39   
+Info: R21 -> R41   
+Info: R22 -> R40   
+Info: R23 -> R38   
+Info: R24 -> R23   
+Info: R26 -> R17   
+Info: R27 -> R19   
+Info: R28 -> R20   
+Info: R29 -> R18   
+Info: R30 -> R5   
+Info: R31 -> R16   
+Info: R32 -> R26   
+Info: R33 -> R4   
+Info: R34 -> R35   
+Info: R35 -> R2   
+Info: R36 -> R29   
+Info: R37 -> R3   
+Info: R38 -> R31   
+Info: R39 -> R32   
+Info: R40 -> R34   
+Info: R41 -> R1   
+Info: R42 -> R37   
+Info: R44 -> R42   
+Info: RN1 -> RN1   
+Info: RN2 -> RN2   
+Info: SBC1 -> SBC2   
+Info: SBC2 -> SBC1   
+Info: SBC3 -> SBC3   
+Info: SD1 -> SD1   
+Info: SPARE1 -> SPARE1   
+Info: SW1 -> SW1   
+Info: SW2 -> SW2   
+Info: TP1 -> TP2   
+Info: TP3 -> TP3   
+Info: TP4 -> TP4  Excluded (will be ignored)
+Info: TP5 -> TP5  Excluded (will be ignored)
+Info: TP6 -> TP6  Excluded (will be ignored)
+Info: TP7 -> TP7   
+Info: TP8 -> TP8  Excluded (will be ignored)
+Info: TP9 -> TP9  Excluded (will be ignored)
+Info: TP10 -> TP10  Excluded (will be ignored)
+Info: TP11 -> TP11  Excluded (will be ignored)
+Info: TP12 -> TP1   
+Info: TP13 -> TP13  Excluded (will be ignored)
+Info: TP14 -> TP12   
+Info: TP15 -> TP14   
+Info: TP16 -> TP15   
+Info: TP17 -> TP17  Excluded (will be ignored)
+Info: TP18 -> TP18  Excluded (will be ignored)
+Info: TP19 -> TP19  Excluded (will be ignored)
+Info: TP20 -> TP20  Excluded (will be ignored)
+Info: TP21 -> TP21  Excluded (will be ignored)
+Info: TP22 -> TP22  Excluded (will be ignored)
+Info: TP23 -> TP23  Excluded (will be ignored)
+Info: TP24 -> TP24  Excluded (will be ignored)
+Info: TP25 -> TP25  Excluded (will be ignored)
+Info: U1 -> U11   
+Info: U2 -> U17   
+Info: U3 -> U4   
+Info: U4 -> U3   
+Info: U5 -> U5   
+Info: U6 -> U21   
+Info: U7 -> U9   
+Info: U8 -> U10   
+Info: U9 -> U7   
+Info: U10 -> U19   
+Info: U11 -> U23   
+Info: U12 -> U2   
+Info: U13 -> U13   
+Info: U14 -> U6   
+Info: U15 -> U15  Excluded (will be ignored)
+Info: U16 -> U24   
+Info: U17 -> U8   
+Info: U18 -> U18  Excluded (will be ignored)
+Info: U19 -> U12   
+Info: U20 -> U14   
+Info: U21 -> U20   
+Info: U22 -> U22  Excluded (will be ignored)
+Info: U23 -> U1   
+Info: U24 -> U16   
+PCB successfully reannotated
+Warning: PCB annotation changes should be synchronized with schematic using the "Update Schematic from PCB" tool.
