@@ -4,11 +4,11 @@
 #
 .PHONY: all clean
 
-ZID_MAIN			:= zid_main
-ZID_BRKPCL			:= zid_brkpcl
-ZID_BDATA_GPIO 		:= zid_bd_gpio
+ZID_MAIN			:= zid_main		# U18 - Main logic
+ZID_BRKPCL			:= zid_brkpcl	# U15 - Breakpoint Address Compare, PC Latch
+ZID_BDATA_GPIO 		:= zid_bd_gpio	# U22 - Breakpoint Data Compare, SBC GPIO
 
-BPEXP_DISPKBD		:= dispkbd
+BPEXP_DISPKBD		:= dispkbd		# U1 Expansion Backplane - Display Select, Keyboard Control
 
 
 JEDECS		:= $(ZID_BRKPCL).jed $(ZID_BDATA_GPIO).jed $(ZID_MAIN).jed $(BPEXP_DISPKBD).jed

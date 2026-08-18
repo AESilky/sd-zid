@@ -25738,7 +25738,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Value" "ATF1502AS-44T"
