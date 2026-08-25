@@ -12,8 +12,8 @@ The debugger probe plugs in in place of the Z80. The debugger provides:
 3. Four probe configurations that allow the cable to exit in different directions (probe in different orientations)
 4. Breakpoint hardware. Stops code execution when specified conditions are met, even with code in read-only memory (see below for details)
 5. Breakpoint hardware allows checking two different conditions. For example; Port Write and Instruction Fetch
-6. Two breakpoint addresses with a condition that includes the ability to not only check the operation but also a data value, including Don't-Care bits.
-7. Up to six other address units that share a condition (for example 6 different instruction fetch locations)
+6. One breakpoint condition or the other can includes the ability to not only check the operation but also a data value, including Don't-Care bits.
+7. Five breakpoint addresses total. One address on Condition A and Four addresses on Condition B (for example, a port read of a specific value with don't-care bits and 4 different instruction fetch locations)
 8. Breakpoint conditions being met can either stop target code execution or simply provide a SYNC signal (can be used to trigger an oscilloscope/analyzer)
 9. External breakpoint trigger allows stopping target code execution when some signal is generated externally
 10. LED indicators for key Z80 control signals (WAIT, HALT, BUSACK)
@@ -42,8 +42,8 @@ The breakpoint logic allows selecting:
 
 A fully populated ZID has:
 
-1. Two breakpoint addresses that share Condition-A, that can specify a Data-Value, with Don't-Care bits
-2. Six breakpoint addresses that share Condition-B
+1. One breakpoint address that uses Condition-A, that can specify a Data-Value, with Don't-Care bits
+2. Four breakpoint addresses that share Condition-B (individually enabled)
 3. All breakpoints are handled in hardware and don't require any modifications to the target system board or code
 
 ## High-Level Debug Monitor Description
