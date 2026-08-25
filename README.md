@@ -10,7 +10,7 @@ The debugger probe plugs in in place of the Z80. The debugger provides:
 1. 20MHz operation. This allows debugging high speed boards. The actual 'top-speed' of the target depends on how tight the timing of the target board is, but debugging 16MHz targets should be handled without problems. Some boards might need the clock speed reduced for debugging.
 2. Compact probe that connects via a small 40-pin FFC/FPC cable
 3. Four probe configurations that allow the cable to exit in different directions (probe in different orientations)
-4. Breakpoint hardware. Stops code execution when specified conditions are met, even with code in read-only memory (see below for details)
+4. Breakpoint and Single-Step hardware. Steps code and stops code execution when specified conditions are met, even with code in read-only memory (see below for details)
 5. Breakpoint hardware allows checking two different conditions. For example; Port Write and Instruction Fetch
 6. One breakpoint condition or the other can includes the ability to not only check the operation but also a data value, including Don't-Care bits.
 7. Five breakpoint addresses total. One address on Condition A and Four addresses on Condition B (for example, a port read of a specific value with don't-care bits and 4 different instruction fetch locations)
