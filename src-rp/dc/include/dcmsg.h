@@ -27,7 +27,7 @@ extern "C" {
 #define CMSG const char* const
 
 GLOBL CMSG dcm_title MSGV("ZID - Z80 In-circuit Debugger");
-GLOBL CMSG dcm_banner MSGV(">>>             ZID - Z80 In-circuit Debugger            <<<\n>>> Hardware: Copyright 2025-26 SilkyDESIGN and CMOS2    <<<\n>>> Software: Copyright 2023-26 AESilky                  <<<\n\n");
+GLOBL CMSG dcm_banner MSGV(">>>             ZID - Z80 In-circuit Debugger            <<<\n>>> Hardware: Copyright 2025-26 SilkyDESIGN and CMOS1    <<<\n>>> Software: Copyright 2023-26 AESilky                  <<<\n\n");
 GLOBL CMSG dcm_blank    MSGV("");
 
 GLOBL CMSG dcm_regfb    MSGV("SZxHxPNC");
@@ -42,14 +42,15 @@ static inline const char* dcm_dashs(int n) {n %= 80; return (dcm_ds80 + (80 - n)
 /** @brief Get a string of 'n' spaces (up to 80) */
 static inline const char* dcm_sps(int n) { n %= 80; return (dcm_sp80 + (80 - n)); }
 
-GLOBL CMSG dcm_breakhit MSGV("BREAK");
 GLOBL CMSG dcm_tgtsbc   MSGV("SBC");
 
 /* Common Command Messages */
 
 GLOBL CMSG dcm_done MSGV("DONE");
 GLOBL CMSG dcm_invalid_arg MSGV("Invalid argument");
+GLOBL CMSG dcm_invalid_argtm MSGV("Too many arguments");
 GLOBL CMSG dcm_invalid_dest MSGV("Invalid destination");
+GLOBL CMSG dcm_mem_get_err MSGV("Error getting target memory");
 GLOBL CMSG dcm_pc MSGV("PC");
 GLOBL CMSG dcm_size MSGV("size");
 
@@ -57,6 +58,7 @@ GLOBL CMSG dcm_size MSGV("size");
 /* Debug Monitor Messages */
 
 GLOBL CMSG dmm_break_hit MSGV("BREAK");
+GLOBL CMSG dmm_ss_done MSGV("STEP");
 GLOBL CMSG dmm_cmd_unknown MSGV("DM received unknown command");
 GLOBL CMSG dmm_fatal_error MSGV("!!!Debug Monitor fatal error !!!");
 GLOBL CMSG dmm_status_error MSGV("!!!Invalid status received from Debug Monitor!!!");

@@ -50,8 +50,8 @@ static int _exec_reboot(int argc, char** argv, const char* unparsed) {
 
 const cmd_handler_entry_t cmds_bootldr_entry = {
     _exec_bootldr,
-    7,
-    "bootldr",
+    8,
+    ".bootldr",
     NULL,
     "Reboot to the UF2 loader."
 };

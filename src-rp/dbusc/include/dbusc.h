@@ -74,6 +74,25 @@ static inline bool dbus_is_out() {
 extern void attn_set_on(bool on);
 
 /**
+ * @brief Clear the WAIT signal and go back to waiting for MODSEL.
+ * @ingroup databus
+ * 
+ * If the WAIT signal is on when MODSEL is on, WAIT is passed to the Host (Z80) and can
+ * keep it from finishing the operation. That is actually a condition that shouldn't
+ * occur if things are working correctly. However, during development and testing it
+ * can occur, and if it does there needs to be some way to break the deadlock.
+ * This method provides the break. It deactivates the WAIT signal, delays a bit to
+ * allow MODSEL to go back false, then restarts the MSEL PIO to once again assert WAIT
+ * and check for MODSEL.
+ * 
+ * This also cancels the DMA channels that use the 'auto' data PIO, and then reconfigures
+ * the receive PIO to a single byte into the trash buffer.
+ * 
+ * THIS METHOD IS INTENDED FOR DEV/TEST
+ */
+extern void dbus_clear_wait();
+
+/**
  * @brief Set the handler for the Control Register access interrupt.
  * @ingroup databus
  * 
@@ -115,11 +134,11 @@ extern uint8_t dbus_last_wr_val();
  * is complete.
  * The DMA operation is not started by this call.
  * 
- * @see dbus_start_recv
+ * @see dbus_start_dataop
  * 
  * @param buf Pointer to buffer
  * @param count Number of bytes
- * @param on_cmplt EXEC message handler executed on completion
+ * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
  */
 extern void dbus_prep_recv(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt);
 
@@ -127,35 +146,68 @@ extern void dbus_prep_recv(volatile uint8_t* buf, int count, msg_handler_fn on_c
  * @brief Prepare to send data from a buffer onto the bus.
  * @ingroup databus
  *
- * Sets up the outgoing DMA to read data from the buffer and give to the PIO
+ * Sets up the outgoing DMA to read data from the buffer and put to the PIO
  * for a specified number of bytes.
  * An EXEC message will be posted with the given handler when the transfer
  * is complete.
  * The DMA operation is not started by this call.
  *
- * @see dbus_start_send
+ * @see dbus_start_dataop
  *
  * @param buf Pointer to buffer
  * @param count Number of bytes
- * @param on_cmplt EXEC message handler executed on completion
+ * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
  */
-extern void dbus_prep_send(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt);
+extern void dbus_prep_send1(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt);
 
 /**
- * @brief Start a receive data operation (after calling `dbus_prep_recv`)
+ * @brief Prepare to send data from two buffers, one following the other.
  * @ingroup databus
  * 
- * @see dbus_prep_recv
+ * This sends data from buffer1 for count1 bytes, and then sends data from buffer2 for
+ * count2 bytes. It runs the completion handler when the second buffer has been transferred.
+ * The DMA operation is not started by this call.
+ *
+ * @see dbus_start_dataop
+ *  
+ * @param buf1 First buffer
+ * @param cnt1 First byte count
+ * @param buf2 Second buffer
+ * @param cnt2 Second byte count
+ * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
  */
-extern void dbus_start_recv();
+extern void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* buf2, int cnt2, msg_handler_fn on_cmplt);
 
 /**
- * @brief Start a send data operation (after calling `dbus_prep_send`)
+ * @brief Prepare to send data from a buffer and then receive data into a buffer.
+ * @ingroup databus
+ * 
+ * This first sends data from the send buffer for send count bytes. When the send
+ * operation completes it triggers the receive operation into the receive buffer
+ * for receive count bytes. It runs the completion handler when the receive
+ * operation completes.
+ * The DMA operation is not started by this call.
+ *
+ * @see dbus_start_dataop
+ * 
+ * @param sbuf Send buffer
+ * @param scnt Send byte count
+ * @param rbuf Receive buffer
+ * @param rcnt Receive byte count
+ * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
+ */
+extern void dbus_prep_sendrecv(volatile uint8_t* sbuf, int scnt, volatile uint8_t* rbuf, int rcnt, msg_handler_fn on_cmplt);
+
+/**
+ * @brief Start a send, send-send, or send-receive data operation
+ *  (after calling `dbus_prep_send1`, `dbus_prep_send2`, or `dbus_prep_sendrecv`)
  * @ingroup databus
  *
- * @see dbus_prep_send
+ * @see dbus_prep_send1
+ * @see dbus_prep_send2
+ * @see dbus_prep_sendrecv
  */
-extern void dbus_start_send();
+extern void dbus_start_dataop();
 
 /**
  * @brief Set the value returned for an unexpected READ operation by the host.

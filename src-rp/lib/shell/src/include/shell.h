@@ -264,6 +264,14 @@ extern int shell_printferr(const char* format, ...) __attribute__((format(_print
 extern void shell_prompt();
 
 /**
+ * @brief Redisplay the prompt, including any input so far
+ * @ingroup shell
+ * 
+ * Used to redisplay the current prompt line.
+ */
+extern void shell_prompt_again();
+
+/**
  * @brief Print the code-text string. This is 0-n spaces and a character.
  * @ingroup shell
  *

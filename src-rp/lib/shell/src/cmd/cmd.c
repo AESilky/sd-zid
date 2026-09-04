@@ -68,21 +68,21 @@ static const cmd_handler_entry_t _cmd_dec_entry = {
     _cmd_dec,
     4,
     "decimal",
-    "hexval1 [hexval2 [hexvaln...]]",
+    "hexval1 [hexval2 [hexvaln ...]]",
     "Convert hex value(s) to decimal.\n",
 };
 static const cmd_handler_entry_t _cmd_help_entry = {
     _cmd_help,
     1,
     "help",
-    "[-a|--all] [command_name [command_name...]]",
-    "List of commands or information for a specific command(s).\n  -a|--all : Display hidden commands.\n",
+    "[-a|--all] [command_name [command_name ...]]",
+    "List of commands or information for a specific command(s).\n  -a|--all : Display hidden (dot) commands.\n",
 };
 static const cmd_handler_entry_t _cmd_hex_entry = {
     _cmd_hex,
     3,
     "hex",
-    "decimal1 [decimal2] [decimaln...]]",
+    "decimal1 [decimal2 [decimaln ...]]",
     "Convert decimal value(s) to hex.\n",
 };
 static const cmd_handler_entry_t _cmd_keys_entry = {

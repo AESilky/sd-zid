@@ -27,7 +27,9 @@ extern "C" {
 
 // Keep the total number of messages under 256 to allow indexing into handlers.
 typedef enum MSG_ID_ {
+    // ==============================================================
     // Common messages 0x00 - 0x5F (used by both HWRT and DCS/APP)
+    //
     MSG_NOOP = 0x00,
     MSG_LOOP_STARTED,
     MSG_HWRT_STARTED,
@@ -45,19 +47,20 @@ typedef enum MSG_ID_ {
     MSG_DBUS_DREAD_XFER_DONE,
     MSG_DBUS_DWRITE_UNEXPECTED,
     MSG_DBUS_DWRITE_XFER_DONE,
-    MSG_DM_BRKHIT,
-    MSG_DM_CMD_CMPLT,       // DM Command Complete. Data value is CMD.
-    MSG_DM_CMD_UNKNOWN,     // DM indicated it don't know the command. Data value is CMD. 
-    MSG_DM_ERROR,
-    MSG_DM_STATUNKNWN,      // An unknown status was received from the DM
     //
+    // ==============================================================
     // Hardware-Runtime (HWRT) messages 0x60 - 0xBF
+    //
     MSG_HWRT_NOOP = 0x60,
     MSG_HWRT_TEST,
     MSG_ROTARY_CHG,
     MSG_STDIO_CHAR_READY,
+    // Debug Monitor Communications Messages
+    MSG_DMC_CMD_REQ,        // Request the DM run a command
     //
+    // ==============================================================
     // Application functionality (APP) messages 0xC0 - 0xFF
+    //
     MSG_APP_NOOP = 0xC0,
     MSG_APP_TEST,
     MSG_CMD_KEY_PRESSED,
@@ -65,6 +68,9 @@ typedef enum MSG_ID_ {
     MSG_DISPLAY_MESSAGE,
     MSG_DLG_TIMEOUT,
     MSG_TERM_CHAR_RCVD,
+    //  Debug Controller/Monitor App Messages
+    MSG_DM_CMDDONE,         // DM completed the command. CMD in value8u. Posted after status.
+    MSG_DM_STATUSRCVD,      // Status was received from the DM. Status in value8u.
 } msg_id_t;
 #define MSG_ID_CNT (0x100)
 
@@ -92,6 +98,8 @@ typedef void (*msg_handler_fn)(struct CMT_MSG_* msg);
 
 #define NULL_MSG_HDLR ((msg_handler_fn)0)
 
+#include "dc/include/dmcomm_t.h"    // Debug Monitor Communications data structures
+
 /**
  * @brief Message data.
  *
@@ -102,6 +110,7 @@ union MSG_DATA_VALUE_ {
     bool bv;
     bool debug;
     cmt_sleep_data_t cmt_sleep;
+    dmc_cmd_req_t dmc_cmd_req;      // DM Communications Command Request
     int8_t value8;
     uint8_t value8u;
     int16_t value16;
@@ -111,7 +120,8 @@ union MSG_DATA_VALUE_ {
     switch_action_data_t sw_action;
     FRESULT fr;
     char* str;
-    void* ptr;
+    uint8_t* bptr;
+    void* vptr;
     uint32_t ts_ms;
     uint64_t ts_us;
 };

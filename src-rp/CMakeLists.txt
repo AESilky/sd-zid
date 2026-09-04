@@ -32,6 +32,8 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 else()
     message(STATUS "Building with unknown configuration: ${CMAKE_BUILD_TYPE}")
 endif()
+add_compile_definitions(LIB_PICO_PRINTF_PICO)
+set(LIB_PICO_PRINTF_PICO 1)
 
 
 # Pull in SDK (must be before project)

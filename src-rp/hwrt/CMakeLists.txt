@@ -3,6 +3,7 @@ add_library(hwrt INTERFACE)
 
 target_sources(hwrt INTERFACE
     hwrt.c
+    hwops.c
 )
 
 target_link_libraries(hwrt INTERFACE

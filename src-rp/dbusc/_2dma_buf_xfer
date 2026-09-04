@@ -1,0 +1,48 @@
+#include "hardware/dma.h"
+#include "hardware/pio.h"
+
+void setup_chained_dma(PIO pio, uint sm, uint32_t *buffer1, uint32_t len1, uint32_t *buffer2, uint32_t len2) {
+    // 1. Claim two unused DMA channels
+    int chanA = dma_claim_unused_channel(true);
+    int chanB = dma_claim_unused_channel(true);
+
+    // 2. Get the PIO Data Request (DREQ) signal for the specific state machine
+    uint dreq = pio_get_dreq(pio, sm, true); // true = TX FIFO
+
+    // 3. Configure Channel A (First Buffer)
+    dma_channel_config cA = dma_channel_get_default_config(chanA);
+    channel_config_set_transfer_data_size(&cA, DMA_SIZE_32);  // 32-bit transfers
+    channel_config_set_read_increment(&cA, true);             // Move through buffer1
+    channel_config_set_write_increment(&cA, false);           // PIO FIFO address is fixed
+    channel_config_set_dreq(&cA, dreq);                      // Pace via PIO TX FIFO
+    channel_config_set_chain_to(&cA, chanB);                 // Trigger Channel B when done
+
+    dma_channel_configure(
+        chanA,
+        &cA,
+        &pio->txf[sm], // Write address (PIO TX FIFO)
+        buffer1,       // Read address (First buffer)
+        len1,          // Number of 32-bit transfers
+        false          // Do not start immediately
+    );
+
+    // 4. Configure Channel B (Second Buffer)
+    dma_channel_config cB = dma_channel_get_default_config(chanB);
+    channel_config_set_transfer_data_size(&cB, DMA_SIZE_32);
+    channel_config_set_read_increment(&cB, true);             // Move through buffer2
+    channel_config_set_write_increment(&cB, false);           // PIO FIFO address is fixed
+    channel_config_set_dreq(&cB, dreq);                      // Pace via PIO TX FIFO
+    // Do not set channel_config_set_chain_to here unless you want a third action
+
+    dma_channel_configure(
+        chanB,
+        &cB,
+        &pio->txf[sm], // Write address (PIO TX FIFO)
+        buffer2,       // Read address (Second buffer)
+        len2,          // Number of 32-bit transfers
+        false          // Do not start immediately
+    );
+
+    // 5. Start Channel A. It will kick off Channel B automatically later.
+    dma_channel_start(chanA);
+}

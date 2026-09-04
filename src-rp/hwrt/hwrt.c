@@ -9,6 +9,7 @@
 */
 
 #include "hwrt.h"
+#include "hwops.h"
 
 #include "board.h"
 #include "debug_support.h"
@@ -61,11 +62,6 @@ static void _handle_apps_started(cmt_msg_t* msg) {
     //
     // Switch debug to the USB
     debug_init(DIM_STDIO_TO_USB);
-    // Initialize the Bus Controller
-    int iv = dbusc_modinit();
-    if (iv) {
-        board_panic("dbusc failed modinit");
-    }
 }
 
 /**
@@ -170,13 +166,7 @@ void core1_main() {
  * @param msg Nothing important in the message
  */
 static void _hwrt_started(cmt_msg_t* msg) {
-    // Initialize all of the things that use the message loop (it is running now).
-
-    // SPI initialization for the MicroSD Card.
-//    ZZZ allow DBUS to use pins for debugging: spi_init(SPI_SD_DEVICE, SPI_SLOW_SPEED);
-
-    // Disk Operations
-//    ZZZ allow DBUS to use pins for debugging: dskops_modinit();
+    hwops_modinit();
 
     cmt_msg_hdlr_add(MSG_APPS_STARTED, _handle_apps_started);
     cmt_msg_hdlr_add(MSG_PERIODIC_RT, _handle_housekeeping);
