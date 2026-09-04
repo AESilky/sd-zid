@@ -36,8 +36,10 @@ regf:		.block	BYTE
 rega:		.block	BYTE
 regsp:		.block	WORD
 regpc:		.block	WORD
+rpopix_:	.equ	$		; IX and IY pop
 regix:		.block	WORD
 regiy:		.block	WORD
+rpushiy_:	.equ	$		; IY and IX push
 _regend		.equ	$
 ;
 regsav2:	.equ	$		; Used for 2nd save operation (PC, SP, and AF) 
@@ -47,6 +49,7 @@ tempsp:		.block	WORD
 asave:		.block	BYTE
 z80im:		.block	BYTE
 sflag:		.block	BYTE		; Flag indicating that the target is the SBC (same board)
+sspflag:		.block	BYTE	; Flag indicating a Single-Step was performed (non-zero)
 tflag:		.block	BYTE		; Target state/status bits (see .inc for bits)
 zflag:		.block	BYTE		; ZID state/status bits (see .inc for bits)
 ;
@@ -77,21 +80,18 @@ brk7addr:	.block	WORD		; Break-7 Address
 brk7aen:	.block	BYTE		; Break-7 Address Enabled
 brk8addr:	.block	WORD		; Break-8 Address
 brk8aen:	.block	BYTE		; Break-8 Address Enabled
-brk9addr:	.block	WORD		; Break-9 Address
-brk9aen:	.block	BYTE		; Break-9 Address Enabled
-brk10addr:	.block	WORD		; Break-10 Address
-brk10aen:	.block	BYTE		; Break-10 Address Enabled
-brk11addr:	.block	WORD		; Break-11 Address
-brk11aen:	.block	BYTE		; Break-11 Address Enabled
-brk12addr:	.block	WORD		; Break-12 Address
-brk12aen:	.block	BYTE		; Break-12 Address Enabled
-brk13addr:	.block	WORD		; Break-13 Address
-brk13aen:	.block	BYTE		; Break-13 Address Enabled
-brk14addr:	.block	WORD		; Break-14 Address
-brk14aen:	.block	BYTE		; Break-14 Address Enabled
+brksum:		.block	BYTE		; checksum of the break configuration
 ;
 ;
 doc_cmd:	.block	BYTE		; Last command from DOC
+doc_cnt:	.block	BYTE		; Byte count from DOC
+doc_addr:	.block	WORD		; Target addr from DOC
+;
+; Doc data transfer buffer. Doc will send or request up to 256 bytes
+; of data for various commands. This is the intermediate staging buffer.
+;
+doc_buf:	.block	ONE_PAGE
+
 
 		.align	2		; just for debugging.
 		; JP gets put in 'tgtskip' and Target PC gets put in 'tgtjump'

@@ -23,11 +23,16 @@ BOOT		.sect	W
 ; target mode).
 ;
 ; After board initialization is complete, the Debug Monitor does not use the alternate
-; register set, the IX or IY registers, and doesn't disable or enable interrupts or change
-; the interrupt mode (as regular interrupts are not used in debug mode)). Therefore, when
-; the user changes those registers, enables or disables interrupts, or changes the interrupt
-; mode, those changes are immediately applied. This speeds up single-step operations and 
-; going into target mode.
+; register set and doesn't disable or enable interrupts or change the interrupt mode
+; (as regular interrupts are not used in debug mode)). Therefore, when the user changes
+; those registers, enables or disables interrupts, or changes the interrupt mode, those
+; changes are immediately applied. This speeds up single-step operations and going into
+; target mode.
+;
+; The contents of RAM are subject to being overwritten if the target is the SBC, as it may
+; map in the region of RAM the ZID uses and modify it. Therefore, the section of RAM that
+; stores the breakpoint information is check-summed. If it is found to be incorrect the
+; breakpoint information is requested from the DOC to restore it.
 ;
 ; ===========================
 
@@ -70,7 +75,7 @@ ver:		.equ	$
 		.input	"version.inc"		; build date/version
 _ver:		.byte	0
 nmivec:		.org	boot+66h
-		jp	dmdocattn		; DOC ATTN when in Debug Mode uses NMI
+		jp	rdyforcmd		; DOC ATTN when in Debug Mode uses NMI
 
 		.align	4
 		;--------------------------------------------------------------
@@ -90,9 +95,9 @@ bar8hdlr:	.equ	$
 
 		.org	boot+0100h
 		;--------------------------------------------------------------
-		; This could be a breakpoint or DOC asking for attention
-		; Or it could be a full reset
-		; Treat as BRK or ATTN until we figure out for sure (save AF and SP)
+		; This could be a Single-Step, Break, or DOC asking for attention
+		; Or it could be a FULL RESET
+		; Treat as SS/BRK or ATTN until we figure out for sure (save AF and SP)
 		;
 bahdlr:		.equ	$
 		ld	(tempsp),sp
@@ -102,12 +107,28 @@ dbzent:		in	a,(PCADDR_RD)		; read the PC-b0 and status. this will allow us to se
 		ld	(brk_pc_inf),a		; reset is from a BRK or ATTN. Or,
 		bit	ZIDINITD_B,a		; if the ZID isn't initialized treat as Full Reset
 		jp	z,doinit		;  Do the initialization
+		; Check for SS, Break, or ATTN
+		; First, see if it is SS (as BRK will also be indicated for SS)
+		in	a,(BRDCTRL)
+		bit	SSTEP_B,a
+		jr	nz,_ss
 		; Break (hard or soft) or Attention?
+		ld	a,(brk_pc_inf)
 		and	SR_ISHBRK_M|SR_ISSBRK_M|ATTN_ON_M
-		jp	z,doinit		; Odd! Init'ed bit on, but not BRK or ATTN??? Go (re)init...
-brkattn:	; Break or Attention Common
+		jr	nz,_brkattn
+		; Odd, It wasn't SS, BRK, or ATTN, but Init'ed bit was on??? Go (re)init...
+		jp	doinit
+_ss:
+		ld	(sspflag),a		; SS flag to non-zero
+		; Clear the Single-Step control bit
+		and	~SSTEP_M
+		out	(BRDCTRL),a
+_brkattn:	; SS/BRK or Attention Common
 		; Save the rest of the registers
-		ld	sp,regf			; Target SP already in 'tempsp' and af pushed on tempsp
+		ld	sp,rpushiy_		; Target SP already in 'tempsp' and af pushed on tempsp
+		push	iy
+		push	ix
+		ld	sp,regf
 		push	hl
 		push	de
 		push	bc
@@ -118,7 +139,7 @@ brkattn:	; Break or Attention Common
 		push	de
 		push	bc
 		push	af
-		; put the primaries back (the DM doesn't use IX, IY, or alternate registers after init)
+		; put the primaries back (the DM doesn't use the alternate registers after init)
 		exx
 		ex	af,af'
 		; get the IV and IE state
@@ -127,24 +148,16 @@ brkattn:	; Break or Attention Common
 		; we have the state of IFF2, disable ints (we don't use them)
 		di
 		;
-		; Clear the Single-Step control bit (don't want it on unless doing a SS)
-		in	a,(BRDCTRL)
-		and	~SSTEP_M
-		out	(BRDCTRL),a
-		;
 		; Read in and build up the saved PC
 		ld	a,(zflag)
 		bit	zf_dbzed,a
-		; ZZZ For now, always using pushed PC jr	z,sr0		; Special Reset => (not RST8 (ZED/SELF) debugging)
+		; ZZZ For now, always using pushed PC jr	z,sr1		; Special Reset => (not RST8 (ZED/SELF) debugging)
 		;
 		; Debugging using RST8 rather than SPRST (to allow ZED to be used)
 		;  try to get the PC from the stack (pushed by the RST8)
 		;
 		res	zf_dbzed,a	; clear the DB-ZED flag for next BRK/ATTN
 		ld	(zflag),a
-		; Tell DOC we'll be right there so that it will remove ATTN
-		ld	a,DMBRT
-		out	(RPMCTRL),a
 		ld	sp,tempaf	; get the target 'sp' and 'af' saved initially
 		pop	bc		; 'AF' into BC
 		ld	sp,dbmstk	; set our stack (for the calls below)
@@ -158,9 +171,9 @@ brkattn:	; Break or Attention Common
 		inc	hl		; Now HL has correct SP
 		ld	(tempsp),hl	; save for resuming
 		; registers now match what SPRST builds up below: PC in DE, SP in HL, AF in BC
-		jr	sr1		;  so bypass the PC read & build steps
+		jr	sr2		;  so bypass the PC read & build steps
 		;	
-sr0:		; bit-15 was read to get the break status, get it back and build up the rest
+sr1:		; bit-15 was read to get the break status, get it back and build up the rest
 		xor	a
 		ld	d,a
 		ld	e,a
@@ -186,7 +199,7 @@ pcrd2:		and	00000001b
 		pop	bc		; 'af' into bc
 		pop	hl		; 'sp'
 		;
-sr1:		; target: PC in DE, SP in HL, AF in BC
+sr2:		; target: PC in DE, SP in HL, AF in BC
 		ld	sp,regsav2
 		push	iy		; do IY and IX now, so the 2-byte registers are together
 		push	ix
@@ -199,17 +212,26 @@ sr1:		; target: PC in DE, SP in HL, AF in BC
 		; Was this SPRST from a breakpoint, single-step, or ATTN
 		;
 		ld	a,(brk_pc_inf)
+		bit	ATTN_ON_B,a
+		jr	nz,srattn	; DOC poked us, say we are ready and read a command...
 		and	SR_ISHBRK_M|SR_ISSBRK_M
-		ld	a,DMBRKHIT
-		jp	nz,doccmdrd	; Hard or Soft Breakpoint =>
+		ld	a,DMBRKHIT	; Hard or Soft Breakpoint =>
+		jp	nz,doc_statsend	; Send our status and go idle...
+		; Single-Step?
+		ld	a,(sspflag)
+		or	a
+		ld	a,DMSSDONE
+		jp	nz,doc_statsend	; Send our status and go idle...
 		;
-		; ATTN or Single-Step
+		; Odd... not SS??? Just fall through to saying we are ready and reading a command.
+srattn:		;
+		; ATTN...
 		ld	a,DMOKCMDRD
-		jp	doccmdrd
+		jp	doc_cmdrd
 
 
 	.stitle	"RESTART Handlers"
-		.org	boot+300h
+		.align	4
 ;; =============
 ;; Restart Handlers - None of these are expected.
 ;;
@@ -235,174 +257,8 @@ onrst:		; Send an error status to DOC and HALT (lights the HALT LED)
 		halt		; Doc can wake us up if it wants
 
 
-	.stitle	"DOC (Debug Operations Controller) Interaction"
-		.org	boot+400h
-;; =============
-;; Send DOC our status repeatedly until DOC indicates it is ready
-;;
-;; @Params
-;;	A: Status to send (SBC bit is or'ed in)
-;; @Used
-;;	B; Counter
-;;	E: Holds status (A)
-;;	D: Holds DOC status
-;;	HL: Counter
-;; @Return
-;;	NO - This goes IDLE waiting for wake-up by DOC
-;;
-docwrdy:	ld	hl,sflag
-		or	(hl)
-		ld	e,a
-_dwr1:		out	(RPMCTRL),a
-		in	a,(RPMCTRL)
-		ld	d,a
-		cp	DOCREADY
-		jp	z,dmdocattn	; It is ready... Get a command
-		;
-		; DOC isn't ready yet, delay some and try again
-		;
-		xor	a
-		ld	b,a
-_dwr_w1:	dec	a
-		jr	nz,_dwr_w1
-		djnz	_dwr_w1
-		; okay, some time has passed - try DOC again
-		ld	a,e
-		jr	_dwr1		
-
-;; =============
-;; Send DOC our status and then go IDLE
-;;
-;; @Params
-;;	A: Status to send (SBC indicator bit is or'ed in)
-;; @Return
-;;	NO - This goes IDLE waiting for wake-up by DOC
-;;
-;; `doccmddone` sets A to OPERATION DONE OKAY status and falls into `docstat`
-docopdone:	ld	a,DMOPDONE
-docstat:	ld	hl,sflag
-		or	(hl)
-		out	(RPMCTRL),a
-go_idle:	ld	sp,dbmstk
-idle:		jr	idle		; Wait for the DOC to ask us to do something
-
-		.align	4
-doccmdrd:	ld	hl,sflag
-		or	(hl)
-		out	(RPMCTRL),a	; on ATTN this returns quickly. DMBRKHIT takes longer due to waking DOC up.
-		in	a,(RPMCTRL)
-		ld	(doc_cmd),a
-		;
-		; process the DOC command
-		;
-		jp	doccmdprc
-
-		.align	4
-		; DOC wants ATTN (or very first interaction) and we are already in Debug Mode
-		; (so no need to do any register saving)
-		; We come here from an NMI (or initial boot), but we don't need to return.
-dmdocattn:	ld	a,DMOKCMDRD	; sending this to DOC will cause it to turn off ATTN
-		jr	doccmdrd
-
-
-		.align	4
-;; =============
-;; Process a DOC command
-;;
-;; @Params
-;;	A: Command from DOC (also in 'doc_cmd')
-;; @Used
-;;	A, C
-;;
-doccmdprc:	; ZZZ - when we process more commands, maybe use a jump table?
-		cp	DCNOP
-		jp	z,do_nop
-		;
-		cp	DCGREGALL
-		jp	z,do_gregall
-		;
-		cp	DCPREGALL
-		jp	z,do_pregall
-		;
-		cp	DCGO
-		jp	z,do_go
-		;
-		cp	DCGOAT
-		jp	z,do_goat
-		;
-		cp	DCSTEP
-		jp	z,do_step
-		;
-		cp	DCSTEPAT
-		jp	z,do_stepat
-		;
-		cp	DCVER
-		jp	z,do_ver
-		;
-		;
-		; If the DOC just woke up, we might get its ready status
-		; in place of a command, so handle it by just saying
-		; 'okay we are done'.
-		cp	DOCREADY
-		jp	z,docopdone
-		;
-		; Command unknown (or not yet supported)
-		ld	a,DMCMDUK
-		jp	docstat
-
-		.align	2
-do_nop:		; NO OPERATION
-		jp	docopdone
-
-		.align	2
-do_ver:		; Get the Version
-		ld	hl,ver
-		ld	b,_ver-ver
-		ld	c,RPMDATA
-		otir
-		jp	docopdone
-
-		.align	2
-do_goat:	; TARGET GO AT (get a PC value)
-		ld	hl,regpc
-		ld	b,WORDREG
-		ld	c,RPMDATA
-		inir
-		; fall through to GO...
-		;
-do_go:		; TARGET GO (from the current PC)
-		jp	tgtgo
-
-		.align	2
-do_gregall:	; Send all the registers to DOC
-		ld	hl,regied
-		ld	b,ZREGBYTES
-		ld	c,RPMDATA
-		otir
-		jp	docopdone
-
-		.align	2
-do_pregall:	; Receive all the registers from the DOC
-		ld	hl,regied
-		ld	b,ZREGBYTES
-		ld	c,RPMDATA
-		inir
-		jp	docopdone
-
-		.align	2
-do_stepat:	; TARGET STEP AT (get a PC value)
-		ld	hl,regpc
-		ld	b,WORDREG
-		ld	c,RPMDATA
-		inir
-		; fall through to STEP...
-		;
-do_step:	; TARGET STEP (from the current PC)
-		jp	tgtstep
-
-
 	.stitle	"TARGET Operations"
-		.org	boot+500h
+		.align	4
 ;;**************
 ;; @brief `tgtgo` Run the target code.
 ;; @ingroup dbmon
@@ -421,23 +277,31 @@ tgtgo:		; make sure Single-Step is off
 		out	(BRDCTRL),a
 		jr	tgthop
 		.align	4		; to aid debugging
-tgtstep:	; make sure Single-Step is on
+tgtstep:	; set operation to Single-Step
 		in	a,(BRDCTRL)
 		or	SSTEP_M
 		out	(BRDCTRL),a
 		;
 		; Common 'HOP' code for GO and Single-Step
 		;
-tgthop:		ld	a,DMTGTGO	; Tell DOC we are going to Target Mode (RUN or SingleStep)
+tgthop:		; put the JP instruction in ram for the Target hop, skip, jump
+		ld	a,JP_OP
+		ld	(tgtskip),a
+		ld	a,DMTGTGO	; Tell DOC we are going to Target Mode (RUN or SingleStep)
 		out	(RPMCTRL),a	;  so we don't want it to bother us for a while!
+		xor	a
+		ld	(sspflag),a	; clear SS performed flag
 		ld	sp,(regpc)	; Get Target PC and put
 		ld	(tgtjump),sp	; into ram at the JP instruction
 		;
 		; restore the target registers...
-		; Note: IV, IX, IY, and alternates are always valid
+		; Note: IV, and alternates are always valid
 		;	(they aren't used by the DM), so there is no
 		;	need to restore them.
 		;
+		ld	sp,rpopix_
+		pop	ix
+		pop	iy
 		ld	sp,regsav_
 		pop	bc
 		pop	de
@@ -484,7 +348,18 @@ twrbyte:	ld	a,(zflag)
 		nop			; MEMOP 1
 		nop			; MEMOP 2
 		nop			; MEMOP 3
-wrbytez:	ld	(hl),e		; MEMOP 4 - MEMOP 5 write the byte
+		nop			; MEMOP 4
+		nop			; MEMOP 5
+		nop			; MEMOP 6
+		nop			; MEMOP 7
+		nop			; MEMOP 8
+		nop			; MEMOP 9
+		nop			; MEMOP 10
+		nop			; MEMOP 11
+		nop			; MEMOP 12
+		nop			; MEMOP 13
+		nop			; MEMOP 14
+wrbytez:	ld	(hl),e		; MEMOP 15 - MEMOP 16 write the byte
 		; clear Single-Op
 		and	~SOP_M
 		out	(BRDCTRL),a
@@ -519,7 +394,18 @@ trdbyte:	ld	a,(zflag)
 		nop			; MEMOP 1
 		nop			; MEMOP 2
 		nop			; MEMOP 3
-rdbytez:	ld	e,(hl)		; MEMOP 4 - MEMOP 5 read the byte
+		nop			; MEMOP 4
+		nop			; MEMOP 5
+		nop			; MEMOP 6
+		nop			; MEMOP 7
+		nop			; MEMOP 8
+		nop			; MEMOP 9
+		nop			; MEMOP 10
+		nop			; MEMOP 11
+		nop			; MEMOP 12
+		nop			; MEMOP 13
+		nop			; MEMOP 14
+rdbytez:	ld	e,(hl)		; MEMOP 15 - MEMOP 16 read the byte
 		; clear Single-Op
 		and	~SOP_M
 		out	(BRDCTRL),a
@@ -552,9 +438,21 @@ toutbyte:	ld	a,(zflag)
 		out	(TGTGO),a	; Countdown begins:
 		nop			; MEMOP 1
 		nop			; MEMOP 2
-obytez:	out	(c),e			; MEMOP 3&4 - output the byte
+		nop			; MEMOP 3
+		nop			; MEMOP 4
+		nop			; MEMOP 5
+		nop			; MEMOP 6
+		nop			; MEMOP 7
+		nop			; MEMOP 8
+		nop			; MEMOP 9
+		nop			; MEMOP 10
+		nop			; MEMOP 11
+		nop			; MEMOP 12
+		nop			; MEMOP 13
+obytez:		out	(c),e		; MEMOP 14&15 - 16 output the byte
 		; clear Single-Op
-		and	~SOP_M
+		in	a,(BRDCTRL)	; need to re-read,
+		and	~SOP_M		;  as the OUT could have changed it
 		out	(BRDCTRL),a
 		ret
 
@@ -587,7 +485,18 @@ tinbyte:	ld	a,(zflag)
 		out	(TGTGO),a	; Countdown begins:
 		nop			; MEMOP 1
 		nop			; MEMOP 2
-inbytez:	in	e,(c)		; MEMOP 3&4 - input the byte
+		nop			; MEMOP 3
+		nop			; MEMOP 4
+		nop			; MEMOP 5
+		nop			; MEMOP 6
+		nop			; MEMOP 7
+		nop			; MEMOP 8
+		nop			; MEMOP 9
+		nop			; MEMOP 10
+		nop			; MEMOP 11
+		nop			; MEMOP 12
+		nop			; MEMOP 13
+inbytez:	in	e,(c)		; MEMOP 14&15 - 16 input the byte
 		; clear Single-Op
 		and	~SOP_M
 		out	(BRDCTRL),a
@@ -597,6 +506,317 @@ inbytez:	in	e,(c)		; MEMOP 3&4 - input the byte
 _tinbyte:	ld	sp,dbmstk
 		call	tinbyte
 		jp	idle
+
+
+	.stitle	"DOC (Debug Operations Controller) Interaction"
+		.align	4
+;; =============
+;; Send DOC our status repeatedly until DOC indicates it is ready
+;;
+;; @Params
+;;	A: Status to send (SBC bit is or'ed in)
+;; @Used
+;;	B; Counter
+;;	E: Holds status (A)
+;;	D: Holds DOC status
+;;	HL: Counter
+;; @Return
+;;	NO - This goes IDLE waiting for wake-up by DOC
+;;
+doc_wrdy:	ld	a,DMINIT
+		ld	hl,sflag
+		or	(hl)
+		ld	e,a
+_dwr1:		out	(RPMCTRL),a
+		in	a,(RPMCTRL)
+		ld	d,a
+		cp	DOCREADY
+		jp	z,go_idle	; It is ready and so are we... Go Idle
+		;
+		; DOC isn't ready yet, delay some and try again
+		;
+		xor	a
+		ld	b,a
+_dwr_w1:	dec	a
+		jr	nz,_dwr_w1
+		djnz	_dwr_w1
+		; okay, some time has passed - try DOC again
+		ld	a,e
+		jr	_dwr1		
+
+		.align	4
+;; =============
+;; Send DOC our status and then go IDLE
+;;
+;; @Params
+;;	A: Status to send (SBC indicator bit is or'ed in)
+;; @Return
+;;	NO - This goes IDLE waiting for wake-up by DOC
+;;
+;; `doccmddone` sets A to OPERATION DONE OKAY status and falls into `doc_statsend`
+doc_opdone:	ld	a,DMOPDONE
+doc_statsend:	ld	hl,sflag
+		or	(hl)
+		out	(RPMCTRL),a
+go_idle:	ld	sp,dbmstk
+idle:		jr	idle		; Wait for the DOC to ask us to do something
+
+		.align	4
+doc_cmdrd:	ld	hl,sflag
+		or	(hl)
+		out	(RPMCTRL),a	; on ATTN this returns quickly. DMBRKHIT takes longer due to waking DOC up.
+		in	a,(RPMCTRL)
+		;
+		; Check that the DM/DC bit (bit-7) is set. Otherwise this isn't for us.
+		bit	DM_CMD_STAT_B,a
+		jr	z,go_idle
+		cp	DOCREADY	; if it's just their 'READY' status, send ours
+		jr	z,doc_wrdy
+		;
+		; process the DOC command
+		;
+		ld	(doc_cmd),a
+		jp	doccmdprc
+
+		.align	4
+		; DOC wants ATTN, or our very first interaction after reset.
+		; We are already in Debug Mode so no need to do any register saving.
+		; We come here from an NMI (or initial boot), but no need to return.
+rdyforcmd:	ld	a,DMOKCMDRD	; Tell DOC we're ready for a command
+		jr	doc_cmdrd
+
+
+		.align	4
+;; =============
+;; Get an address and count from DOC.
+;;
+;; @Used:
+;;	A, C
+;; Return:
+;;	HL: address from DOC
+;;	B: count
+;;
+doc_gaddrcnt:	ld	c,RPMDATA
+		in	l,(c)
+		in	h,(c)
+		in	b,(c)
+		ld	a,l
+		ld	(doc_addr),a
+		ld	a,h
+		ld	(doc_addr+1),a
+		ld	a,b
+		ld	(doc_cnt),a
+		ret
+
+		.align	4
+;; =============
+;; Get a buffer of values from DOC.
+;;
+;; @Used:
+;;	A, B, C, H, L
+;; @Result:
+;;	doc_addr = Address received
+;;	doc_cnt	 = Count received
+;;	doc_buf  = Data received
+;; @Return:
+;;	B: Count
+;;	HL: Address
+;;
+doc_gdata:	.equ	$
+		call	doc_gaddrcnt
+		ld	hl,doc_buf
+		ld	c,RPMDATA
+		inir
+		ld	hl,(doc_addr)
+		ld	a,(doc_cnt)
+		ld	b,a
+		ret
+
+		.align	4
+;; =============
+;; Send a buffer of values to DOC.
+;;
+;; @Expects:
+;;	doc_cnt  = Count to send
+;;	doc_buf  = Data to send
+;; @Uses:
+;;	A, B, C, H, L
+;;
+doc_sdata:	.equ	$
+		ld	a,(doc_cnt)
+		ld	b,a
+		ld	hl,doc_buf
+		ld	c,RPMDATA
+		otir
+		ret
+
+		.align	4
+;; =============
+;; Process a DOC command
+;;
+;; @Params
+;;	A: Command from DOC (also in 'doc_cmd')
+;; @Used
+;;	A, C
+;;
+doccmdprc:	; ZZZ - When we process more commands, maybe use a jump table?
+		;	In the grand scheme of things, this doesn't take a lot
+		;	of time or memory, and it's easy to understand and debug.
+		cp	DCNOP
+		jp	z,do_nop
+		;
+		cp	DCGM
+		jp	z,do_gmem
+		;
+		cp	DCGP
+		jp	z,do_gport
+		;
+		cp	DCGREGALL
+		jp	z,do_gregall
+		;
+		cp	DCPM
+		jp	z,do_pmem
+		;
+		cp	DCPP
+		jp	z,do_pport
+		;
+		cp	DCPREGALL
+		jp	z,do_pregall
+		;
+		cp	DCGO
+		jp	z,do_go
+		;
+		cp	DCGOWREG
+		jp	z,do_gowreg
+		;
+		cp	DCSTEP
+		jp	z,do_step
+		;
+		cp	DCSTEPWREG
+		jp	z,do_stepwreg
+		;
+		cp	DCVER
+		jp	z,do_ver
+		;
+		;
+		; If the DOC just woke up, we might get its ready status
+		; in place of a command, so handle it by just saying
+		; 'okay we are done'.
+		cp	DOCREADY
+		jp	z,doc_opdone
+		;
+		; Command unknown (or not yet supported)
+		ld	a,DMCMDUK
+		jp	doc_statsend
+
+		.align	2
+do_nop:		; NO OPERATION
+		jp	doc_opdone
+
+		.align	2
+do_ver:		; Get the Version
+		ld	hl,ver
+		ld	b,_ver-ver
+		ld	c,RPMDATA
+		otir
+		jp	doc_opdone
+
+		.align	2
+do_gowreg:	; TARGET GO with REGISTERS
+		ld	hl,regied
+		ld	b,ZREGBYTES
+		ld	c,RPMDATA
+		inir
+		; fall through to GO...
+		;
+do_go:		; TARGET GO (from the current PC)
+		jp	tgtgo
+
+		.align	2
+do_gmem:	; Send memory to DOC
+		;  READ: Addr, Count
+		call	doc_gaddrcnt
+		ld	ix,doc_buf
+_gmem:		; Get the bytes into the buffer
+		call	trdbyte;
+		ld	(ix),e
+		inc	hl
+		inc	ix
+		djnz	_gmem
+		; data is in buffer, send it to DOC
+		call	doc_sdata
+		jp	doc_opdone
+
+		.align	2
+do_gport:	; Send port values to DOC
+		;  READ: Addr, Count
+		call	doc_gaddrcnt
+		ld	ix,doc_buf
+		ld	c,l
+_gport:		; Get the values into the buffer
+		ld	d,b	; save count
+		ld	b,h	; upper address into b
+		call	tinbyte;
+		ld	(ix),e
+		inc	ix
+		ld	b,d
+		djnz	_gport
+		; data is in buffer, send it to DOC
+		call	doc_sdata
+		jp	doc_opdone
+
+		.align	2
+do_pmem:	; Get values from DOC and put in Target memory
+		call	doc_gdata
+		ld	ix,doc_buf
+_pmem:		ld	e,(ix)
+		call	twrbyte
+		inc	hl
+		inc	ix
+		djnz	_pmem
+		jp	doc_opdone
+
+		.align	2
+do_pport:	; Get values from DOC and output to Target port
+		call	doc_gdata
+		ld	ix,doc_buf
+		ld	c,l
+_pport:		; Put the values from the buffer
+		ld	d,b	; save count
+		ld	b,h	; upper address into b
+		ld	e,(ix)	; value
+		call	toutbyte
+		inc	ix
+		ld	b,d
+		djnz	_pport
+		jp	doc_opdone
+
+		.align	2
+do_gregall:	; Send all the registers to DOC
+		ld	hl,regied
+		ld	b,ZREGBYTES
+		ld	c,RPMDATA
+		otir
+		jp	doc_opdone
+
+		.align	2
+do_pregall:	; Receive all the registers from the DOC
+		ld	hl,regied
+		ld	b,ZREGBYTES
+		ld	c,RPMDATA
+		inir
+		jp	doc_opdone
+
+		.align	2
+do_stepwreg:	; TARGET STEP with REGISTERS
+		ld	hl,regied
+		ld	b,ZREGBYTES
+		ld	c,RPMDATA
+		inir
+		; fall through to STEP...
+		;
+do_step:	; TARGET STEP (from the current PC)
+		jp	tgtstep
 
 
 		.align	4
@@ -657,9 +877,6 @@ init2:		; fill ram with 0
 		ld	de,DB_RAMBASE+1
 		ld	bc,(DB_RAMPC*ONE_PAGE)-1
 		ldir
-		; put the JP instruction in ram for the Target hop, skip, jump
-		ld	a,JP_OP
-		ld	(tgtskip),a
 		;
 		; Determine how many Breakpoint Address Units (BAU) there are.
 		; 1 & 2 are on the main board, so they should be there, but
@@ -708,10 +925,8 @@ initsbcf:	srl	a		; move the SBC indicator into bit 0
 		out	(BRDCTRL),a
 		; now let DOC know that we've initialized
 		;  and go idle...
-		ld	a,DMINIT
-		jp	docwrdy	
+		jp	doc_wrdy	
 
 		.align	2
 		.byte	"!dbmon!"
 		.end
-

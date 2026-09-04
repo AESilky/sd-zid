@@ -31,17 +31,17 @@ ASMOPTS	:= -li$(BASEPATH) -li$(CMNPATH) -i./ -d _BLD_DT=$(BUILD_DT)
 
 PRNOPTS := --media=Letter --landscape --lines-per-page=68 --no-header --font="Courier8" --truncate-lines --no-job-header
 
-%.obj:	%.asm
+%.obj:	%.z80
 	$(ASM) $(ASMOPTS) $<
 
-%.lst:	%.asm
+%.lst:	%.z80
 	$(ASM) $(ASMOPTS) $<
 
 all:	$(LOBJS)
 
-dbmon.obj:		makefile dbmon.asm $(CMNFILES) $(INCS)
+dbmon.obj:		makefile dbmon.z80 $(CMNFILES) $(INCS)
 
-storage.obj:	makefile storage.asm storage.inc $(CMNFILES)
+storage.obj:	makefile storage.z80 storage.inc $(CMNFILES)
 
 dbmon.bin:	makefile $(LOBJS) LIBS dbmon.lnk
 	$(ALINK) -f=dbmon.lnk
@@ -57,6 +57,9 @@ ROM:	$(ROMIMG)
 listcode:	
 	enscript $(PRNOPTS) dbmon.lst 
 
+listcmds:
+	enscript $(PRNOPTS) doccmds.inc
+
 listmap:	
 	enscript $(PRNOPTS) dbmon.map 
 
@@ -64,8 +67,7 @@ liststo:
 	enscript $(PRNOPTS) storage.lst 
 
 clean:
-	rm -f *.lst *.map *.obj
-	rm -f $(ROMIMG)
+	rm -f *.lst *.map *.obj *.bin
 
 cleanall:
 	cd $(BASEPATH);make clean
