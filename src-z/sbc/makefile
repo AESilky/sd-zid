@@ -32,17 +32,17 @@ ASMOPTS	:= -li$(BASEPATH) -li$(CMNPATH) -i./ -d _BLD_DT=$(BUILD_DT)
 
 PRNOPTS := --media=Letter --landscape --lines-per-page=68 --no-header --font="Courier8" --truncate-lines --no-job-header
 
-%.obj:	%.asm
+%.obj:	%.z80
 	$(ASM) $(ASMOPTS) $<
 
-%.lst:	%.asm
+%.lst:	%.z80
 	$(ASM) $(ASMOPTS) $<
 
 all:	$(LOBJS)
 
-sbc1.obj:	makefile sbc1.asm $(CMNFILES) $(LIBFILES) $(INCS)
+sbc1.obj:	makefile sbc1.z80 $(CMNFILES) $(LIBFILES) $(INCS)
 
-storage.obj: makefile storage.asm storage.inc $(CMNFILES)
+storage.obj: makefile storage.z80 storage.inc $(CMNFILES)
 
 sbc.bin:	makefile $(LOBJS) LIBS sbc.lnk
 	$(ALINK) -f=sbc.lnk
@@ -63,8 +63,7 @@ liststo:
 	enscript $(PRNOPTS) storage.lst 
 
 clean:
-	rm -f *.lst *.map *.obj
-	rm -f $(ROMIMG)
+	rm -f *.lst *.map *.obj *.bin
 
 cleanall:
 	cd $(BASEPATH);make clean

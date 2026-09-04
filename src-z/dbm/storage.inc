@@ -48,6 +48,8 @@ ZREGBYTES	.equ	26	; Must match DOC
 BYTEREG		.equ	BYTE
 WORDREG		.equ	WORD
 ;
+	.global	rpopix_
+	.global	rpushiy_
 	.global	regsav2
 	.global	tempaf		; Temporary AF storage (saved by 'push')
 	.global	tempsp		; Temporary SP storage (SP saved here, then set here)
@@ -59,6 +61,7 @@ WORDREG		.equ	WORD
 	.global sflag		; Is SBC
 sf_issbc	.equ	1	;  bit-1: Indicates target is the SBC (same board)
 sf_issbc_m	.equ	00000001b
+	.global sspflag		; Single-Step was performed (non-zero, value may vary)
 	.global tflag		; Target state/status bits
 	.global zflag		; ZID state/status bits
 zf_usezid	.equ	7	;  bit-7: Use ZID memory and ports for 'target' ops
@@ -105,6 +108,9 @@ brkalen_m:	.equ	00000001b	; Address Low enabled
 brkahen_m:	.equ	00000010b	; Address High enabled
 
 	.global doc_cmd		; last command from DOC
+	.global doc_cnt		; byte count from DOC
+	.global doc_addr	; target address from DOC
+	.global	doc_buf		; transfer buffer for DOC
 
 	.global dbmstk		; debug monitor stack (top)
 

@@ -27,7 +27,7 @@ ASMOPTS	:= -li$(BASEPATH) -i./ -d _BLD_DT=$(BUILD_DT)
 
 PRNOPTS := --media=Letter --landscape --lines-per-page=68 --no-header --font="Courier8" --truncate-lines --no-job-header
 
-%.obj:	%.asm
+%.obj:	%.z80
 	$(ASM) $(ASMOPTS) $<
 
 %.lst:	%.inc

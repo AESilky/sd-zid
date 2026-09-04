@@ -9,6 +9,10 @@
 ; ==============
 ; Debug Monitor (DM) to Debug Operation Controller (DOC) State/Status indicators
 ;
+DM_CMD_STAT_B	.equ	7
+DM_CMD_STAT_M	.equ	10000000b
+
+;
 ; Status from DOC (CTRL port read)
 DOCREADY	.equ	0FAh		; DOC is ready
 
@@ -22,6 +26,7 @@ DMINIT		.equ	080h		; DM has finished initialization
 DMOPDONE	.equ	082h		; DOC requested operation complete
 DMOKCMDRD	.equ	084h		; OK, reading command
 DMCMDUK		.equ	088h		; Requested Command Unknown
+DMSSDONE	.equ	08Ah		; Single-Step done
 DMBRKHIT	.equ	08Ch		; Breakpoint hit
 DMTGTGO		.equ	08Eh		; DM transitioning to Target Mode
 					; (so don't interrupt for a bit)
@@ -61,8 +66,9 @@ DCCMDIND	.equ	080h
 
 ; --------------
 ; Do Nothing, go IDLE. Don't read another command.
+; (same as DOC Ready status, to make it easy to sync up)
 ;
-DCNOP		.equ	080h
+DCNOP		.equ	DOCREADY
 
 ; --------------
 ; GET the firmware version
@@ -74,7 +80,7 @@ DCVER		.equ	081h
 
 ; --------------
 ; GET the complete set of registers (a different command can be used to just
-; get the primary, alternate, or single, register)
+; get a single register)
 ;
 ; DC Sends to the data register:
 ; 26 BYTES: IE/ID(bit-2),IV,(alts)F',A',C',B',E',D',L',H',
@@ -84,7 +90,7 @@ DCGREGALL	.equ	088h
 
 ; --------------
 ; PUT the complete set of registers (a different command can be used to just
-; put the primary, alternate, or single, register)
+; put a single register)
 ;
 ; DC Reads from the data register:
 ; 26 BYTES: IE/ID(bit-2),IV,(alts)F',A',C',B',E',D',L',H',
@@ -105,6 +111,12 @@ DCGIEDV		.equ	08Ah
 ; DC Reads from the data register
 ; 2 BYTES: IE/ID(bit-2),IV
 DCPIEDV		.equ	08Bh
+
+;; ==============
+;;
+;; 2x and 3x Commands Get/Put single registers, bytes and pages of memory,
+;; and ports (I/O).
+;;
 
 ; --------------
 ; GET a (byte) register. The register is encoded in the lower 4 bits (using a
@@ -133,32 +145,6 @@ DCPIEDV		.equ	08Bh
 ;
 DCGREG		.equ	090h		; 10..1F
 
-;
-; Register mask values for the low 4-bits for DCGREG and DCPREG
-DCRFP_M		.equ	00h
-DCRAP_M		.equ	01h
-DCRCP_M		.equ	02h
-DCRBP_M		.equ	03h
-DCREP_M		.equ	04h
-DCRDP_M		.equ	05h
-DCRLP_M		.equ	06h
-DCRHP_M		.equ	07h
-DCRF_M		.equ	08h
-DCRA_M		.equ	09h
-DCRC_M		.equ	0Ah
-DCRB_M		.equ	0Bh
-DCRE_M		.equ	0Ch
-DCRD_M		.equ	0Dh
-DCRL_M		.equ	0Eh
-DCRH_M		.equ	0Fh
-
-
-;; ==============
-;;
-;; 2x and 3x Commands Get/Put single registers, bytes and pages of memory,
-;; and ports (I/O).
-;;
-
 ; --------------
 ; PUT a register. The register is encoded in the lower 4 bits
 ; (the same as GET REG)
@@ -183,6 +169,25 @@ DCRH_M		.equ	0Fh
 ; 1 BYTE
 ;
 DCPREG		.equ	0A0h		; 20..2F
+
+;
+; Register mask values for the low 4-bits for DCGREG and DCPREG
+DCRFP_M		.equ	00h
+DCRAP_M		.equ	01h
+DCRCP_M		.equ	02h
+DCRBP_M		.equ	03h
+DCREP_M		.equ	04h
+DCRDP_M		.equ	05h
+DCRLP_M		.equ	06h
+DCRHP_M		.equ	07h
+DCRF_M		.equ	08h
+DCRA_M		.equ	09h
+DCRC_M		.equ	0Ah
+DCRB_M		.equ	0Bh
+DCRE_M		.equ	0Ch
+DCRD_M		.equ	0Dh
+DCRL_M		.equ	0Eh
+DCRH_M		.equ	0Fh
 
 ; --------------
 ; GET a 16-bit register. The register is encoded in the lower 2 bits
@@ -210,58 +215,42 @@ DCGRP		.equ	0B0h		; 30..33
 DCPRP		.equ	0B4h		; 34..37
 
 ; --------------
-; GET a byte of memory.
+; GET a region of memory (up to 256 bytes).
 ;   
 ; DC Reads from the data register:
-; 2 BYTES (L/H): ADDRESS
+; 3 BYTES: START ADDRESS (L/H), COUNT (0=256)
 ; DC Sends to the data register:
-; 1 BYTE: VALUE
+; n BYTES: VALUE0, VALUE1, ..., VALUEn
 ;
-DCGMB		.equ	0B8h
+DCGM		.equ	0BAh
 
 ; --------------
-; PUT a byte of memory.
+; PUT a region of memory (up to 256 bytes).
 ;   
 ; DC Reads from the data register:
-; 3 BYTES (L/H): ADDRESS, VALUE
+; 3 BYTES: ADDRESS (L/H), COUNT (0=256)
+; n BYTES: VALUE0, VALUE1, ..., VALUEn
 ;
-DCPMB		.equ	0B9h
+DCPM		.equ	0BBh
 
 ; --------------
-; GET a page of memory.
+; GET bytes from a port.
 ;   
 ; DC Reads from the data register:
-; 2 BYTES (L/H): START ADDRESS
+; 3 BYTES: ADDRESS (L/H), COUNT (0=256)
 ; DC Sends to the data register:
-; 256 BYTES: VALUE0, VALUE1, ..., VALUE255
+; n BYTES: VALUE0, VALUE1, ..., VALUEn
 ;
-DCGMP		.equ	0BAh
+DCGP		.equ	0BCh
 
 ; --------------
-; PUT a page of memory.
+; PUT bytes to a port.
 ;   
 ; DC Reads from the data register:
-; 258 BYTES (L/H): ADDRESS, VALUE0, VALUE1, ..., VALUE255
+; 3 BYTES: ADDRESS (L/H), COUNT (0=256)
+; n BYTES: VALUE0, VALUE1, ..., VALUEn
 ;
-DCPMP		.equ	0BBh
-
-; --------------
-; GET a byte from a port.
-;   
-; DC Reads from the data register:
-; 2 BYTES (L/H): ADDRESS
-; DC Sends to the data register:
-; 1 BYTE: VALUE
-;
-DCGPB		.equ	0BCh
-
-; --------------
-; PUT a byte to a port.
-;   
-; DC Reads from the data register:
-; 3 BYTES (L/H): ADDRESS, VALUE
-;
-DCPPB		.equ	0BDh
+DCPP		.equ	0BDh
 
 
 ;; ==============
@@ -363,12 +352,12 @@ DCPBRK2NO	.equ	0CFh
 DCGO		.equ	0D0h
 
 ; --------------
-; GO AT - Run the target from a given location.
+; GO w/Registers - Run the target but read all the registers first.
 ;
 ; DC Reads from the data register:
-; 2 BYTES: ADDR-L,ADDR-H
+; Same as DCGREGALL
 ;
-DCGOAT		.equ	0D1h
+DCGOWREG	.equ	0D1h
 
 ; --------------
 ; STEP - Single-Step the target from the current PC.
@@ -376,7 +365,10 @@ DCGOAT		.equ	0D1h
 DCSTEP		.equ	0D2h
 
 ; --------------
-; STEP AT - Single-Step the target from a given location.
+; STEP AT - Single-Step the target but read all the registers first.
 ;
-DCSTEPAT	.equ	0D3h
+; DC Reads from the data register:
+; Same as DCGREGALL
+;
+DCSTEPWREG	.equ	0D3h
 
