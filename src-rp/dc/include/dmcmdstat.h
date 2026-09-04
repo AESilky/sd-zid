@@ -15,15 +15,17 @@ typedef enum DM_STATUS_VAL_ {
     DMOPDONE    = 0x82,     // DOC requested operation complete
     DMOKCMDRD   = 0x84,     // OK, reading command
     DMCMDUK     = 0x88,     // Requested command unknown
+    DMSSDONE    = 0x8A,     // Single-Step done
     DMBRKHIT    = 0x8C,     // Breakpoint hit
-    DMTGTGO     = 0x8E,     // DM transitioning to Target Mode (don't interrupt)
+    DMTGTGO     = 0x8E,     // DM transitioning to Target Mode
+                            //  (don't interrupt for a bit)
     DMBRT       = 0x90,     // Be Right There. Sent when ATTN requested
                             //  indicating that DM is transitioning
                             //  from Target to Debug and needs ATTN
                             //  cleared to continue. DM will follow
                             //  with DMOKCMDRD once the Target state
                             //  has been taken care of.
-    DMRSTEXEC   = 0xC2,     //  DM executed a RST instruction(ERROR)
+    DMRSTEXEC   = 0xC2,     //  DM executed a RST instruction (ERROR)
 } dm_stat_val_t;
 #define DMSTATSBC_M 0x01    //  Bit added to status if target is SBC
 
@@ -36,7 +38,7 @@ typedef enum DM_STATUS_VAL_ {
  * Also Note: DM command values always have Bit-7 set
  */
 typedef enum DM_CMDS_ {
-    DMNOP           = 0x80,
+    DMNOP           = 0xFA,
     DCVER           = 0x81, //
     DCGREGALL       = 0x88,	// 
     DCPREGALL       = 0x89,	// 
@@ -46,21 +48,22 @@ typedef enum DM_CMDS_ {
     DCPREG          = 0xA0,	//  20..2F
     DCGRP           = 0xB0,	//  30..33
     DCPRP           = 0xB4,	//  34..37
-    DCGMB           = 0xB8,	// 
-    DCPMB           = 0xB9,	// 
-    DCGMP           = 0xBA,	// 
-    DCPMP           = 0xBB,	// 
-    DCGPB           = 0xBC,	// 
-    DCPPB           = 0xBD,	// 
+    DCGM            = 0xBA,	// Get mem byte(s)
+    DCPM            = 0xBB,	// Put mem byte(s)
+    DCGP            = 0xBC,	// Get port byte(s)
+    DCPP            = 0xBD,	// Put port byte(s)
     DCGBRKCNT       = 0xC0,	// 
     DCPBRKS1        = 0xC1, //
     DCPBRK2NA       = 0xC2,	// 42..4E Break - 2..Break - 14
     DCPBRK2NO       = 0xCF,	// 
     DCGO            = 0xD0, //
-    DCGOAT          = 0xD1, //
+    DCGOWREG        = 0xD1, //
     DCSTEP          = 0xD2, //
-    DCSTEPAT        = 0xD3, //
-    DC_INITRDY      = 0xFA, // Status (not command) indicating we are ready
+    DCSTEPWREG      = 0xD3, //
+    DC_INITRDY      = DMNOP, // Status (not command) indicating we are ready
+                             //  should be available for a read any time DM sends 80/81
+                             //  The same value as NOP is used to make it easier to sync up
+    DC_DATARDUXPCTD = 0xEE  // There was an unexpected read from CTRL
 } dm_cmd_t;
 #define NOCMD ((dm_cmd_t)0)
 

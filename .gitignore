@@ -2,6 +2,9 @@
 **/~*
 **/.~*
 
+# OS (core dumps, etc.)
+core
+
 # Prerequisites
 *.d
 

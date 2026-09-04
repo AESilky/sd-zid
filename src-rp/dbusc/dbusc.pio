@@ -80,6 +80,7 @@ drdy:
     jmp     done                       
 datain:
     in      pins,8                      ; read data from the bus
+    push    NOBLOCK
 done:
     irq     PIO_DDONE_IRQ      side 0   ; Releases MOD_SEL SM
 .wrap

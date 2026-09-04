@@ -5,6 +5,7 @@ target_sources(dc INTERFACE
     dc.c
     dcmsg.c
     z80reg.c
+    dmcomm.c
 )
 
 target_include_directories(dc INTERFACE

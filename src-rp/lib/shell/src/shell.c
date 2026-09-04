@@ -460,6 +460,11 @@ void shell_prompt() {
     shell_puts(shell_get_prompt());
 }
 
+void shell_prompt_again() {
+    shell_prompt();
+    shell_puts(_getline_buf);
+}
+
 void shell_put_apptext(char* str) {
     // If the Command Shell is active, don't display output.
     if (CMD_SNOOZING == cmd_get_state()) {

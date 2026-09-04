@@ -70,16 +70,16 @@ _finally:
 
 const cmd_handler_entry_t cmds_attn_entry = {
     _exec_dbc_attn,
-    1,
-    "attn",
+    2,
+    ".attn",
     "[0|1]",
     "Show the ATTN line state. Set the ATTN line state."
 };
 
 const cmd_handler_entry_t cmds_dbwr_entry = {
     _exec_dbwr,
-    4,
-    "dbwr",
+    5,
+    ".dbwr",
     "v",
     "Write the value to the data bus."
 };

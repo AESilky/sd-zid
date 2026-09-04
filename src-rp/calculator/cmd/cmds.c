@@ -731,34 +731,34 @@ static const cmd_handler_entry_t cmds_add_entry = {
     _exec_add,
     3,
     "add",
-    "[num [[num] ...]]",
-    "Add multiple values or display the last result.\n   \
-The result is displayed in decimal, hex, and octal.\n   \
-The result is placed in the calculator's X register.\n   \
-See also: calc, nbase, sub\n"
+    "[num [num] ...]",
+    "Add multiple values or display the last result.\n\
+   The result is displayed in decimal, hex, and octal.\n\
+   The result is placed in the calculator's X register.\n\
+    SEE ALSO: calc, nbase, sub\n"
 };
 
 static const cmd_handler_entry_t cmds_calc_entry = {
     _exec_calc,
     1,
     "calc",
-    "[v|op] ...",
-    "Programmer's Calculator in the spirit of the HP-16C.\n   \
-RPN using values 'v' and operations 'op'. Entry can span multiple lines.\n   \
-Use: 'calc ops' for a list of operators.\n   \
-See also: add, nbase, sub\n"
+    "[v|op] ... (\"ops\" to list operators)",
+    "Programmer's Calculator in the spirit of the HP-16C.\n\
+   RPN using values 'v' and operations 'op'. Value entry and operations\n\
+   can span multiple lines/invocations.\n\
+    SEE ALSO: add, nbase, sub\n"
 };
 
 static const cmd_handler_entry_t cmds_sub_entry = {
     _exec_sub,
     3,
     "sub",
-    "[num [[num] ...]]",
-    "Subtract multiple values or display the last result. The values are\n   \
-subtracted from the first going from left to right. The result is displayed\n   \
-in decimal, hex, and octal.\n   \
-The result is placed in the calculator's X register.\n   \
-See also: calc, nbase, sub\n"
+    "[num [num] ...]",
+    "Subtract multiple values or display the last result. The values are\n\
+   subtracted from the first going from left to right. The result is displayed\n\
+   in decimal, hex, and octal.\n\
+   The result is placed in the calculator's X register.\n\
+    SEE ALSO: calc, nbase, sub\n"
 };
 
 

@@ -67,8 +67,11 @@ extern "C" {
 #define MORSE_CHR_SP_MS (3 * MORSE_DOT_MS)
 
     // Memory/Computer Sizes
-#define ONE_K (1024)
-#define ONE_M (ONE_K*ONE_K)
+#define BYTE    (1)
+#define WORD    (2)
+#define PAGE    (256)
+#define ONE_K   (1024)
+#define ONE_M   (ONE_K*ONE_K)
 
 // Some general purpose time constants
 #define ONE_SECOND_MS 1000

@@ -69,19 +69,25 @@ static msg_handler_fn _on_dout_cmplt;
 
 // PIO and SM Configurations
 //
-static pio_sm_pocfg _msel_pocfg;                // Handles Module Select, Addr, RD/WR
-static pio_sm_pocfg _datarw_pocfg;              // Automated read/write (Data reg)
-static pio_sm_pocfg _mrd_pocfg;                 // Used to manually read from the data bus
-static pio_sm_pocfg _mwr_pocfg;                 // Used to manually write to the data bus
+static pio_sm_pocfg _msel_pocfg;        // Handles Module Select, Addr, RD/WR
+static pio_sm_pocfg _datarw_pocfg;      // Automated read/write (Data reg)
+static pio_sm_pocfg _mrd_pocfg;         // Used to manually read from the data bus
+static pio_sm_pocfg _mwr_pocfg;         // Used to manually write to the data bus
 
-// DMA Configurations
-static uint _dma_to_pio;                        // DMA channel used to feed the HOST READ PIO-SM
-static uint _dma_from_pio;                      // DMA channel used to get data from the HOST WRITE PIO-SM
-static dma_channel_config _dma_to_pio_cfg;      // Keep the config so the channel is easy to re-run
-static dma_channel_config _dma_from_pio_cfg;    // Keep the config so the channel is easy to re-run
+// DMA Channels and Configurations
+static uint _dma_to_start;              // DMA channel to start for the prep'ed operation R/S/SR/SS
+static uint _dma_to_irqen;              // DMA channel to IRQ enable
+static uint _dmaR_from_pio;             // DMA channel used to get data from the HOST WRITE PIO-SM
+static uint _dmaS_to_pio;               // DMA channel used to feed the HOST READ PIO-SM and interrupt
+static uint _dmaSS_to_pio;              // DMA channel used to feed the HOST READ PIO-SM and trigger dmaS
+static uint _dmaSR_to_pio;              // DMA channel used to feed the HOST READ PIO-SM and trigger dmaR
+static dma_channel_config _dmaR_cfg;    // Keep the config so the channel is easy to re-run
+static dma_channel_config _dmaS_cfg;    // Keep the config so the channel is easy to re-run
+static dma_channel_config _dmaSR_cfg;   // Keep the config so the channel is easy to re-run
+static dma_channel_config _dmaSS_cfg;   // Keep the config so the channel is easy to re-run
 
-static volatile msg_id_t _dma_dread_msg;        // Message to post when the DMA has completed a READ op (to host)
-static volatile msg_id_t _dma_dwrite_msg;       // Message to post when the DMA has completed a WRITE op (from host)
+static volatile msg_id_t _dma_dsnddone_msg; // Message to post when the DMA has completed a READ op (to host)
+static volatile msg_id_t _dma_drcvdone_msg; // Message to post when the DMA has completed a WRITE op (from host)
 
 static volatile int _rd_default_cnt;
 static volatile int _wr_default_cnt;
@@ -123,38 +129,45 @@ static uint8_t _man_read();
 void _irq_dma_pio() {
     cmt_msg_t msg;
     // See which one is done.
-    if (dma_channel_get_irq0_status(_dma_to_pio)) {
-        dma_channel_acknowledge_irq0(_dma_to_pio);
-        // restart it
-        dma_channel_hw_addr(_dma_to_pio)->transfer_count = 1;
-        dma_channel_hw_addr(_dma_to_pio)->al3_read_addr_trig = (uintptr_t)&_def_databuf;
+    if (dma_channel_get_irq0_status(_dmaS_to_pio)) {
+        dma_channel_acknowledge_irq0(_dmaS_to_pio);
+        // We don't automatically restart the TO PIO DMA
+        //dma_channel_hw_addr(_dmaS_to_pio)->transfer_count = 1;
+        //dma_channel_hw_addr(_dmaS_to_pio)->al3_read_addr_trig = (uintptr_t)&_def_databuf;
         // indicate it was a RD by the Host
-        cmt_msg_init(&msg, _dma_dread_msg);
+        cmt_msg_init(&msg, _dma_dsnddone_msg);
         msg.data.value8u = _def_databuf;
         postAPPMsg(&msg);
+        _dma_dsnddone_msg = MSG_DBUS_DREAD_UNEXPECTED;
     }
-    if (dma_channel_get_irq0_status(_dma_from_pio)) {
+    if (dma_channel_get_irq0_status(_dmaR_from_pio)) {
         // Disable the SM while we handle the end of transfer
         pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, false);
         pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, false);
         //
-        dma_channel_acknowledge_irq0(_dma_from_pio);
-        // Reconfigure it for 'idle' operation and start it
-        dma_channel_hw_addr(_dma_from_pio)->transfer_count = 1;
-        dma_channel_hw_addr(_dma_from_pio)->al2_write_addr_trig = (uintptr_t)&_def_databuf;
+        dma_channel_acknowledge_irq0(_dmaR_from_pio);
         // indicate it was a WR from the Host
         if (_on_din_cmplt) {
             cmt_exec_init(&msg, _on_din_cmplt);
             _on_din_cmplt = NULL;
         }
         else {
-            cmt_msg_init(&msg, _dma_dwrite_msg);
+            cmt_msg_init(&msg, _dma_drcvdone_msg);
             msg.data.value8u = _def_databuf;
         }
         postAPPMsg(&msg);
-        // Reenable the SM
+        //Reenable the SM
         pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, true);
         pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, true);
+        // Drain the RX FIFO
+        while (!pio_sm_is_rx_fifo_empty(_datarw_pocfg.pio, _datarw_pocfg.sm)) {
+            (void)pio_sm_get(_datarw_pocfg.pio, _datarw_pocfg.sm); // Read and discard value
+        }
+        // Set the message to unexpected write
+        _dma_drcvdone_msg = MSG_DBUS_DWRITE_UNEXPECTED;
+        // Reconfigure it for 'idle' operation and start it
+        dma_channel_hw_addr(_dmaR_from_pio)->transfer_count = 1;
+        dma_channel_hw_addr(_dmaR_from_pio)->al2_write_addr_trig = (uintptr_t)&_def_databuf;
     }
     irq_set_enabled(SYSIRQ_DMA_TF_PIO, true);
 }
@@ -193,15 +206,15 @@ void _irq_pio_ctrl_handler() {
             if (host_rd) {
                 dbus_value_put(_ctrl_status);       // The HOST is reading, put data on the bus
             }
+            msg.data.value16u = ctrl << 8;
+            msg.data.value16u |= v;
+            cmt_msg_init(&msg, MSG_DBUS_CTRL_ACCESS);
+            postAPPMsg(&msg);
         }
     }
-    msg.data.value16u = ctrl << 8;
-    msg.data.value16u |= v;
-    cmt_msg_init(&msg, MSG_DBUS_CTRL_ACCESS);
-    postAPPMsg(&msg);
     pio_interrupt_clear(_msel_pocfg.pio, PIO_BCA_CTRL);
     irq_set_enabled(SYSIRQ_PIO_ACTRL, true);
-    pio_sm_clear_fifos(_msel_pocfg.pio, _msel_pocfg.sm);
+    //pio_sm_clear_fifos(_msel_pocfg.pio, _msel_pocfg.sm);
     _dbus_to_ctrl(false); // DBUS back to auto RD/WR PIO
 }
 
@@ -254,7 +267,7 @@ static pio_sm_pocfg _cb_msel_pio_init() {
     sm_config_set_jmp_pin(&smpocfg.sm_cfg, CTRL_ADDR);
     sm_config_set_in_shift(&smpocfg.sm_cfg, false, true, 8);
     sm_config_set_fifo_join(&smpocfg.sm_cfg, PIO_FIFO_JOIN_NONE);
-    sm_config_set_clkdiv(&smpocfg.sm_cfg, 2.0f);
+    sm_config_set_clkdiv(&smpocfg.sm_cfg, 1.0f);
     //
     pio_set_irq0_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
     pio_set_irq1_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
@@ -299,11 +312,11 @@ static pio_sm_pocfg _cb_autodata_pio_init() {
     sm_config_set_out_pins(&smpocfg.sm_cfg, DATA0, DATA_BUS_WIDTH);
     sm_config_set_out_shift(&smpocfg.sm_cfg, true, false, DATA_BUS_WIDTH);
     sm_config_set_in_pins(&smpocfg.sm_cfg, DATA0);
-    sm_config_set_in_shift(&smpocfg.sm_cfg, false, true, DATA_BUS_WIDTH);   // 8-bits, auto-push
+    sm_config_set_in_shift(&smpocfg.sm_cfg, false, false, DATA_BUS_WIDTH);   // 8-bits, no auto-push
     sm_config_set_fifo_join(&smpocfg.sm_cfg, PIO_FIFO_JOIN_NONE);
     sm_config_set_jmp_pin(&smpocfg.sm_cfg, CTRL_RD);
     sm_config_set_mov_status(&smpocfg.sm_cfg, STATUS_TX_LESSTHAN, 1);
-    sm_config_set_clkdiv(&smpocfg.sm_cfg, 2.0f);
+    sm_config_set_clkdiv(&smpocfg.sm_cfg, 1.0f);
     //
     pio_set_irq0_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
     pio_set_irq1_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
@@ -337,7 +350,7 @@ static pio_sm_pocfg _cb_mread_pio_init() {
     sm_config_set_in_pins(&smpocfg.sm_cfg, DATA0);
     sm_config_set_in_shift(&smpocfg.sm_cfg, false, true, DATA_BUS_WIDTH);   // 8-bits, auto-push
     sm_config_set_fifo_join(&smpocfg.sm_cfg, PIO_FIFO_JOIN_NONE);
-    sm_config_set_clkdiv(&smpocfg.sm_cfg, 2.0f);
+    sm_config_set_clkdiv(&smpocfg.sm_cfg, 1.0f);
     //
     pio_set_irq0_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
     pio_set_irq1_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
@@ -369,7 +382,7 @@ static pio_sm_pocfg _cb_mwrite_pio_init() {
     sm_config_set_out_pins(&smpocfg.sm_cfg, DATA0, DATA_BUS_WIDTH);
     sm_config_set_out_shift(&smpocfg.sm_cfg, true, false, DATA_BUS_WIDTH);
     sm_config_set_fifo_join(&smpocfg.sm_cfg, PIO_FIFO_JOIN_NONE);
-    sm_config_set_clkdiv(&smpocfg.sm_cfg, 2.0f);
+    sm_config_set_clkdiv(&smpocfg.sm_cfg, 1.0f);
     //
     pio_set_irq0_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
     pio_set_irq1_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
@@ -431,15 +444,17 @@ void dbus_cancel_recv() {
     //  and any chained channels, prior to the abort to prevent (re)triggering.
     //
     // disable the system and DMA channel IRQ
-    dma_channel_set_irq0_enabled(_dma_from_pio, false);
+    dma_channel_set_irq0_enabled(_dmaR_from_pio, false);
     irq_set_enabled(SYSIRQ_DMA_TF_PIO, false);
     // Abort the channel
-    dma_channel_abort(_dma_from_pio);
+    dma_channel_abort(_dmaSR_to_pio);
+    dma_channel_abort(_dmaR_from_pio);
     // Read the Abort register until 0
     // (this isn't done in the SDK, but the datasheet says it is needed)
     while (dma_hw->abort) tight_loop_contents();
     // clear any spurious IRQ (if there was one)
-    dma_channel_acknowledge_irq0(_dma_from_pio);
+    dma_channel_acknowledge_irq0(_dmaR_from_pio);
+    _dma_drcvdone_msg = MSG_DBUS_DWRITE_UNEXPECTED;
 }
 
 void dbus_cancel_send() {
@@ -449,15 +464,38 @@ void dbus_cancel_send() {
     //  and any chained channels, prior to the abort to prevent (re)triggering.
     //
     // disable the system and DMA channel IRQ
-    dma_channel_set_irq0_enabled(_dma_to_pio, false);
+    dma_channel_set_irq0_enabled(_dmaS_to_pio, false);
     irq_set_enabled(SYSIRQ_DMA_TF_PIO, false);
-    // Abort the channel
-    dma_channel_abort(_dma_to_pio);
+    // Abort the channels
+    dma_channel_abort(_dmaSS_to_pio);
+    dma_channel_abort(_dmaS_to_pio);
     // Read the Abort register until 0
     // (this isn't done in the SDK, but the datasheet says it is needed)
     while (dma_hw->abort) tight_loop_contents();
     // clear any spurious IRQ (if there was one)
-    dma_channel_acknowledge_irq0(_dma_to_pio);
+    dma_channel_acknowledge_irq0(_dmaS_to_pio);
+    _dma_dsnddone_msg = MSG_DBUS_DREAD_UNEXPECTED;
+}
+
+void dbus_clear_wait() {
+    // Stop the auto-data and msel PIO State Machines
+    pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, false);
+    pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, false);
+    piosm_reset(_datarw_pocfg);
+    piosm_reset(_msel_pocfg);
+    // Stop and cancel Receive and Send DMA operations
+    dbus_cancel_recv();
+    dbus_cancel_send();
+    // De-assert WAIT
+    gpio_init(CTRL_WAITRQ);
+    gpio_set_function(CTRL_WAITRQ, GPIO_FUNC_SIO);
+    gpio_set_dir(CTRL_WAITRQ, GPIO_OUT);
+    gpio_put(CTRL_WAITRQ, CTRL_WAITRQ_OFF);
+    // Now set WAIT back to PIO control
+    pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_WAITRQ);
+    // Re-enable the auto-data and msel PIO State Machines
+    pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, true);
+    pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, true);
 }
 
 void dbus_prep_recv(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt) {
@@ -469,14 +507,15 @@ void dbus_prep_recv(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt) {
     pio_sm_clear_fifos(_datarw_pocfg.pio, _datarw_pocfg.sm);
     //
     // Now configure for new one
-    dma_channel_configure(_dma_from_pio, &_dma_from_pio_cfg,
+    dma_channel_configure(_dmaR_from_pio, &_dmaR_cfg,
         buf,                            // Put into indicated buffer
         (uint8_t*)&_datarw_pocfg.pio->rxf[_datarw_pocfg.sm],   // Read from PIO-SM
         count,
         false);                         // Don't start yet
+    _dma_drcvdone_msg = MSG_DBUS_DWRITE_XFER_DONE;
 }
 
-void dbus_prep_send(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt) {
+void dbus_prep_send1(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt) {
     _on_dout_cmplt = on_cmplt;
     // Configure TO PIO DMA channel to read from the supplied buffer and send to the TXFIFO.
     //
@@ -485,27 +524,71 @@ void dbus_prep_send(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt) {
     pio_sm_clear_fifos(_datarw_pocfg.pio, _datarw_pocfg.sm);
     //
     // Now configure for new one
-    dma_channel_configure(_dma_to_pio, &_dma_to_pio_cfg,
+    dma_channel_configure(_dmaS_to_pio, &_dmaS_cfg,
         (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
         buf,
         count,
         false);                         // Don't start yet
+    _dma_to_start = _dmaS_to_pio;
+    _dma_to_irqen = _dmaS_to_pio;
+    _dma_dsnddone_msg = MSG_DBUS_DREAD_XFER_DONE;
 }
 
-void dbus_start_recv() {
-    // enable the system and DMA channel IRQ
-    irq_set_enabled(SYSIRQ_DMA_TF_PIO, true);
-    dma_channel_set_irq0_enabled(_dma_from_pio, true);
-    // start the DMA
-    dma_channel_start(_dma_from_pio);
+void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* buf2, int cnt2, msg_handler_fn on_cmplt) {
+    _on_dout_cmplt = on_cmplt;
+    // Configure TO PIO DMA channel to read from the supplied buffer and send to the TXFIFO.
+    //
+    // First cancel any current operation
+    dbus_cancel_send();
+    pio_sm_clear_fifos(_datarw_pocfg.pio, _datarw_pocfg.sm);
+    //
+    // Now configure for new one
+    dma_channel_configure(_dmaSS_to_pio, &_dmaSS_cfg,
+        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        buf1,
+        cnt1,
+        false);                         // Don't start yet
+    dma_channel_configure(_dmaS_to_pio, &_dmaS_cfg,
+        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        buf2,
+        cnt2,
+        false);                         // Don't start yet
+    _dma_to_start = _dmaSS_to_pio;      // We start the SS dma. It triggers the S dma when done.
+    _dma_to_irqen = _dmaS_to_pio;
+    _dma_dsnddone_msg = MSG_DBUS_DREAD_XFER_DONE;
 }
 
-void dbus_start_send() {
+void dbus_prep_sendrecv(volatile uint8_t* sbuf, int scnt, volatile uint8_t* rbuf, int rcnt, msg_handler_fn on_cmplt) {
+    _on_dout_cmplt = on_cmplt;
+    // Configure TO PIO DMA channel to read from the supplied buffer and send to the TXFIFO.
+    //
+    // First cancel any current operation
+    dbus_cancel_send();
+    dbus_cancel_recv();
+    pio_sm_clear_fifos(_datarw_pocfg.pio, _datarw_pocfg.sm);
+    //
+    // Now configure for new one
+    dma_channel_configure(_dmaSR_to_pio, &_dmaSR_cfg,
+        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        sbuf,
+        scnt,
+        false);                         // Don't start yet
+    dma_channel_configure(_dmaR_from_pio, &_dmaR_cfg,
+        rbuf,                            // Put into indicated buffer
+        (uint8_t*)&_datarw_pocfg.pio->rxf[_datarw_pocfg.sm],   // Read from PIO-SM
+        rcnt,
+        false);                         // Don't start yet
+    _dma_to_start = _dmaSR_to_pio;      // We start the SR dma. It triggers the R dma when done.
+    _dma_to_irqen = _dmaR_from_pio;
+    _dma_drcvdone_msg = MSG_DBUS_DWRITE_XFER_DONE;
+}
+
+void dbus_start_dataop() {
     // enable the system and DMA channel IRQ
     irq_set_enabled(SYSIRQ_DMA_TF_PIO, true);
-    dma_channel_set_irq0_enabled(_dma_to_pio, true);
+    dma_channel_set_irq0_enabled(_dma_to_irqen, true);
     // start the DMA
-    dma_channel_start(_dma_to_pio);
+    dma_channel_start(_dma_to_start);
 }
 
 void dbus_rd_def(uint8_t v) {
@@ -576,8 +659,10 @@ int dbusc_modinit() {
     dbus_rd_def(0x55);
 
     // Get the Read and Write DMA channels. Panic if not available.
-    _dma_to_pio = dma_claim_unused_channel(true);
-    _dma_from_pio = dma_claim_unused_channel(true);
+    _dmaS_to_pio = dma_claim_unused_channel(true);
+    _dmaR_from_pio = dma_claim_unused_channel(true);
+    _dmaSR_to_pio = dma_claim_unused_channel(true);
+    _dmaSS_to_pio = dma_claim_unused_channel(true);
 
     // Initialize the state machines
     _mrd_pocfg = _cb_mread_pio_init();
@@ -601,21 +686,47 @@ int dbusc_modinit() {
     // Init the PIO WR and RD DMA to read/write from/to the PIO when data is ready or a read is requested
     //
     // 
-    _dma_from_pio_cfg = dma_channel_get_default_config(_dma_from_pio); //Get configurations for data writes
-    channel_config_set_transfer_data_size(&_dma_from_pio_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
-    channel_config_set_read_increment(&_dma_from_pio_cfg, false); // Read increment to false (read from PIO)
-    channel_config_set_write_increment(&_dma_from_pio_cfg, true); // Write increment to true (advance in wr-buffer)
-    channel_config_set_dreq(&_dma_from_pio_cfg, PIO_BCA_FROMHOST_DREQ); // PIO-SM rx-fifo not empty.
+    _dmaR_cfg = dma_channel_get_default_config(_dmaR_from_pio); //Get configurations for data writes
+    channel_config_set_transfer_data_size(&_dmaR_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
+    channel_config_set_read_increment(&_dmaR_cfg, false); // Read increment to false (read from PIO)
+    channel_config_set_write_increment(&_dmaR_cfg, true); // Write increment to true (advance in wr-buffer)
+    channel_config_set_dreq(&_dmaR_cfg, PIO_BCA_FROMHOST_DREQ); // PIO-SM rx-fifo not empty.
     // Configure PIO WR DMA channel to read from the RXFIFO and write to the input buffer.
     dbus_prep_recv(&_def_databuf, 1, NULL);
     //
-    _dma_to_pio_cfg = dma_channel_get_default_config(_dma_to_pio); //Get configurations for data reads
-    channel_config_set_transfer_data_size(&_dma_to_pio_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
-    channel_config_set_read_increment(&_dma_to_pio_cfg, true); // Read increment to true (advance through rd-buffer)
-    channel_config_set_write_increment(&_dma_to_pio_cfg, false); // Write increment to false (write to PIO)
-    channel_config_set_dreq(&_dma_to_pio_cfg, PIO_BCA_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
+    _dmaS_cfg = dma_channel_get_default_config(_dmaS_to_pio); //Get configurations for data reads
+    channel_config_set_transfer_data_size(&_dmaS_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
+    channel_config_set_read_increment(&_dmaS_cfg, true); // Read increment to true (advance through rd-buffer)
+    channel_config_set_write_increment(&_dmaS_cfg, false); // Write increment to false (write to PIO)
+    channel_config_set_dreq(&_dmaS_cfg, PIO_BCA_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
     // Configure PIO RD DMA channel to read from the output buffer and write to the TXFIFO.
-    dma_channel_configure(_dma_to_pio, &_dma_to_pio_cfg,
+    dma_channel_configure(_dmaS_to_pio, &_dmaS_cfg,
+        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        &_def_databuf,                   // Default value
+        1,                              // Can't do a single byte, as it wants to fill the FIFO.
+        false);                         // Don't start yet
+    //
+    _dmaSR_cfg = dma_channel_get_default_config(_dmaSR_to_pio); //Get configurations for data reads that trigger 2nd
+    channel_config_set_transfer_data_size(&_dmaSR_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
+    channel_config_set_read_increment(&_dmaSR_cfg, true); // Read increment to true (advance through rd-buffer)
+    channel_config_set_write_increment(&_dmaSR_cfg, false); // Write increment to false (write to PIO)
+    channel_config_set_dreq(&_dmaSR_cfg, PIO_BCA_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
+    channel_config_set_chain_to(&_dmaSR_cfg, _dmaR_from_pio);  // Trigger Receive Channel when done
+    // Configure PIO RD DMA channel to read from the output buffer and write to the TXFIFO.
+    dma_channel_configure(_dmaSR_to_pio, &_dmaSR_cfg,
+        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        &_def_databuf,                   // Default value
+        1,                              // Can't do a single byte, as it wants to fill the FIFO.
+        false);                         // Don't start yet
+    //
+    _dmaSS_cfg = dma_channel_get_default_config(_dmaSS_to_pio); //Get configurations for data reads that trigger 2nd
+    channel_config_set_transfer_data_size(&_dmaSS_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
+    channel_config_set_read_increment(&_dmaSS_cfg, true); // Read increment to true (advance through rd-buffer)
+    channel_config_set_write_increment(&_dmaSS_cfg, false); // Write increment to false (write to PIO)
+    channel_config_set_dreq(&_dmaSS_cfg, PIO_BCA_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
+    channel_config_set_chain_to(&_dmaSS_cfg, _dmaS_to_pio);  // Trigger Send Channel2 when done
+    // Configure PIO RD DMA channel to read from the output buffer and write to the TXFIFO.
+    dma_channel_configure(_dmaSS_to_pio, &_dmaSS_cfg,
         (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
         &_def_databuf,                   // Default value
         1,                              // Can't do a single byte, as it wants to fill the FIFO.
@@ -629,8 +740,8 @@ int dbusc_modinit() {
     pio_interrupt_clear(_datarw_pocfg.pio, PIO_BCA_RDDR);
 
     // No Data READs or WRITEs expected at this time
-    _dma_dread_msg = MSG_DBUS_DREAD_UNEXPECTED;
-    _dma_dwrite_msg = MSG_DBUS_DWRITE_UNEXPECTED;
+    _dma_dsnddone_msg = MSG_DBUS_DREAD_UNEXPECTED;
+    _dma_drcvdone_msg = MSG_DBUS_DWRITE_UNEXPECTED;
 
     // Set up for the interrupts generated by the PIO and DMAs
     irq_set_exclusive_handler(SYSIRQ_PIO_ACTRL, _irq_pio_ctrl_handler);
@@ -656,12 +767,14 @@ int dbusc_modinit() {
     pio_interrupt_clear(_datarw_pocfg.pio, PIO_BCA_RDDR);
 
     // Tell the DMAs to raise their IRQ when the channel finishes a block
-    dma_channel_set_irq0_enabled(_dma_from_pio, true);
-    dma_channel_set_irq0_enabled(_dma_to_pio, true);
-    dma_channel_acknowledge_irq0(_dma_from_pio);
-    dma_channel_acknowledge_irq0(_dma_to_pio);
+    dma_channel_set_irq0_enabled(_dmaR_from_pio, true);
+    dma_channel_set_irq0_enabled(_dmaS_to_pio, true);
+    dma_channel_acknowledge_irq0(_dmaR_from_pio);
+    dma_channel_acknowledge_irq0(_dmaS_to_pio);
     // Start receive from PIO. Send to PIO will be handled manually until a block is needed.
-    dbus_start_recv();
+    _dma_to_irqen = _dmaR_from_pio;
+    _dma_to_start = _dmaR_from_pio;
+    dbus_start_dataop();
     //dma_channel_start(_dma_to_pio);
 
     // Enable the CPU IRQs now
