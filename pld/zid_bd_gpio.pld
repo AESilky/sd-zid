@@ -98,8 +98,8 @@ FIELD ioaddr        = [addr3..0];	/* A7..4 handled by sbc_io          */
 /** Board and Breakpoint Control    */
 FIELD brkdata       = [bd7..0];
 FIELD brkdx         = [bdx7..0];
-$DEFINE B1DV_WR     (zid_io & ioaddr:'b'1000 & wr)  /* 05: BRK1 Data Value  */
-$DEFINE B1DX_WR     (zid_io & ioaddr:'b'1001 & wr)  /* 05: BRK1 Don't-Care  */
+$DEFINE B1DV_WR     (zid_io & ioaddr:'b'1000 & wr)  /* 08: BRK1 Data Value      */
+$DEFINE B1DX_WR     (zid_io & ioaddr:'b'1001 & wr)  /* 09: BRK1 Don't-Care      */
 
 /** SBC General Purpose I/O Bits    */
 FIELD gpData        = [gp7..0];
@@ -107,12 +107,12 @@ $DEFINE GPIN_DATA    [d7..4]
 $DEFINE GPOUT_DATA   [d3..0]
 $DEFINE GPIN_BITS    [gp7..4]
 $DEFINE GPOUT_BITS   [gp3..0]
-$DEFINE GP_RD       (sbc_io & ioaddr:'b'11xx & rd)  /* 08: SBC Gen-Purpose RD   */
-$DEFINE GP_WR       (sbc_io & ioaddr:'b'11xx & wr)  /* 08: SBC Gen-Purpose WR   */
+$DEFINE GP_RD       (sbc_io & ioaddr:'b'11xx & rd)  /* 0C-0F: SBC Gen-Purpose RD */
+$DEFINE GP_WR       (sbc_io & ioaddr:'b'11xx & wr)  /* 0C-0F: SBC Gen-Purpose WR */
 
 /** Target Go Counter               */
 FIELD tgc           = [tgc3..0];
-$DEFINE TGTGO_WR    (zid_io & ioaddr:'b'0111 & wr)  /* 07: Target GO    */
+$DEFINE TGTGO_WR    (zid_io & ioaddr:'b'0111 & wr)  /* 07: Target GO            */
 
 
 /************************************************************************/
