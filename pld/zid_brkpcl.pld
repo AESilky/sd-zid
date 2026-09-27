@@ -131,14 +131,14 @@ $DEFINE B1ADDR_WR   (zid_io & ioaddr:'b'0000 & wr)  /* 00: BRK1 Address H/L (Hig
 $DEFINE B2ADDR_WR   (zid_io & ioaddr:'b'0001 & wr)  /* 01: BRK2 Address H/L (High on upper addr) */
 $DEFINE B3ADDR_WR   (zid_io & ioaddr:'b'0010 & wr)  /* 02: BRK3 Address H/L (High on upper addr) */
 $DEFINE B4ADDR_WR   (zid_io & ioaddr:'b'0011 & wr)  /* 03: BRK4 Address H/L (High on upper addr) */
-$DEFINE BRKAEN_WR   (zid_io & ioaddr:'b'0100 & wr)  /* 04: BRK Address Enable (2 bits per break)*/
+$DEFINE BRKAEN_WR   (zid_io & ioaddr:'b'0100 & wr)  /* 04: BRK Address Enable (2 bits per break) */
 
 /** Special Reset PC Latch          */
 FIELD srpc          = [pc15..0];
 $DEFINE SRPCH       (pc15..8)
 $DEFINE SRPCL       (pc7..0)
-$DEFINE SRPCL_RD    (zid_io & ioaddr:'b'0101 & rd)  /* 08: Special Reset PC Low RD  */
-$DEFINE SRPCH_RD    (zid_io & ioaddr:'b'0110 & rd)  /* 09: Special Reset PC High RD */
+$DEFINE SRPCL_RD    (zid_io & ioaddr:'b'0101 & rd)  /* 05: Special Reset PC Low RD  */
+$DEFINE SRPCH_RD    (zid_io & ioaddr:'b'0110 & rd)  /* 06: Special Reset PC High RD */
 
 
 /************************************************************************/
@@ -162,7 +162,7 @@ $DEFINE SRPCH_RD    (zid_io & ioaddr:'b'0110 & rd)  /* 09: Special Reset PC High
 [b4ah7..0].ck  = B4ADDR_WR;
 [b4al7..0].d   = databus;
 [b4al7..0].ck  = B4ADDR_WR;
-brkaen.d       = [d7..0];
+brkaen.d       = databus;
 brkaen.ck      = BRKAEN_WR;
 
 /** Break Address Compare */

@@ -324,7 +324,7 @@ PIN 68  = !zint;        /* INT to Z80 */
 PIN 21  = rfmr_;        /* RFSH gated MREQ (for the target during debug)(low=true) */
 /* */
 PIN 84  = !tgtmode_R;   /* Running target (not debug), used to reset OP counter */
-PIN 16  = mem_op;      /* Memory Op (excluding zrfsh), used to clock OP counter (45)*/
+PIN 16  = mem_op;       /* Memory Op (excluding zrfsh), used to clock OP counter (45)*/
 /* */
 PIN 20  = !pc_latch;    /* Latch enable for the external PC Save register   */
 PIN 67  = sync;         /* Break condition detected - SYNC signal on board  */
