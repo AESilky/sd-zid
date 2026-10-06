@@ -4,6 +4,7 @@
 
 # OS (core dumps, etc.)
 core
+.DS_Store
 
 # Prerequisites
 *.d
