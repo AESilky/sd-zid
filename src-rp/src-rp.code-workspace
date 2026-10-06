@@ -1,15 +1,14 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"files.exclude": {
-			"build/**/*": true
-		},
-		"cortex-debug.variableUseNaturalFormat": false,
-		"cSpell.words": [
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "cortex-debug.variableUseNaturalFormat": false,
+        "cortex-debug.openocdPath": "/opt/homebrew/bin/openocd",
+        "cortex-debug.gdbPath": "/opt/homebrew/bin/arm-none-eabi-gdb",
+        "cSpell.words": [
             "accs",
             "addrpin",
             "altscr",
@@ -101,12 +100,9 @@
             "zregbuf"
         ],
         "files.associations": {
-            "dbusc.pio.h": "c",
-            "dbusc.h": "c",
-            "system_defs.h": "c",
-            "stdlib.h": "c",
-            "time.h": "c",
-            "timer.h": "c"
-        }
-	}
+            "*.pio.h": "c",
+            "*.h": "c"
+        },
+        "cmake.useCMakePresets": "never",
+    }
 }

@@ -22,6 +22,24 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+#if defined(DEBUG_MODE) && (DEBUG_MODE == 1)
+    // Approximate delay loops for standard 125MHz RP2040 clock
+    // Each loop iteration takes ~3-4 clock cycles
+    #define SLEEP_US(us) do { \
+        volatile uint32_t count = (us) * 35; \
+        while(count--) { __asm volatile("nop"); } \
+    } while(0)
+
+    #define SLEEP_MS(ms) do { \
+        volatile uint32_t count = (ms) * 35000; \
+        while(count--) { __asm volatile("nop"); } \
+    } while(0)
+#else
+    // Fall back to standard Pico SDK hardware timer paths for production/ThinkPad
+    #define SLEEP_US(us) sleep_us(us)
+    #define SLEEP_MS(ms) sleep_ms(ms)
+#endif
+
 /**
  * @brief Reboot the board into the 'BOOTSEL' state.
  */

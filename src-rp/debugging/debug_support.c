@@ -10,6 +10,7 @@
 #include "board.h"
 
 #include "cmt.h"
+#include "picoutil.h"
 #include "util.h"
 
 #include "tusb.h"
@@ -65,7 +66,7 @@ void debug_init(debug_init_mode_t mode) {
         // Read switch to set debug enabled flag
         debug_sw_init();
         debug_trace_init();
-        sleep_ms(80); // Ok to sleep
+        SLEEP_MS(80); // Ok to sleep
         // Check the switch
         bool pressed = debug_sw_pressed();
 #if (DEBUG_MODE != 0)
@@ -78,28 +79,28 @@ void debug_init(debug_init_mode_t mode) {
         break;
     case DIM_STDIO_TO_USB:
         stdio_flush();
-        sleep_ms(8);
+        SLEEP_MS(8);
         // initialize TinyUSB so it can be used for STDIO.
         tusb_init();
-        sleep_ms(10);
+        SLEEP_MS(10);
         // Switch STDIO from the UART to the USB
         stdio_set_driver_enabled(&stdio_uart, false);
-        sleep_ms(2); // Short sleep ok
+        SLEEP_MS(2); // Short sleep ok
         stdio_usb_init();
         nondb_gpio_init(); // Init the GPIO that was skipped to allow UART
         break;
     case DIM_STDIO_TO_USB_DIUART:
         stdio_flush();
-        sleep_ms(8);
+        SLEEP_MS(8);
         // initialize TinyUSB so it can be used for STDIO.
         tusb_init();
-        sleep_ms(10);
+        SLEEP_MS(10);
         // Switch STDIO from the UART to the USB
 #ifndef DEBUG_TRACE_ENABLE
         stdio_set_driver_enabled(&stdio_uart, false);
         // Deinit the UART
         stdio_uart_deinit();
-        sleep_ms(2);
+        SLEEP_MS(2);
 #endif
         stdio_usb_init();
         nondb_gpio_init(); // Init the GPIO that was skipped to allow UART
