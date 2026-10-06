@@ -1,5 +1,29 @@
 {
-    "cmake.sourceDirectory": "/home/esilky/proj/sd-zidrm/src-rp",
-    "C_Cpp.errorSquiggles": "enabled",
-    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc"
+  "search.exclude": {
+    "**/build": true,
+    "**/.git": true,
+    "**/node_modules": true
+  },
+  "search.useIgnoreFiles": true,
+  "cmake.sourceDirectory": "/Users/esilky/proj/sd-zid/src-rp",
+  "C_Cpp.errorSquiggles": "enabled",
+  "cmake.environment": {
+    "CFLAGS": "",
+    "CXXFLAGS": "",
+    "ASMFLAGS": "",
+    "LDFLAGS": "",
+    "PICO_SDK_PATH": "${env:PICO_SDK_PATH}",
+    "ARM_GDB_PATH": "/opt/homebrew/bin/arm-none-eabi-gdb",
+    "PICO_MULTICORE_DEBUG": "1"
+  },
+  "cmake.configureSettings": {
+    "PICO_SDK_PATH": "${env:PICO_SDK_PATH}"
+  },
+  "cmake.useCMakePresets": "never",
+  "files.exclude": {
+    "**/build": true
+  },
+  "C_Cpp.files.exclude": {
+    "**/build": true
+  }
 }

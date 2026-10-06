@@ -157,7 +157,7 @@ int board_init() {
     rtc_set_datetime(&t);
     // clk_sys is >2000x faster than clk_rtc, so datetime is not updated immediately when rtc_set_datetime() is called.
     // tbe delay is up to 3 RTC clock cycles (which is 64us with the default clock settings)
-    sleep_us(100);
+    SLEEP_US(100);
 
     // The PWM is used for a recurring interrupt in CMT. It will initialize it.
 

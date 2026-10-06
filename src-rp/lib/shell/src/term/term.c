@@ -15,6 +15,7 @@
  * SPDX-License-Identifier: MIT
  */
 #include "term.h"
+#include "picoutil.h"
 
 #include "pico/stdio.h"
 #include "pico/stdlib.h"
@@ -88,7 +89,7 @@ static int _read_from_term(char* buf, int maxlen, char term_char, int max_wait) 
             if (term_input_available()) {
                 break;
             }
-            sleep_ms(1);
+            SLEEP_MS(1);
             if (++delay >= max_wait) {
                 timeout = true;
                 break;
@@ -142,96 +143,133 @@ static void _stdio_chars_available(void *param) {
 
 inline void term_charset(vt_charset_t cs) {
     printf("%s%c", SCS, (char)cs);
+    fflush(stdout);
 }
 
-inline void term_clear(bool home) {
-    char* cs = (home ? "\e[H\e[2J" : "\e[2J");
+void term_clear(bool home) {
+    // 1. Clear the entire display using that chosen background (\033[2J)
+    // 2. Jump the cursor cleanly to the top-left home position (\033[H)
+    char* cs = (home ? "\e[2J\e[H" : "\e[2J");
     printf(cs); // Some guides indicate 'ESC c', but that is 'Reset' not just 'Clear'
+    fflush(stdout);
 }
 
 inline void term_color_default() {
-    printf("%s39;49m", CSI);
+    // Reset text color and background to user's native choice (\033[39;49m)
+    printf("%s0m", CSI);
+    fflush(stdout);
 }
 
-inline void term_color_bg(term_color_t colorn) {
-    printf("%s48;5;%dm", CSI, colorn);
+inline void term_color_bg(term_bgcolor_t colorn) {
+    printf("%s%dm", CSI, colorn);
+    fflush(stdout);
 }
 
-inline void term_color_fg(term_color_t colorn) {
-    printf("%s38;5;%dm", CSI, colorn);
+inline void term_color_error(void) {
+    // Set text to BOLD RED
+    printf("%s1;31m", CSI);
+    fflush(stdout);
+}
+
+inline void term_color_fg(term_fgcolor_t colorn) {
+    printf("%s%dm", CSI, colorn);
+    fflush(stdout);
+}
+
+inline void term_color_fgbg(term_fgcolor_t fg, term_bgcolor_t bg) {
+    printf("%s%d%dm", CSI, fg, bg);
+    fflush(stdout);
 }
 
 inline void term_cursor_bol() {
     putchar(CBOL);
+    fflush(stdout);
 }
 
 inline void term_cursor_down(uint16_t n) {
     printf("%s%hdB", CSI, n); // Also 'E'
+    fflush(stdout);
 }
 
 inline void term_cursor_down_1(void) {
     printf("%s", NEL);
+    fflush(stdout);
 }
 
 inline void term_cursor_home(void) {
     printf("%sH", CSI);
+    fflush(stdout);
 }
 
 inline void term_cursor_left(uint16_t n) {
     printf("%s%hdD", CSI, n);
+    fflush(stdout);
 }
 
 inline void term_cursor_left_1(void) {
     putchar(BS);
+    fflush(stdout);
 }
 
 inline void term_cursor_moveto(uint16_t line, uint16_t column) {
     printf("%s%hd;%hdH", CSI, line, column);
+    fflush(stdout);
 }
 
 void term_cursor_on(bool on) {
     char onoff = (on ? 'h' : 'l');
     printf("%s?25%c", CSI, onoff); // VT220
+    fflush(stdout);
 }
 
 inline void term_cursor_restore() {
     printf("%c8", ESC);
+    fflush(stdout);
 }
 
 inline void term_cursor_right(uint16_t n) {
     printf("%s%hdC", CSI, n);
+    fflush(stdout);
 }
 
 inline void term_cursor_right_1(void) {
     printf("%sC", CSI);
+    fflush(stdout);
 }
 
 inline void term_cursor_save() {
     printf("%c7", ESC);
+    fflush(stdout);
 }
 
 inline void term_cursor_up(uint16_t n) {
     printf("%s%hdA", CSI, n); // Also 'F'
+    fflush(stdout);
 }
 
 inline void term_cursor_up_1(void) {
     printf("%s", RI);
+    fflush(stdout);
 }
 
 inline void term_erase_bol() {
     printf("%s1K", CSI);
+    fflush(stdout);
 }
 
 inline void term_erase_char(uint16_t n) {
     printf("%s%hdX", CSI, n); // Erase chars without moving cursor
+    fflush(stdout);
 }
 
 inline void term_erase_eol() {
     printf("%s0K", CSI);
+    fflush(stdout);
 }
 
 inline void term_erase_line() {
     printf("%s2K", CSI);
+    fflush(stdout);
 }
 
 int term_get_input_buf_size() {
@@ -243,32 +281,36 @@ scr_position_t term_get_cursor_position(void) {
     scr_position_t pos = {-1,-1};
 
     printf("%s6n", CSI); //  "CSI 6 n" = CPR (Cursor Position Report)
+    fflush(stdout);
     if (_read_from_term(buf, 15, 'R', 80) > 0) {
         // Response should be ESC[rn;cnR
         char *rcn = buf+2; // Skip the leading ESC[ (CSI)
         sscanf(rcn, "%hd;%hdR", &pos.line, &pos.column);
     }
-
     return (pos);
 }
 
 int term_get_id_info(vt_term_id_spec_t id_spec, char* buf, int maxlen) {
     printf("%s%hd,q", CSI, id_spec);
+    fflush(stdout);
     return (_read_from_term(buf, maxlen, 'c', 80));
 }
 
 int term_get_screen_info(char* buf, int maxlen) {
     printf("%s6n", CSI); //  "CSI 6 n" = CPR (Cursor Position Report)
+    fflush(stdout);
     return (_read_from_term(buf, maxlen, 'R', 80));
 }
 
 int term_get_name(char* buf, int maxlen) {
     printf("%c", ENQ);
+    fflush(stdout);
     return (_read_from_term(buf, maxlen, '\000', 80));
 }
 
 int term_get_type_info(char* buf, int maxlen) {
     printf("%s0c", CSI); //  "ESC Z" = DECID, "CSI 0 c" = DA1 (Device Attributes 1)
+    fflush(stdout);
     return (_read_from_term(buf, maxlen, 'c', 80));
 }
 
@@ -294,7 +336,7 @@ void term_init0() {
 
 void term_init1() {
     term_reset();
-    sleep_ms(100); // Allow the terminal to reset.
+    SLEEP_MS(100); // Allow the terminal to reset.
 }
 
 /**
@@ -305,7 +347,7 @@ void term_init() {
     assert((TERM_INPUT_BUF_SIZE & (TERM_INPUT_BUF_SIZE - 1)) == 0);
     // Terminal type and screen size...
     term_reset();
-    sleep_ms(100); // Allow the terminal to reset.
+    SLEEP_MS(100); // Allow the terminal to reset.
     // Ask for the terminal ID and see what we got
     term_get_type_info(_term_info, _TERM_INFO_MAX_);
     // Ask for the terminal name and see what we got
@@ -347,6 +389,7 @@ void term_register_notify_on_input(term_notify_on_input_fn notify_fn) {
 
 inline void term_reset() {
     printf("%cc", ESC);
+    fflush(stdout);
 }
 
 void term_set_margin_top_bottom(uint16_t top_line, uint16_t bottom_line) {
@@ -357,11 +400,13 @@ void term_set_margin_top_bottom(uint16_t top_line, uint16_t bottom_line) {
         term_set_origin_mode(TERM_OM_UPPER_LEFT); // No scroll area - set orinin mode to full screen
     }
     printf("%s%hd;%hdr", CSI, top_line, bottom_line);
+    fflush(stdout);
 }
 
 void term_set_origin_mode(term_om_t mode) {
     char om = (mode == TERM_OM_IN_MARGINS ? 'h' : 'l');
     printf("%s?6%c", CSI, om);
+    fflush(stdout);
 }
 
 /**
@@ -407,37 +452,44 @@ void term_set_size(uint16_t lines, uint16_t columns) {
 
     // Send the terminal the commands to set the screen and the page size...
     printf("%s?3%c", CSI, colind); // Columns: Screen size
-    sleep_ms(15);
+    fflush(stdout);
+    SLEEP_MS(15);
     // printf("%s%hd", CSI, columns); // Columns: Page size
-    // sleep_ms(15);
+    // SLEEP_MS(15);
     printf("%s%hd*|", CSI, lines); // Lines: Screen size
-    sleep_ms(15);
+    fflush(stdout);
+    SLEEP_MS(15);
     // printf("%s%hdt", CSI, lines); // Lines: Page size
-    // sleep_ms(20);
+    // SLEEP_MS(20);
     term_clear(true);
 }
 
 inline void term_set_title(const char* title) {
     printf("%s0;%s%s", OSC, title, ST);
+    fflush(stdout);
 }
 
 void term_set_type(vt_term_type_spec_t type, vt_term_id_spec_t id_type) {
     printf("%s6%d;1;\"p", CSI, type); // The ;1 specifies using 7-bit control mode
+    fflush(stdout);
     // printf("%s41;1;\"p", CSI); // Set to PuTTY mode ('41' is PuTTY only value)
     // printf("%s42;1;\"p", CSI); // Set to SCO-ANSI mode ('42' is PuTTY only value)
     printf("%s%hd,q", CSI, id_type);
+    fflush(stdout);
     // Read terminal response until there isn't any
-    sleep_ms(100);
+    SLEEP_MS(100);
     while (term_input_available()) {
         term_input_buf_clear();
-        sleep_ms(50);
+        SLEEP_MS(50);
     }
 }
 
 inline void term_text_bold() {
     printf("%s1m", CSI);
+    fflush(stdout);
 }
 
 inline void term_text_normal() {
     printf("%s0m", CSI);
+    fflush(stdout);
 }

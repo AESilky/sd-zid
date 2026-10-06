@@ -34,7 +34,7 @@ static void _led_flash_cont(void* user_data) {
 void led_flash(int ms) {
     led_on(true);
     if (!cmt_message_loop_0_running()) {
-        sleep_ms(ms);
+        SLEEP_MS(ms);
         _led_flash_cont(NULL);
     }
     else {
@@ -58,7 +58,7 @@ void led_on_off(const int32_t* pattern) {
             return;
         }
         if (!cmt_message_loop_0_running()) {
-            sleep_ms(off_time);
+            SLEEP_MS(off_time);
         }
         else {
             cmt_run_after_ms(off_time, _led_on_off_cont, (void*)pattern);

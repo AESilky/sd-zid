@@ -11,22 +11,29 @@ set(PICO_BOARD pico)  # Regular RP2040 (Pico)
 #set(PICO_BOARD pico2)  # RP2350 (Pico2)
 #set(PICO_BOARD adafruit_kb2040)  # Adafruit RP2040 Kee Boar
 #set(PICO_BOARD waveshare_rp2040_zero)  # Waveshare RP2040 Zero
+#
 
 set(PICO_USE_MALLOC_MUTEX 1)
 set(PICO_QUEUE_MAX_LEVEL 1)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  message(STATUS "Building in Debug mode. (EAS)")
+  message(STATUS "Building in Debug mode. (EAS-MAC)")
   # Use fully-deoptimized debug build for true single-step and data viewing.
-  set(PICO_DEOPTIMIZED_DEBUG 1)
+  #set(PICO_DEOPTIMIZED_DEBUG 1)
+  # Add debug-specific compiler flags and definitions
+  #add_compile_options(
+  #  -O0     # No optimizations
+  #)
+  # Use optimized debug build to avoid timing problems.
+  set(PICO_DEOPTIMIZED_DEBUG 0)
   # Add debug-specific compiler flags and definitions
   add_compile_options(
-    -O0     # No optimizations
+    -O1     # Some optimizations
   )
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
   message(STATUS "Building in Release mode. (EAS)")
   set(PICO_DEOPTIMIZED_DEBUG 0)
   add_compile_options(
-    -O2     # Optimize
+    -O2     # Fully Optimize
   )
   add_compile_definitions(NDEBUG)
 else()
@@ -41,6 +48,8 @@ include(pico_sdk_import.cmake)
 
 if (PICO_SDK_VERSION_STRING VERSION_LESS "2.2.0")
     message(FATAL_ERROR "Raspberry Pi Pico SDK version 2.2.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
+else()
+    message(STATUS "Raspberry Pi Pico SDK version is: ${PICO_SDK_VERSION_STRING}")
 endif()
 
 # For debug output from USB (pass -DPICO_STDIO_USB=1) this ensures we don't lose any debug output while USB is set up
@@ -59,6 +68,8 @@ set(PICO_STDIO_UART 0)
 # Don't enable the USB STDIO globally. Enabling is handled in 'debug_support' in the code.
 set(PICO_STDIO_USB 0)
 
+# Force the Pico SDK to completely disable Link-Time Optimization on Mac
+set(PICO_NO_LTO 1)
 
 project(DOC_SBC C CXX ASM)
 
@@ -78,11 +89,10 @@ add_compile_definitions(
   PICO_USE_STACK_GUARDS
   PICO_STACK_SIZE=4096
   PICO_CORE1_STACK_SIZE=4096
-  #PICO_DEBUG_MALLOC
   PICO_MAX_SHARED_IRQ_HANDLERS=6u
   PICO_STDIO_USB_CONNECTION_WITHOUT_DTR
   PICO_STDIO_USB_SUPPORT_CHARS_AVAILABLE_CALLBACK
-  #DEBUG_TRACE_ENABLE
+  PICO_MULTICORE_DEBUG=1
 )
 
 # Initialize the SDK
@@ -103,7 +113,7 @@ util.c
 )
 
 #
-# Add executable (output) with Debug Mode enabled by default
+# Add executable (output) with Debug Mode disabled by default
 #
 add_executable(docsbc
   ${TL_SRC}
@@ -284,3 +294,12 @@ add_subdirectory(dskops)
 set(EXT_LIBS
 )
 add_subdirectory(lib)
+
+# Force the low-level SDK multi-core libraries to optimize out timing gaps
+target_compile_options(pico_multicore INTERFACE -O1)
+target_compile_options(pico_base INTERFACE -O1)
+
+# Disable Link-Time Optimization (LTO) to bypass the Arm GNU Toolchain 15.3 linker bug on Mac
+if(APPLE)
+    set_target_properties(docsbc PROPERTIES INTERPROCEDURAL_OPTIMIZATION FALSE)
+endif()

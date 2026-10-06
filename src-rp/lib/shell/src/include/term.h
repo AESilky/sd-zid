@@ -83,27 +83,36 @@ typedef struct _scr_position_ {
 #endif
 
 /**
- * @brief Terminal text colors
+ * @brief Terminal text background colors
  * @ingroup term
  */
-typedef enum _TERM_CHR_COLOR_NUMS_ {
-    TERM_CHR_COLOR_BLACK            =  0,
-    TERM_CHR_COLOR_RED              =  1,
-    TERM_CHR_COLOR_GREEN            =  2,
-    TERM_CHR_COLOR_YELLOW           =  3,
-    TERM_CHR_COLOR_BLUE             =  4,
-    TERM_CHR_COLOR_MAGENTA          =  5,
-    TERM_CHR_COLOR_CYAN             =  6,
-    TERM_CHR_COLOR_WHITE            =  7,
-    TERM_CHR_COLOR_GRAY             =  8,
-    TERM_CHR_COLOR_BR_RED           =  9,
-    TERM_CHR_COLOR_BR_GREEN         =  10,
-    TERM_CHR_COLOR_BR_YELLOW        =  11,
-    TERM_CHR_COLOR_BR_BLUE          =  12,
-    TERM_CHR_COLOR_BR_MAGENTA       =  13,
-    TERM_CHR_COLOR_BR_CYAN          =  14,
-    TERM_CHR_COLOR_BR_WHITE         =  15,
-} term_color_t;
+typedef enum _TERM_BGCHR_COLOR_NUMS_ {
+    TERM_BGCHR_COLOR_BLACK      =  40,
+    TERM_BGCHR_COLOR_RED        =  41,
+    TERM_BGCHR_COLOR_GREEN      =  42,
+    TERM_BGCHR_COLOR_YELLOW     =  43,
+    TERM_BGCHR_COLOR_BLUE       =  44,
+    TERM_BGCHR_COLOR_MAGENTA    =  45,
+    TERM_BGCHR_COLOR_CYAN       =  46,
+    TERM_BGCHR_COLOR_WHITE      =  47,
+    TERM_BGCHR_COLOR_DEF        =  49       // Use the user's default background color
+} term_bgcolor_t;
+
+/**
+ * @brief Terminal text foreground colors
+ * @ingroup term
+ */
+typedef enum _TERM_FGCHR_COLOR_NUMS_ {
+    TERM_FGCHR_COLOR_BLACK      =  30,
+    TERM_FGCHR_COLOR_RED        =  31,
+    TERM_FGCHR_COLOR_GREEN      =  32,
+    TERM_FGCHR_COLOR_YELLOW     =  33,
+    TERM_FGCHR_COLOR_BLUE       =  34,
+    TERM_FGCHR_COLOR_MAGENTA    =  35,
+    TERM_FGCHR_COLOR_CYAN       =  36,
+    TERM_FGCHR_COLOR_WHITE      =  37,
+    TERM_FGCHR_COLOR_DEF        =  39       // Use the user's default foreground color
+} term_fgcolor_t;
 
 /**
  * @brief Terminal Origin Mode (DECOM)
@@ -187,20 +196,36 @@ extern void term_charset(vt_charset_t cs);
 extern void term_clear(bool home);
 
 /**
- * @brief Set the text character forground color using a color value.
- * @ingroup term
- *
- * @param colorn A color number (0-16)
- */
-extern void term_color_fg(term_color_t colorn);
-
-/**
  * @brief Set the text character background color using a color value.
  * @ingroup term
  *
- * @param colorn A color number (0-16)
+ * @param colorn A color number
  */
-extern void term_color_bg(term_color_t colorn);
+extern void term_color_bg(term_bgcolor_t colorn);
+
+/**
+ * @brief Set the text character color to the error color (RED)
+ * @ingroup term
+ * 
+ */
+extern void term_color_error(void);
+
+/**
+ * @brief Set the text character foreground and background colors using color values.
+ * @ingroup term
+ *
+ * @param fg A foreground color number
+ * @param bg A background color number
+ */
+extern void term_color_fgbg(term_fgcolor_t fg, term_bgcolor_t bg);
+
+/**
+ * @brief Set the text character foreground color using a color value.
+ * @ingroup term
+ *
+ * @param colorn A foreground color number
+ */
+extern void term_color_fg(term_fgcolor_t colorn);
 
 /**
  * @brief Set the text to the default colors.

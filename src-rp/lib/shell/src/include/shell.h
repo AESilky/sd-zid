@@ -26,18 +26,12 @@ extern "C" {
 
 // Code display color
 #ifndef shell_APP_COLOR_FG
-    #define shell_APP_COLOR_FG TERM_CHR_COLOR_GREEN
-#endif
-#ifndef shell_APP_COLOR_BG
-    #define shell_APP_COLOR_BG TERM_CHR_COLOR_BLACK
+    #define shell_APP_COLOR_FG TERM_FGCHR_COLOR_DEF
 #endif
 
 // Command color
 #ifndef shell_CMD_COLOR_FG
-    #define shell_CMD_COLOR_FG TERM_CHR_COLOR_BR_CYAN
-#endif
-#ifndef shell_CMD_COLOR_BG
-    #define shell_CMD_COLOR_BG TERM_CHR_COLOR_BLACK
+    #define shell_CMD_COLOR_FG TERM_FGCHR_COLOR_CYAN
 #endif
 
 // Labels
@@ -49,8 +43,8 @@ typedef void (*shell_notify_fn)(void);
 
 typedef const char* (*shell_prompt_prov_fn)(void);
 typedef struct _TERM_COLOR_PAIR_ {
-    term_color_t fg;
-    term_color_t bg;
+    term_fgcolor_t fg;
+    term_bgcolor_t bg;
 } term_color_pair_t;
 
 #ifndef SHELL_GETLINE_MAX_LEN
@@ -147,15 +141,16 @@ extern term_color_pair_t shell_color_get();
 extern void shell_color_refresh();
 
 /**
- * @brief Set and save text forground and background colors.
+ * @brief Set and save text foreground and background colors.
  * @ingroup shell
  *
- * This should be used to set a screen color that can restored when needed.
+ * This should be used to set a screen color that can be restored when needed.
+ * @depricated Use the shell_textcolor_set method
  *
  * @param fg The color number for the foreground
  * @param bg The color number for the background
  */
-extern void shell_color_set(term_color_t fg, term_color_t bg);
+//extern void shell_color_set(term_fgcolor_t fg, term_bgcolor_t bg);
 
 /**
  * @brief Must be called when an input character is ready to be processed.
@@ -338,6 +333,14 @@ extern void shell_register_input_available_handler(shell_input_available_handler
  * @param fn shell_prompt_prov_fn function that provides a prompt string
  */
 extern void shell_set_promptprov(shell_prompt_prov_fn fn);
+
+/**
+ * @brief Set the shell text color. This is preferred over setting both the foreground and background.
+ * @ingroup shell
+ * 
+ * @param fg The text (foreground) color to use 
+ */
+extern void shell_set_text_color(term_fgcolor_t fg);
 
 /**
  * @brief Set the color to the output display color.

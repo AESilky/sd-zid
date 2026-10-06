@@ -29,8 +29,8 @@ static const char* _shell_title;
 /** Function to call when the stdio character ready interrupt handler indicates there is a character ready */
 static shell_notify_fn _notify_of_char_rdy;
 
-static term_color_t _color_term_text_current_bg;
-static term_color_t _color_term_text_current_fg;
+static term_bgcolor_t _color_term_text_current_bg;
+static term_fgcolor_t _color_term_text_current_fg;
 
 static shell_control_char_handler _control_char_handler[32]; // Room for a handler for each control character
 
@@ -306,12 +306,11 @@ void shell_color_refresh() {
     term_color_fg(_color_term_text_current_fg);
 }
 
-void shell_color_set(term_color_t fg, term_color_t bg) {
-    _color_term_text_current_bg = bg;
-    _color_term_text_current_fg = fg;
-    term_color_bg(bg);
-    term_color_fg(fg);
-}
+// void shell_color_set(term_fgcolor_t fg, term_bgcolor_t bg) {
+//     _color_term_text_current_bg = bg;
+//     _color_term_text_current_fg = fg;
+//     term_color_fgbg(fg, bg);
+// }
 
 const char* shell_get_prompt() {
     return _prompt_prov();
@@ -367,6 +366,11 @@ bool shell_handle_control_character(char c) {
     return (false);
 }
 
+void shell_text_color_set(term_fgcolor_t fg) {
+    _color_term_text_current_fg = fg;
+    term_color_fg(fg);
+}
+
 static void _printc_for_printf_term(char c, void* arg) {
     putchar(c);
 }
@@ -390,7 +394,7 @@ int shell_printferr(const char* format, ...) {
     int pl = 0;
     if (_host_connected) {
         term_color_pair_t cs = shell_color_get();
-        shell_color_set(TERM_CHR_COLOR_BR_RED, TERM_CHR_COLOR_BLACK);
+        term_color_error();
         // if (_wraptext_on) {
         //     putchar('\n');
         //     pl = 1;
@@ -399,7 +403,8 @@ int shell_printferr(const char* format, ...) {
         va_start(xArgs, format);
         pl += vfctprintf(_printc_for_printf_term, NULL, format, xArgs);
         va_end(xArgs);
-        shell_color_set(cs.fg, cs.bg);
+        term_color_default();
+        shell_set_text_color(cs.fg);
     }
     return (pl);
 }
@@ -515,12 +520,16 @@ void shell_set_promptprov(shell_prompt_prov_fn fn) {
     _prompt_prov = (fn ? fn : _promptprov_def);
 }
 
+void shell_set_text_color(term_fgcolor_t fg) {
+
+}
+
 void shell_use_output_color() {
-    shell_color_set(shell_APP_COLOR_FG, shell_APP_COLOR_BG);
+    shell_set_text_color(shell_APP_COLOR_FG);
 }
 
 void shell_use_cmd_color() {
-    shell_color_set(shell_CMD_COLOR_FG, shell_CMD_COLOR_BG);
+    shell_set_text_color(shell_CMD_COLOR_FG);
 }
 
 
