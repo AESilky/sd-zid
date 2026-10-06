@@ -175,6 +175,7 @@ set(CORE_LIBS
   dc
   dc_cmd
   pico_cmd
+  z80dasm
 )
 
 #
