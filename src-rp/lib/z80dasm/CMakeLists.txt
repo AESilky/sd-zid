@@ -8,7 +8,7 @@ target_sources(z80dasm INTERFACE
 )
 
 target_include_directories(z80dasm INTERFACE
-  ${CMAKE_CURRENT_LIST_DIR}/src/include
+  ${CMAKE_CURRENT_LIST_DIR}/include
 )
 #
 # Configuration - Release Mode - Debug disabled by default
