@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+    ],
+    "settings": {
+        "cSpell.words": [
+            "argi",
+            "ccbits",
+            "dasm",
+            "datest",
+            "disasm",
+            "dispbyte",
+            "disstr",
+            "hlixiy",
+            "kbits",
+            "ldai",
+            "rlca",
+            "rrca"
+        ],
+        "cmake.buildTask": true
+    }
+}

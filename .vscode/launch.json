@@ -1,0 +1,81 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Test (no opts)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/z80datest",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+        {
+            "name": "Test 1C D",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/z80datest",
+            "args": [
+                "1C",
+                "D"
+            ],
+            "stopAtEntry": true,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+        {
+            "name": "Test (prompt)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/z80datest",
+            "stopAtEntry": true,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            // Leave this empty so VS Code doesn't interfere
+            "args": [],
+            "setupCommands": [
+                {
+                    "description": "Inject raw space-separated arguments directly into LLDB",
+                    "text": "settings set -- target.run-args ${input:commandLineArgs}",
+                    "ignoreFailures": false
+                }
+            ]
+        },
+        {
+            "name": "Debug C Program with Dynamic Args",
+            "type": "cppdbg",
+            "request": "launch",
+            // Dynamically points to the executable built by the active CMake target
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${command:cmake.launchTargetDirectory}",
+            "MIMode": "lldb",
+            "args": [],
+            "setupCommands": [
+                {
+                    "description": "Inject raw space-separated arguments safely into LLDB",
+                    "text": "settings set -- target.run-args ${input:commandLineArgs}",
+                    "ignoreFailures": false
+                }
+            ],
+            "preLaunchTask": "CMake: build"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "commandLineArgs",
+            "type": "promptString",
+            "description": "Enter space-separated arguments (e.g. -u X 00 01):",
+            "default": ""
+        }
+    ]
+}
