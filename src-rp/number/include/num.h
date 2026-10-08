@@ -136,6 +136,31 @@ extern uint32_t num_valprovider(const char* str, repsize_t sz, valstatus_t* stat
  */
 extern bool num_valstr_nb(char* buf, uint v, repsize_t rs, bool uc);
 
+/**
+ * @brief Get a string representation of the value in the current number base
+ * excluding Binary.
+ * @ingroup number
+ *
+ * The string representing the value with the number of characters indicated
+ * by the `repsize_t` parameter.
+ * If the value is too large for the requested size, the value will be down-sized
+ * and `false` will be returned.
+ * To account for hexidecimal characters, the `uc` flag indicates that upper case
+ * should be used.
+ * This is the same as `num_valstr_nb` except that it will not generate a binary
+ * representation. If the current number base is Binary a hex representation is
+ * generated.
+ * 
+ * @see num_valstr_nb
+ *
+ * @param buf Buffer to put the output into
+ * @param v The value
+ * @param rs The 'size' for the representation
+ * @param uc Upper case (ignored if the number base is not HEX)
+ * @return true:Overflow occurred, the value was down-sized.
+ */
+extern bool num_valstr_nb_eb(char* buf, uint v, repsize_t rs, bool uc);
+
 
 /**
  * @brief Initialize the module. Must be called once/only-once before module use.

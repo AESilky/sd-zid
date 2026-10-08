@@ -56,13 +56,14 @@ static uint16_t _dm_sim_wval;           //  simulation word value
 static dm_stat_val_t _dm_status;        // The Debug Monitor's status
 dc_mp_opbuf_t _dm_mp_opbuf;             // DM memory/port operation buffer
 
-
 static dcm_t _mode;                     // The current mode (DEBUG/TARGET/ERROR)
 
 static bool _tgt_is_sbc;                // The target is the SBC (same board)
 
 static char _promptbuf[10];             // Buffer to build the prompt into
 static bool _prompten;                  // Flag to temporarily disable the prompt
+
+static bool _uc;                        // Upper case
 
 // ====================================================================
 // Local/Private Method Declarations
@@ -76,6 +77,15 @@ static void _handle_dm_ssdone(cmt_msg_t* msg);
 static void _print_cpu();
 
 static const char* _prompt_prov();
+
+// === Format Functions for the disassembler (see: z80disasm.h) === //
+
+// fmtbyte_t
+static void _fmt_byte(char* buf, uint8_t v);
+// fmtindex_t
+static void _fmt_index(char* buf, int8_t v);
+// fmtword_t
+static void _fmt_word(char* buf, uint16_t v);
 
 
 // ====================================================================
@@ -291,7 +301,7 @@ static void _dm_fatal_error() {
 static void _dm_target_running() {
     // We started the Target Operation (GO,STEP), print the PC
     char buf[8];
-    num_valstr_nb(buf, regpc_gv(), RS_WORD, true);
+    num_valstr_nb(buf, regpc_gv(), RS_WORD, _uc);
     shell_printf("%s=%s\n", dcm_pc, buf);
     if (_dm_cmd != DCSTEP && _dm_cmd != DCSTEPWREG) { 
         // re-enable the prompt for GO, not for STEP
@@ -350,10 +360,14 @@ dc_mp_opbuf_t* dc_mp_opbuf_get() {
     return &_dm_mp_opbuf;
 }
 
-extern bool dc_prompt_en(bool enbl) {
+bool dc_prompt_en(bool enbl) {
     bool lv = _prompten;
     _prompten = enbl;
     return lv;
+}
+
+void dc_uppercase(bool uc) {
+    _uc = uc;
 }
 
 void dm_getallreg(msg_handler_fn on_cmplt) {
@@ -518,7 +532,8 @@ int dc_modinit() {
     cmt_msg_hdlr_add(MSG_DM_STATUSRCVD, _handle_dm_statusrcvd);
     _prompten = true;
     shell_set_promptprov(_prompt_prov);
-
+    _uc = true;     // Start with Upper Case enabled
+    
     return retval;
 
 _fail:
