@@ -108,9 +108,10 @@ typedef struct zda_ctx_ {
     uint16_t addr;                  // Address of the first byte of the instruction
     zda_need_t ntype;               // The type of data needed
     int8_t status;                  // The status (same as value returned from disassemble methods)
+    bool uc;                        // Uppercase flag (`true` to produce uppercase output)
     char stmt[Z80INST_BUF_LEN];     // The disassembled statement text
     char comment[Z80CMNT_BUF_LEN];  // Comment for the disassembled statement
-    // The remainder are for internal use
+    // The remainder are used internally for the disassembly operation
     uint8_t bi;                     // Index of expected (next) byte (also, count of bytes received)
     uint8_t d[Z80INST_MAX_BYTES];   // The data for the disassembly
     int8_t i_ndx;                   // The 'instruction' byte index
@@ -129,6 +130,7 @@ typedef struct zda_ctx_ {
  * as the opcode to disassemble and initializes the context for the operation.
  * If the opcode represents a 1-byte instruction that doesn't require any
  * additional data, the operation will also be completed (details below).
+ * 
  * If additional data is needed or it isn't a 1-byte instruction the context
  * will be used to continue the disassembly with calls to `zda_next` with
  * additional data until complete or an error occurs.
@@ -153,9 +155,10 @@ typedef struct zda_ctx_ {
  * @param ctx The disassembly context to use (it will be initialized)
  * @param addr The address of the instruction (used to provide jump/call locations)
  * @param data The first byte of the instruction
+ * @param upper_case Flag to produce uppercase ouput (`true` for uppercase)
  * @return int8_t Status value (0:done, >0:more data needed, <0:error)
  */
-extern int8_t zda_begin(zda_ctx_t* ctx, uint16_t addr, uint8_t data);
+extern int8_t zda_begin(zda_ctx_t* ctx, uint16_t addr, uint8_t data, bool upper_case);
 
 /**
  * @brief Provide the next byte for the disassemble operation.
@@ -213,9 +216,8 @@ typedef enum MODINIT_STATUS_ {
  * @param byte_formatter Function that formats an 8-bit byte value to a string into a buffer
  * @param word_formatter Function that formats a 16-bit word value to a string into a buffer
  * @param index_formatter Function that formats a signed 8-bit value into a string with a leading '+'/'-'
- * @param upper_case `true` for upper case disassembly, `false` for lower case.
  * @return modinit_status_t 
  */
-extern modinit_status_t zda_modinit(fmtbyte_t byte_formatter, fmtword_t word_formatter, fmtindex_t index_formatter, bool upper_case);
+extern modinit_status_t zda_modinit(fmtbyte_t byte_formatter, fmtword_t word_formatter, fmtindex_t index_formatter);
 
 #endif // Z80DISASM_H_

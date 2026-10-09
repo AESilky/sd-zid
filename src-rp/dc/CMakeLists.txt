@@ -17,4 +17,5 @@ add_subdirectory(cmd)
 target_link_libraries(dc INTERFACE
     calculator_cmd
     pico_stdlib
+    z80dasm
 )

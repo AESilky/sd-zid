@@ -80,6 +80,15 @@ static inline dc_mp_opbuf_t* dc_mp_opbuf_fill(uint16_t addr, uint8_t cnt) {
 extern bool dc_prompt_en(bool enbl);
 
 /**
+ * @brief Set Uppercase operation.
+ * @ingroup debugcontrol
+ * 
+ * 
+ * @param uc True for uppercase operation
+ */
+extern void dc_uppercase(bool uc);
+
+/**
  * @brief Get all the Z80 registers from the Debug Monitor.
  * @ingroup debugcontrol
  *

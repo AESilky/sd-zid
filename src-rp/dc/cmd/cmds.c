@@ -19,6 +19,7 @@
 #include "num.h"
 #include "shell.h"
 #include "util.h"
+#include "z80disasm.h"
 #include "z80reg.h"
 
 #include "calculator/cmd/cmds.h"
@@ -143,11 +144,13 @@ typedef struct AI_VALS_ {
 
 static addrcnt_vals_s _addrcnt_vals;
 static addrind_vals_s _addrind_vals;
+static zda_ctx_t _da_ctx;               // Disassembler Context
 static uint16_t _dump_addr;
 static uint16_t _dump_addr_prev;
 #define PRNBUFEND 80
 #define PRNBUFLEN 81
 static char _prnbuf[PRNBUFLEN];
+static bool _uc;                        // Upper case
 static val_prvdr_fn _val_provider;
 
 // ====================================================================
@@ -192,6 +195,23 @@ static const char* _flagbits(zregBv_t f) {
     _prnbuf[8] = nul;
 
     return _prnbuf;
+}
+
+// fmtbyte_t (see: z80disasm.h)
+static void _fmt_byte(char* buf, uint8_t v) {
+    num_valstr_nb_eb(buf, v, RS_BYTE, _uc);
+}
+
+// fmtindex_t (see: z80disasm.h)
+static void _fmt_index(char* buf, int8_t v) {
+    char sign = (v < 0 ? '-' : '+');
+    *buf++ = sign;
+    num_valstr_nb_eb(buf, v, RS_BYTE, _uc);
+}
+
+// fmtword_t (see: z80disasm.h)
+static void _fmt_word(char* buf, uint16_t v) {
+    num_valstr_nb_eb(buf, v, RS_WORD, _uc);
 }
 
 /**
@@ -1435,9 +1455,11 @@ void dccmds_modinit() {
     //
     // initialize the rest of the commands that we make available.
     //
+    _uc = true;     // Start with Upper Case enabled
     calccmds_modinit();
     dbusccmds_modinit();
     numcmds_modinit();
+    zda_modinit(_fmt_byte, _fmt_word, _fmt_index);
     //
     // Set things that modify the setups
     dcc_set_valprov(reg_num_valprov);  // Set the Z80 register & number provider

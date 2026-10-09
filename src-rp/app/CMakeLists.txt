@@ -10,6 +10,7 @@ target_include_directories(app INTERFACE
   ${CMAKE_CURRENT_LIST_DIR}
   ${CMAKE_CURRENT_LIST_DIR}/include
   ${CMAKE_SOURCE_DIR}/lib/shell/src/include
+  ${CMAKE_SOURCE_DIR}/lib/z80dasm/include
 )
 
 target_link_libraries(app INTERFACE
@@ -17,4 +18,5 @@ target_link_libraries(app INTERFACE
   shell
   #shell_stub
   pico_stdlib
+  z80dasm
 )
