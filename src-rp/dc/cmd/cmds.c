@@ -137,6 +137,14 @@ typedef struct AI_VALS_ {
     addr_ind_t  ind;
 } addrind_vals_s;
 
+typedef struct CMD_DASM_CTX_ {
+    zda_ctx_t ctx;          // Disassembler Context
+    uint16_t caddr;         // Current address
+    uint16_t stmt_cnt;      // Number of statements left to disassemble
+    uint8_t buf[Z80INST_MAX_BYTES]; // Data buffer
+    uint8_t bi;             // Data byte index
+    uint8_t bc;             // Data byte count (retrieved/left)
+} cmddasm_ctx_s;
 
 // ====================================================================
 // Data Section
@@ -144,7 +152,8 @@ typedef struct AI_VALS_ {
 
 static addrcnt_vals_s _addrcnt_vals;
 static addrind_vals_s _addrind_vals;
-static zda_ctx_t _da_ctx;               // Disassembler Context
+static cmddasm_ctx_s _da_ctx;           // Disassembler Context
+static bool _dasm_pc;                   // Disassemble PC on CPU display
 static uint16_t _dump_addr;
 static uint16_t _dump_addr_prev;
 #define PRNBUFEND 80
@@ -156,6 +165,8 @@ static val_prvdr_fn _val_provider;
 // ====================================================================
 // Local/Private Methods
 // ====================================================================
+
+// === Inline Methods
 
 static inline void __clrbuf() {
     memset(_prnbuf, sp, PRNBUFLEN); _prnbuf[PRNBUFEND] = nul;
@@ -195,6 +206,61 @@ static const char* _flagbits(zregBv_t f) {
     _prnbuf[8] = nul;
 
     return _prnbuf;
+}
+
+// === Standard Methods
+
+/** Continue disassembly with data */
+static void _disasm_c_d(cmt_msg_t* msg) {
+    // Continue the disassembly, now with data
+    uint8_t* vbuf = msg->data.bptr;
+    uint16_t addr = _da_ctx.caddr;
+    uint8_t b = *vbuf++; _da_ctx.bc--; _da_ctx.caddr++;
+    int8_t s;
+    if (_da_ctx.ctx.status == 0) {
+        s = zda_begin(&(_da_ctx.ctx), addr, b, _uc);
+    }
+    while (s > 0 && _da_ctx.bc) {
+        b = *vbuf++; _da_ctx.bc--;
+        s = zda_next(&(_da_ctx.ctx), b);
+    }
+    if (s < 0) {
+        _disasm_err();
+        goto ERR_;
+    }
+    else if (s == 0) {
+        // The statement is complete. Print it.
+
+    }
+    else {
+        // The statement isn't complete, but we need more data.
+
+    }
+ERR_:
+    return;
+}
+/** Continue the disassembly no data yet (note: msg may be NULL) */
+static void _disasm_c(cmt_msg_t* msg) {
+    // Continue the disassembly to get the data
+    uint16_t addr = _da_ctx.caddr;
+    uint8_t bc = _da_ctx.bc;
+    // Read the data from 'addr' to start the disassembly
+    dc_mp_opbuf_fill(addr, bc);
+    dm_mem_get(bc, _disasm_c_d);
+}
+/**
+ * @brief Disassemble from a starting address for a number of statements
+ * 
+ * @param addr Address to start from
+ * @param count The number of statements to disassemble
+ * @param uc Uppercase flag (true for uppercase)
+ */
+static void _disasm(uint16_t addr, uint16_t count, bool uc) {
+    _da_ctx.stmt_cnt = count;
+    _da_ctx.caddr = addr;
+    _da_ctx.bc = 1;     // A single byte is needed to start
+    _da_ctx.ctx.status = 0; // Set the disassembly context status to 0 to start
+    _disasm_c(NULL);
 }
 
 // fmtbyte_t (see: z80disasm.h)
@@ -652,7 +718,7 @@ _finally:
     return (retval);
 }
 
-static void _dump_cmplt(cmt_msg_t* msg) {
+static void _dump_c(cmt_msg_t* msg) {
     uint16_t addr = _addrcnt_vals.addr;
     uint16_t cnt = _addrcnt_vals.cnt;
     uint16_t paddr;
@@ -762,7 +828,7 @@ static int _exec_dump(int argc, char** argv, const char* unparsed) {
     cnt = (cnt > 256 ? 256 : cnt); // ZZZ - temp, support max count of 256 (0)
     // Get the memory from the target
     dc_mp_opbuf_fill(addr, lowByte(cnt));
-    dm_mem_get(cnt, _dump_cmplt);
+    dm_mem_get(cnt, _dump_c);
     _addrcnt_vals.addr = addr;
     _addrcnt_vals.cnt = cnt;
     dc_prompt_en(false);
@@ -770,7 +836,7 @@ _finally:
     return retval;
 }
 
-static void _dumpa_cmplt(cmt_msg_t* msg) {
+static void _dumpa_c(cmt_msg_t* msg) {
     uint16_t addr = _addrcnt_vals.addr;
     uint16_t cnt = _addrcnt_vals.cnt;
     uint16_t paddr;
@@ -868,7 +934,7 @@ static int _exec_dumpa(int argc, char** argv, const char* unparsed) {
     cnt = (cnt > 256 ? 256 : cnt); // ZZZ - temp, support max count of 256
     // Get the memory from the target
     dc_mp_opbuf_fill(addr, lowByte(cnt));
-    dm_mem_get(cnt, _dumpa_cmplt);
+    dm_mem_get(cnt, _dumpa_c);
     _addrcnt_vals.addr = addr;
     _addrcnt_vals.cnt = cnt;
     dc_prompt_en(false);
@@ -876,7 +942,7 @@ _finally:
     return retval;
 }
 
-static void _exam_cmplt(cmt_msg_t* msg) {
+static void _exam_c(cmt_msg_t* msg) {
     uint16_t addr = _addrind_vals.addr;
     addr_ind_t addr_ind = _addrind_vals.ind;
     uint16_t value;
@@ -935,11 +1001,11 @@ static int _exec_examine(int argc, char** argv, const char* unparsed) {
     }
     if (addr_ind == ADDR_IND_WORD) {
         dc_mp_opbuf_fill(addr, WORD);
-        dm_mem_get(WORD, _exam_cmplt);
+        dm_mem_get(WORD, _exam_c);
     }
     else {
         dc_mp_opbuf_fill(addr, BYTE);
-        dm_mem_get(BYTE, _exam_cmplt);
+        dm_mem_get(BYTE, _exam_c);
     }
     _addrind_vals.addr = addr;
     _addrind_vals.ind = addr_ind;
@@ -979,7 +1045,7 @@ _finally:
     return (retval);
 }
 
-static void _in_cmplt(cmt_msg_t* msg) {
+static void _in_c(cmt_msg_t* msg) {
     uint16_t addr = _addrind_vals.addr;
     addr_ind_t addr_ind = _addrind_vals.ind;
     uint16_t value;
@@ -1019,7 +1085,7 @@ static int _exec_in(int argc, char** argv, const char* unparsed) {
     _addrind_vals.addr = addr;
     _addrind_vals.ind = addr_ind;
     dc_mp_opbuf_fill(addr, BYTE);
-    dm_port_get(BYTE, _in_cmplt);
+    dm_port_get(BYTE, _in_c);
     dc_prompt_en(false);
 _finally:
     return retval;
@@ -1258,6 +1324,9 @@ void dcc_cpudisp() {
     SHPF(dcm_regwhdr);
     SHPF("\n%s\n%s\n", _regallwstr(), sbcind);
     nbase_set(nb);
+    if (_dasm_pc) {
+        _disasm(regpc_gv(), 1, _uc);
+    }
 }
 
 
@@ -1455,7 +1524,8 @@ void dccmds_modinit() {
     //
     // initialize the rest of the commands that we make available.
     //
-    _uc = true;     // Start with Upper Case enabled
+    _dasm_pc = true;    // Start with disassembling the PC on CPU display
+    _uc = true;         // Start with Upper Case enabled
     calccmds_modinit();
     dbusccmds_modinit();
     numcmds_modinit();
