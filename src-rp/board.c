@@ -107,18 +107,20 @@ int board_init() {
     gpio_set_dir(CTRL_WAITRQ, GPIO_OUT);
 
     // CPU/BUS Control
-    gpio_init(CTRL_INTRQ);
-    gpio_put(CTRL_INTRQ, CTRL_INTRQ_OFF);
-    gpio_set_dir(CTRL_INTRQ, GPIO_OUT);
-    gpio_set_drive_strength(CTRL_INTRQ, GPIO_DRIVE_STRENGTH_4MA);
     gpio_init(CTRL_ADDR);
     gpio_set_dir(CTRL_ADDR, GPIO_IN);
     gpio_init(CTRL_MODSEL);
     gpio_set_dir(CTRL_MODSEL, GPIO_IN);
     gpio_init(CTRL_RD);
     gpio_set_dir(CTRL_RD, GPIO_IN);
-    gpio_init(CTRL_WR);
-    gpio_set_dir(CTRL_WR, GPIO_IN);
+
+    // I/O Port Control
+    gpio_init(CTRL_IOECLK);
+    gpio_put(CTRL_IOECLK, 0);
+    gpio_set_pulls(CTRL_IOECLK, false, false);  // No Pulls
+    gpio_set_drive_strength(CTRL_IOECLK, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_dir(CTRL_IOECLK, GPIO_OUT);
+
 
     // SPI Pins for MicroSD Card
     // gpio_set_function(SPI_SD_SCK, GPIO_FUNC_SPI);

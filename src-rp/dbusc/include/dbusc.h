@@ -34,14 +34,12 @@ extern "C" {
 typedef bool (*ctrlreg_irq_fn)(uint8_t ctrl, bool host_rd, uint8_t* d);
 
 
-/** @brief ADDR bit (mask) */
+/** @brief ADDR bit (mask) for CTRL */
 #define CTRL_ADDR_BIT_M    0x01
-/** @brief RD- bit (mask) */
+/** @brief RD- bit (mask) for CTRL */
 #define CTRL_RD_BIT_M      0x02
-/** @brief WR- bit (mask) */
-#define CTRL_WR_BIT_M      0x04
-/** @brief MSEL- bit (mask) */
-#define CTRL_MSEL_BIT_M    0x08
+/** @brief MSEL- bit (mask) for CTRL */
+#define CTRL_MSEL_BIT_M    0x04
 
 /**
  * @brief Databus transfer operation type (RD, WR, UNKNOWN)
@@ -242,7 +240,21 @@ extern void dbus_release_msel();
  */
 extern void dbus_value_put(uint8_t v);
 
-
+#define LED_RED 0x08
+#define LED_YELLOW1 0x10
+#define LED_YELLOW2 0x20
+#define LED_GREEN1 0x40
+#define LED_GREEN2 0x80
+/**
+ * @brief Turn LEDs ON/OFF
+ * @ingroup ioport
+ * 
+ * LED values are OR'ed together and written to the I/O Port.
+ * The RED LED is ON with a value of 0, while the others are ON with a value of 1.
+ * 
+ * @param leds OR'ed values for the LEDs 
+ */
+extern void led_control(uint8_t leds);
 
 /**
  * @brief Initialize the module. Must be called once/only-once before module use.

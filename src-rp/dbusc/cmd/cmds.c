@@ -40,7 +40,7 @@ static int _exec_dbc_attn(int argc, char** argv, const char* unparsed) {
         shell_printf("Set ATTN: %s\n", vstr);
     }
     // Display the level
-    const char* drstr = (gpio_get(CTRL_INTRQ) ? "ON" : "OFF");
+    const char* drstr = "ZZZ TBD"; // (gpio_get(CTRL_INTRQ) ? "ON" : "OFF");
     shell_printf("ATTN is: %s\n", drstr);
 
     return (retval);

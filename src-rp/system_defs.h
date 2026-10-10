@@ -36,11 +36,15 @@ extern "C" {
 
 // SPI for the SD Card.
 //
+#ifdef _BOARDS_WAVESHARE_RP2040_ZERO_H  // The module is the Waveshare RP2040 Zero
+#define SPI_SD_CS               GP29
+#else
+#define SPI_SD_CS               GP17
+#endif
 #define SPI_SD_DEVICE           spi1            // Hardware SPI to use
 #define SPI_SD_MISO             GP28
 #define SPI_SD_MOSI             GP27
 #define SPI_SD_SCK              GP26
-#define SPI_SD_CS               GP17
 #define SPI_SLOW_SPEED          (50 * 1000)     // Very slow speed for init ops
 #define SPI_SD_SPEED            (800 * 1000)    // SPI at 800KHz
 #define SPI_CS_ENABLE           0               // Chip Select is active LOW
@@ -50,22 +54,22 @@ extern "C" {
 //
 #ifndef CTRL_GPIOS          // Defaults for Control Pins
 #define CRTL_GPIOS
-#define CTRL_INTRQ              GP15            // Interrupt Request (ATTN) to main CPU
+#define CTRL_IOECLK             GP15            // I/O Enable/Clock (low to high clocks data)
 #define CTRL_INTRQ_OFF          0               //  Interrupt Request (ATTN) is Active-HIGH
 #define CTRL_INTRQ_ON           1               //
-#define CTRL_MODSEL             GP13            // ModuleSelect- from main CPU
+#define CTRL_MODSEL             GP12            // ModuleSelect- from main CPU
 #define CTRL_MOD_SELECTED       0               //  ModuleSelect is Active-LOW
 #define CTRL_MOD_NOTSEL         1               //  ModuleSelect is Active-LOW
 #define CTRL_ADDR               GP10            // C-/D from main CPU
 #define CTRL_RD                 GP11            // RD- from main CPU
-#define CTRL_WR                 GP12            // WR- from main CPU
-#define CTRL_RD_ON              0               //  RD is Active-LOW
 #define CTRL_RD_OFF             1               //  RD is Active-LOW
-#define CTRL_WR_ON              0               //  WR is Active-LOW
-#define CTRL_WR_OFF             1               //  WR is Active-LOW
-#define CTRL_WAITRQ             GP14            // Wait Request to main CPU
+#define CTRL_RD_ON              0               //  RD is Active-LOW
+#define CTRL_WAITRQ             GP13            // Wait Request to main CPU
 #define CTRL_WAITRQ_OFF         1               //  Wait Request is Active-LOW
 #define CTRL_WAITRQ_ON          0               //
+#define CTRL_RST                GP14            // Reset (request) from board
+#define CTRL_RST_OFF            1               //  Reset is active low
+#define CTRL_RST_ON             0               //  Reset is active low
 #endif
 // Data Bus
 //

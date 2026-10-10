@@ -225,7 +225,7 @@ static void _disasm_c_d(cmt_msg_t* msg) {
         s = zda_next(&(_da_ctx.ctx), b);
     }
     if (s < 0) {
-        _disasm_err();
+        //_disasm_err();
         goto ERR_;
     }
     else if (s == 0) {

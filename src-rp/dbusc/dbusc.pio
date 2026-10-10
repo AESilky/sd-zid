@@ -7,7 +7,7 @@
 ;
 .pio_version RP2040
 
-.define MSEL_GPIO   13      ; Module Select Pin
+.define MSEL_GPIO   12      ; Module Select Pin
 .define MSEL_OFF    1       ; Active LOW
 .define MSEL_ON     0       ; Active LOW
 
@@ -39,7 +39,7 @@ PUBLIC start:
     jmp     pin,addr1                               ; Raise IRQ based on Control[0]/Data[1] 
     ; We have MS and A:0 (Control). The CPU handles this, so let it know.
     mov     isr,NULL
-    in      pins,8                                  ; read CTRL signals (MSEL,WR,RD,ADDR)
+    in      pins,8                                  ; read CTRL signals (MSEL,RD,ADDR)
     irq     wait PIO_BCA_CTRL
 .wrap_target
     wait    MSEL_OFF gpio MSEL_GPIO side WAIT_OFF [7]; Wait for Module Select to go away

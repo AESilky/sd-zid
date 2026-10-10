@@ -5,7 +5,7 @@
     "**/node_modules": true
   },
   "search.useIgnoreFiles": true,
-  "cmake.sourceDirectory": "/Users/esilky/proj/sd-zid/src-rp",
+  "cmake.sourceDirectory": "/home/esilky/proj/sd-ziddc/src-rp",
   "C_Cpp.errorSquiggles": "enabled",
   "cmake.environment": {
     "CFLAGS": "",

@@ -96,6 +96,12 @@ static volatile uint8_t _ctrl_status;           // Location used for CTRL READ o
 static volatile uint8_t _def_ctrlbuf;           // Location used for unexpected CTRL operations
 static volatile uint8_t _def_databuf;           // Location used for unexpected DATA operations
 
+#define IO_ATTN_M   0b00000001
+#define IO_MODINT_M 0b00000010
+#define IO_SPICS2_M 0b00000100
+#define IO_CTRL_M (IO_ATTN_M | IO_MODINT_M | IO_SPICS2_M)
+static volatile uint8_t _io_val;                // Backing value of the I/O Port (hardware is write-only)
+
 // ====================================================================
 // Local/Private Method Declarations
 // ====================================================================
@@ -189,7 +195,7 @@ void _irq_pio_ctrl_handler() {
     cmt_msg_t msg;
     bool handled = false;
     uint32_t ctrlbus = pio_sm_get(_msel_pocfg.pio, _msel_pocfg.sm);
-    uint8_t ctrl = (uint8_t)(ctrlbus & 0x0f);  // MSEL,WR,RD,ADDR
+    uint8_t ctrl = (uint8_t)(ctrlbus & 0x07);  // MSEL,RD,ADDR
     uint8_t v = _ctrl_status;
     // Verify that it is a valid CTRL operation
     if ((ctrl & (CTRL_MSEL_BIT_M | CTRL_ADDR_BIT_M)) == 0) {
@@ -422,7 +428,11 @@ static uint8_t _man_read() {
 // ====================================================================
 
 void attn_set_on(bool on) {
-    gpio_put(CTRL_INTRQ, (on ? CTRL_INTRQ_ON : CTRL_INTRQ_OFF));
+    uint8_t ab = (on ? IO_ATTN_M : 0x00);
+    _io_val = (ab | (_io_val & ~IO_ATTN_M));
+    dbus_value_put(_io_val);
+    gpio_put(CTRL_IOECLK, 1);   // Latch the value
+    gpio_put(CTRL_IOECLK, 0);
 }
 
 void dbus_ctrl_hdlr_set(ctrlreg_irq_fn hdlr) {
@@ -608,6 +618,14 @@ void dbus_value_put(uint8_t v) {
     pio_sm_put(_mwr_pocfg.pio, _mwr_pocfg.sm, (uint32_t)v);
 }
 
+void led_control(uint8_t leds) {
+    // Assure that only the LED bits are being controlled and OR in the bottom bits
+    //  The RED LED is ON=0:OFF=1, so flip the value given to us
+    _io_val = (((leds ^ LED_RED) & 0xf8) | (_io_val & IO_CTRL_M));
+    dbus_value_put(_io_val);
+    gpio_put(CTRL_IOECLK, 1);   // Latch the value
+    gpio_put(CTRL_IOECLK, 0);
+}
 
 // ====================================================================
 // Initialization/Start-Up Methods
@@ -628,9 +646,6 @@ int dbusc_modinit() {
     gpio_init(CTRL_RD);
     gpio_set_dir(CTRL_RD, GPIO_IN);
     pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_RD);
-    gpio_init(CTRL_WR);
-    gpio_set_dir(CTRL_WR, GPIO_IN);
-    pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_WR);
     gpio_init(CTRL_MODSEL);
     gpio_set_dir(CTRL_MODSEL, GPIO_IN);
     pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_MODSEL);
@@ -651,7 +666,6 @@ int dbusc_modinit() {
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, DATA0, DATA_BUS_WIDTH, false);
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_ADDR, 1, false);
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_RD, 1, false);
-    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_WR, 1, false);
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_MODSEL, 1, false);
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_WAITRQ, 1, true);
 
