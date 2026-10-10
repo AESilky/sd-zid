@@ -20,7 +20,7 @@ Property Atmel {TMS_pullup = ON};
 
 /* !!! PUT HERE TO BE OBVIOUS !!! */
 $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
-/*$DEFINE ZFOP        'h'CF   /* but, when using ZED a RST8 is forced, as ZED initializes on Reset */
+/*$DEFINE ZFOP        'h'CF   /* but, when using ZED a RST is forced, as ZED initializes on Reset */
 
 /**
  * ZID (Z80 In-circuit Debugger) Main Logic
@@ -307,7 +307,6 @@ PIN 50  = !ram_sel;
 PIN 49  = rom_sel;  /* Defined as HIGH-TRUE and an inverter used externally */
                     /* to avoid the Microchip CUPL/Fitter issue.            */
 PIN 72  = !zwait;
-PROPERTY Atmel {open_collector = on zwait}; /* ZZZ needed on breadboard */
 PIN 69  = !zbreq;     /* To the Z80 */
 PIN 19  = !mod_sel;     /* RP2040 Module Select                             */
 /* */

@@ -2,14 +2,13 @@
 
 ATF1508AS
 10
-1
+4
 C:\Users\aesil\proj\sd-zid\pld\zid_main.jed
-
 ATF1508AS
 10
-0
-
+4
+C:\Users\aesil\proj\sd-zid\pld\zid_brkpcl.jed
 ATF1504AS
 10
-0
-
+4
+C:\Users\aesil\proj\sd-zid\pld\zid_bd_gpio.jed
