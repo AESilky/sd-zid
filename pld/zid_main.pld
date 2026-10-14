@@ -798,7 +798,8 @@ attn_tms_R.ck   = attn;
 /* */
 sync            = hbrk_dtctd_R # sbrk_dtctd_R;      /* SYNC signal of board                     */
 /* */
-pc_latch   = zm1 & tgtmode_R & !dbi_if2_R;
+pc_latch   = (zm1 & tgtmode_R & !dbi_if2_R)         /* Parallel load of PC when in Target mode  */
+            # (!tgtmode_R & BRKPC_RD);              /* Read of the PC Bit and shift after       */
 
 
 /*  MMU Register Read, Z80 NOP Force, Break2-n Detect read, PC Save SR-bit read */
