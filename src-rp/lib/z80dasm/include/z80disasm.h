@@ -183,7 +183,7 @@ extern int8_t zda_next(zda_ctx_t* ctx, uint8_t data);
  *
  * If the result of a disassembly is `ZDAE_INVALID_INSTRUCTION`, this will format
  * the collected bytes into a string in the format '! = byte1 [byte2...]' in the
- * context `inst` field and possibly more information in the `comment` field.
+ * context `stmt` field and possibly more information in the `comment` field.
  *
  * @param ctx The context used in the disassembly
  */

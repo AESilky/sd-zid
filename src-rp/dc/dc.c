@@ -36,8 +36,8 @@
 // Local Constants and types
 // ====================================================================
 
-#define DMSIM_STAT1DLY 200  // Delay before simulated status 1
-#define DMSIM_STATDLYINC 150  // Delay increment for additional status
+#define DMSIM_STAT1DLY 180  // Delay before simulated status 1
+#define DMSIM_STATDLYINC 80  // Delay increment for additional status
 
 // ====================================================================
 // Data Section
@@ -49,7 +49,7 @@ static volatile bool _modinit_called;
 static msg_handler_fn _dc_op_complete;  // Handler to run when operation is complete
 
 static dm_cmd_t _dm_cmd;                // The command last sent
-static bool _dm_simulate;               // Simulate DM activity to allow UI dev
+static bool _dm_simulate;               // Simulate DM activity to allow stand-alone dev
 static msg_handler_fn _dm_buf_rcv_cmplt;  //  buffer receive operation complete method
 static uint8_t _dm_sim_bval;            //  simulation byte value
 static uint16_t _dm_sim_wval;           //  simulation word value
@@ -119,6 +119,9 @@ static void _handle_dm_mget_done(cmt_msg_t* msg) {
     // Make sure we have a completion routine, otherwise nothing to do
     if (_dm_buf_rcv_cmplt) {
         cmt_msg_t msgcmplt;
+        if (_dm_simulate) {
+            *_dm_mp_opbuf.buf = _dm_sim_bval;
+        }
         msgcmplt.data.bptr = (uint8_t*)&_dm_mp_opbuf.buf;
         cmt_exec_init(&msgcmplt, _dm_buf_rcv_cmplt);
         postAPPMsg(&msgcmplt);
@@ -526,13 +529,13 @@ int dc_modinit() {
     }
 
     _mode = DCM_DEBUG;
-    dminit_status_set(DC_INITRDY);      // Status to be returned when DM initializes
     //
     cmt_msg_hdlr_add(MSG_DM_CMDDONE, _handle_dm_cmddone);
     cmt_msg_hdlr_add(MSG_DM_STATUSRCVD, _handle_dm_statusrcvd);
     _prompten = true;
     shell_set_promptprov(_prompt_prov);
     _uc = true;     // Start with Upper Case enabled
+    dminit_status_set(DC_INITRDY);      // Status to be returned when DM initializes
     
     return retval;
 

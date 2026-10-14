@@ -96,13 +96,21 @@ static volatile uint8_t _ctrl_status;           // Location used for CTRL READ o
 static volatile uint8_t _def_ctrlbuf;           // Location used for unexpected CTRL operations
 static volatile uint8_t _def_databuf;           // Location used for unexpected DATA operations
 
+#define IO_ATTN_M   0b00000001
+#define IO_MODINT_M 0b00000010
+#define IO_SPICS2_M 0b00000100
+#define IO_CTRL_M (IO_ATTN_M | IO_MODINT_M | IO_SPICS2_M)
+static volatile uint8_t _eop_val;                // Backing value of the Expansion Port (hardware is write-only)
+
 // ====================================================================
 // Local/Private Method Declarations
 // ====================================================================
 
 static void _dbus_to_ctrl(bool b);
+static void _eop_write(uint8_t v);
 static uint8_t _man_read();
-/*static*/ void dbus_value_put(uint8_t v);
+void dbus_cancel_recv();
+void dbus_cancel_send();
 
 
 // ====================================================================
@@ -189,7 +197,7 @@ void _irq_pio_ctrl_handler() {
     cmt_msg_t msg;
     bool handled = false;
     uint32_t ctrlbus = pio_sm_get(_msel_pocfg.pio, _msel_pocfg.sm);
-    uint8_t ctrl = (uint8_t)(ctrlbus & 0x0f);  // MSEL,WR,RD,ADDR
+    uint8_t ctrl = (uint8_t)(ctrlbus & 0x07);  // MSEL,RD,ADDR
     uint8_t v = _ctrl_status;
     // Verify that it is a valid CTRL operation
     if ((ctrl & (CTRL_MSEL_BIT_M | CTRL_ADDR_BIT_M)) == 0) {
@@ -204,7 +212,7 @@ void _irq_pio_ctrl_handler() {
         }
         if (!handled) {
             if (host_rd) {
-                dbus_value_put(_ctrl_status);       // The HOST is reading, put data on the bus
+                dbus_ctrl_val_put(_ctrl_status);       // The HOST is reading, put data on the bus
             }
             msg.data.value16u = ctrl << 8;
             msg.data.value16u |= v;
@@ -401,6 +409,47 @@ static void _dbus_to_ctrl(bool ctrl) {
     }
 }
 
+/** @brief Write a value to the Expansion Output Port */
+static void _eop_write(uint8_t v) {
+    // This must take control of the data bus so it can put a value on it
+    // and hold the value while the IOE clock is pulsed.
+    //
+    // To take control of the but we must:
+    // 1. stop the PIO SMs for the Auto operations
+    // 2. stop the PIO SMs for the Manual operations
+    // 3. configure the GPIOs for SIO and Output
+    // 4. put the value on the bus
+    //
+    // Once we have pulsed the IOE Clock we must put the PIO SMs
+    // back to controlling the bus.
+    //
+    piosm_reset(_datarw_pocfg);
+    piosm_reset(_msel_pocfg);
+    piosm_reset(_mrd_pocfg);
+    piosm_reset(_mwr_pocfg);
+    // Set up the Data Bus
+    for (uint i = 0; i < DATA_BUS_WIDTH; i++) {
+        gpio_init(DATA0 + i);
+        gpio_set_dir(DATA0 + i, GPIO_OUT);
+        gpio_set_drive_strength(DATA0 + i, GPIO_DRIVE_STRENGTH_12MA);
+        gpio_set_pulls(DATA0 + i, false, true);    // pull down
+    }
+    uint32_t mask = 0xFF << DATA0;
+    uint32_t sv = (uint32_t)v << DATA0;
+    gpio_put_masked(mask, sv);
+    gpio_put(CTRL_IOECLK, 0);   // Assure that we get a LOW to HIGH transition
+    gpio_put(CTRL_IOECLK, 1);   // Latch the value
+    gpio_put(CTRL_IOECLK, 0);   // Leave IOECLK LOW
+    _eop_val = v;
+    //
+    // Put things back to normal PIO control
+    _dbus_to_ctrl(false);
+    pio_sm_set_enabled(_mrd_pocfg.pio, _mrd_pocfg.sm, true);
+    pio_sm_set_enabled(_mwr_pocfg.pio, _mwr_pocfg.sm, true);
+    pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, true); // Auto R/W needs to be before MSel
+    pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, true);
+}
+
 /** @brief Manually read a byte from the data bus */
 static uint8_t _man_read() {
     uint32_t dbus;
@@ -421,8 +470,15 @@ static uint8_t _man_read() {
 // Public Methods
 // ====================================================================
 
+bool attn_get() {
+    bool b = ((_eop_val & IO_ATTN_M) != 0);
+    return b;
+}
+
 void attn_set_on(bool on) {
-    gpio_put(CTRL_INTRQ, (on ? CTRL_INTRQ_ON : CTRL_INTRQ_OFF));
+    uint8_t ab = (on ? IO_ATTN_M : 0x00);
+    uint8_t epv = (ab | (_eop_val & ~IO_ATTN_M));
+    _eop_write(epv);
 }
 
 void dbus_ctrl_hdlr_set(ctrlreg_irq_fn hdlr) {
@@ -435,6 +491,13 @@ void dbus_ctrl_status_set(uint8_t v) {
 
 uint8_t dbus_last_wr_val() {
     return _def_databuf;
+}
+
+extern void dbus_cancel_ops() {
+    attn_set_on(false);
+    dbus_cancel_recv();
+    dbus_cancel_send();
+    dbus_clear_wait();
 }
 
 void dbus_cancel_recv() {
@@ -489,8 +552,8 @@ void dbus_clear_wait() {
     // De-assert WAIT
     gpio_init(CTRL_WAITRQ);
     gpio_set_function(CTRL_WAITRQ, GPIO_FUNC_SIO);
-    gpio_set_dir(CTRL_WAITRQ, GPIO_OUT);
     gpio_put(CTRL_WAITRQ, CTRL_WAITRQ_OFF);
+    gpio_set_dir(CTRL_WAITRQ, GPIO_OUT);
     // Now set WAIT back to PIO control
     pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_WAITRQ);
     // Re-enable the auto-data and msel PIO State Machines
@@ -601,13 +664,19 @@ void dbus_release_msel() {
     pio_interrupt_clear(_msel_pocfg.pio, PIO_BCA_CTRL);
 }
 
-void dbus_value_put(uint8_t v) {
+void dbus_ctrl_val_put(uint8_t v) {
     // To write, clear the interrupt bit that the PIOSM is waiting on (allows PINDIRS to be set to out),
     pio_sm_clear_fifos(_mwr_pocfg.pio, _mwr_pocfg.sm);
     pio_interrupt_clear(_mwr_pocfg.pio, _mwr_pocfg.sm);
     pio_sm_put(_mwr_pocfg.pio, _mwr_pocfg.sm, (uint32_t)v);
 }
 
+void led_control(uint8_t leds) {
+    // Assure that only the LED bits are being controlled and OR in the bottom bits
+    //  The RED LED is ON=0:OFF=1, so flip the value given to us
+    uint8_t ledv = (((leds ^ LED_RED) & 0xf8) | (_eop_val & IO_CTRL_M));
+    _eop_write(ledv);
+}
 
 // ====================================================================
 // Initialization/Start-Up Methods
@@ -628,15 +697,9 @@ int dbusc_modinit() {
     gpio_init(CTRL_RD);
     gpio_set_dir(CTRL_RD, GPIO_IN);
     pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_RD);
-    gpio_init(CTRL_WR);
-    gpio_set_dir(CTRL_WR, GPIO_IN);
-    pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_WR);
     gpio_init(CTRL_MODSEL);
     gpio_set_dir(CTRL_MODSEL, GPIO_IN);
     pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_MODSEL);
-    // WAIT is initialized (early) in Board Init
-    //gpio_init(CTRL_WAITRQ);
-    //gpio_set_dir(CTRL_WAITRQ, GPIO_OUT);
     pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_WAITRQ);
 
     // Set up the Data Bus
@@ -651,7 +714,6 @@ int dbusc_modinit() {
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, DATA0, DATA_BUS_WIDTH, false);
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_ADDR, 1, false);
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_RD, 1, false);
-    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_WR, 1, false);
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_MODSEL, 1, false);
     pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_WAITRQ, 1, true);
 

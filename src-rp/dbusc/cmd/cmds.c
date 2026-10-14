@@ -40,13 +40,14 @@ static int _exec_dbc_attn(int argc, char** argv, const char* unparsed) {
         shell_printf("Set ATTN: %s\n", vstr);
     }
     // Display the level
-    const char* drstr = (gpio_get(CTRL_INTRQ) ? "ON" : "OFF");
+    v = attn_get();
+    const char* drstr = (v ? "ON" : "OFF");
     shell_printf("ATTN is: %s\n", drstr);
 
     return (retval);
 }
 
-/*static*/ void dbus_value_put(uint8_t v);
+/*static*/ void dbus_ctrl_val_put(uint8_t v);
 
 static int _exec_dbwr(int argc, char** argv, const char* unparsed) {
     int retval = 0;
@@ -63,7 +64,7 @@ static int _exec_dbwr(int argc, char** argv, const char* unparsed) {
         retval = 1;
         goto _finally;
     }
-    dbus_value_put((uint8_t)v);
+    dbus_ctrl_val_put((uint8_t)v);
 _finally:
     return (retval);
 }

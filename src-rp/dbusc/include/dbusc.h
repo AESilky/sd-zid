@@ -34,14 +34,12 @@ extern "C" {
 typedef bool (*ctrlreg_irq_fn)(uint8_t ctrl, bool host_rd, uint8_t* d);
 
 
-/** @brief ADDR bit (mask) */
+/** @brief ADDR bit (mask) for CTRL */
 #define CTRL_ADDR_BIT_M    0x01
-/** @brief RD- bit (mask) */
+/** @brief RD- bit (mask) for CTRL */
 #define CTRL_RD_BIT_M      0x02
-/** @brief WR- bit (mask) */
-#define CTRL_WR_BIT_M      0x04
-/** @brief MSEL- bit (mask) */
-#define CTRL_MSEL_BIT_M    0x08
+/** @brief MSEL- bit (mask) for CTRL */
+#define CTRL_MSEL_BIT_M    0x04
 
 /**
  * @brief Databus transfer operation type (RD, WR, UNKNOWN)
@@ -55,15 +53,12 @@ typedef enum {
 } dbxfer_op_t;
 
 /**
- * @brief Check if the Data Bus direction is OUT.
+ * @brief Get the state of the ATTN bit
  * @ingroup databus
- *
- * @return true It is OUT
- * @return false It is IN
+ * 
+ * @return bool true if the ATTN bit is ON 
  */
-static inline bool dbus_is_out() {
-    return gpio_get_dir(DATA0); // We check DATA-0. All DATA bits direction are set as one.
-}
+extern bool attn_get();
 
 /**
  * @brief Set the ATTN (INTRQ) pin ON|OFF
@@ -72,6 +67,15 @@ static inline bool dbus_is_out() {
  * @param on true=on false=off 
  */
 extern void attn_set_on(bool on);
+
+/**
+ * @brief Cancel any inprocess/pending data bus operations
+ * @ingroup databus
+ * 
+ * This cancels any DMA and data transfer options, putting the data bus processing
+ * back into an idle state.
+ */
+extern void dbus_cancel_ops();
 
 /**
  * @brief Clear the WAIT signal and go back to waiting for MODSEL.
@@ -114,6 +118,17 @@ extern void dbus_ctrl_hdlr_set(ctrlreg_irq_fn hdlr);
  * @param v Value
  */
 extern void dbus_ctrl_status_set(uint8_t v);
+
+/**
+ * @brief Check if the Data Bus direction is OUT.
+ * @ingroup databus
+ *
+ * @return true It is OUT
+ * @return false It is IN
+ */
+static inline bool dbus_is_out() {
+    return gpio_get_dir(DATA0); // We check DATA-0. All DATA bits direction are set as one.
+}
 
 /**
  * @brief Get the value of the last unexpected WRITE operation by the host.
@@ -231,18 +246,34 @@ extern void dbus_rd_def(uint8_t v);
 extern void dbus_release_msel();
 
 /**
- * @brief Write a value to the Data Bus.
+ * @brief Write a value to the Data Bus for a Control Port Read.
  * @ingroup databus
  *
- * This should (generally) only be used by an IRQ Handler handling a CTRL
+ * This should only be used by an IRQ Handler handling a CTRL
  * register access operation to put a value on the bus to be read by
  * the host.
+ * 
+ * To write to the LEDs use `led_control`. To set/clear ATTN use `attn_set_on`.
  *
  * @param v The value to put on the bus
  */
-extern void dbus_value_put(uint8_t v);
+extern void dbus_ctrl_val_put(uint8_t v);
 
-
+#define LED_RED 0x08
+#define LED_YELLOW1 0x10
+#define LED_YELLOW2 0x20
+#define LED_GREEN1 0x40
+#define LED_GREEN2 0x80
+/**
+ * @brief Turn LEDs ON/OFF
+ * @ingroup ioport
+ * 
+ * LED values are OR'ed together and written to the I/O Port.
+ * The RED LED is ON with a value of 0, while the others are ON with a value of 1.
+ * 
+ * @param leds OR'ed values for the LEDs 
+ */
+extern void led_control(uint8_t leds);
 
 /**
  * @brief Initialize the module. Must be called once/only-once before module use.

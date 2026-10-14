@@ -35,7 +35,7 @@ static volatile bool _modinit_called;
 
 
 static volatile bool _dm_alive;
-static volatile dm_cmd_t _dm_cmd;            // The command to send
+static volatile dm_cmd_t _dm_cmdstat;            // The command to send
 static volatile dm_cmd_t _dm_lastcmd;        // The command last sent (for debugging)
 static volatile dm_cmd_t _dm_cmd_ip;         // We are waiting for a command to be completed
 static volatile bool _dm_rd_expctd;          // We are expecting a DM read
@@ -48,7 +48,7 @@ static volatile uint8_t _dminit_status_ret;  // The status value to auto-send to
 // ====================================================================
 
 static inline void _dm_cmd_prep(dm_cmd_t cmd, bool readexpected) {
-    _dm_cmd = cmd;
+    _dm_cmdstat = cmd;
     _dm_rd_expctd = readexpected;
     _dm_cmd_ip = (cmd != DMNOP && cmd != DC_INITRDY ? cmd : NOCMD);
 }
@@ -152,6 +152,9 @@ static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
  *
  * The function prototype is:
  * bool ctrlreg_irq_fn(uint8_t ctrl, bool host_rd, uint8_t d)
+ * 
+ * When the DM wakes up and finishes its initialization it sends DMINIT (80)
+ * repetitively until we respond with DOCREADY (FA).
  *
  * This is executed as an IRQ Handler, so make is quick! (no printing)
  *
@@ -166,10 +169,10 @@ bool _ctrl_reg_hdlr(uint8_t ctrl, bool host_rd, uint8_t* d) {
     if (host_rd) {
         if (_dm_rd_expctd) {
             // We were expecting a DM read, give it our command/status
-            *d = _dm_cmd;
-            dbus_value_put(_dm_cmd);
-            _dm_lastcmd = _dm_cmd;
-            _dm_cmd = DMNOP;
+            *d = _dm_cmdstat;
+            dbus_ctrl_val_put(_dm_cmdstat);
+            _dm_lastcmd = _dm_cmdstat;
+            _dm_cmdstat = DMNOP;
             _dm_rd_expctd = false;
         }
         else {
@@ -240,6 +243,12 @@ uint8_t dmc_last_cmd() {
     return _dm_lastcmd;
 }
 
+void dmc_op_cancel() {
+    dbus_cancel_ops();
+    _dm_lastcmd = _dm_cmdstat;
+    _dm_cmd_prep(DMNOP, false);
+}
+
 void dminit_status_set(uint8_t v) {
     _dminit_status_ret = v;
 }
@@ -255,7 +264,7 @@ int dmcomm_modinit() {
     }
     _modinit_called = true;
 
-    _dm_cmd = DMNOP;
+    _dm_cmdstat = DMNOP;
     _dm_rd_expctd = true;   // Be ready for the host to read a command - send NOP
 
     cmt_msg_hdlr_add(MSG_DBUS_CTRL_ACCESS, _handle_dbus_ctrl_op);

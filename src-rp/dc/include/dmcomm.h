@@ -34,6 +34,15 @@ extern bool dm_available();
 extern uint8_t dmc_last_cmd();
 
 /**
+ * @brief Cancel any inprocess/pending DM operation
+ * @ingroup debugcontrol
+ *
+ * This will cancel and reset any data bus operation (DMA, PIO, etc.) and
+ * clear the command and read/write expected status flags.
+ */
+extern void dmc_op_cancel();
+
+/**
  * @brief Set the status value to be returned when/if the DM indicates it has
  * initialized.
  * @ingroup debugcontrol

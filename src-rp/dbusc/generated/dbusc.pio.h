@@ -32,13 +32,13 @@
 static __pio_const uint16_t cb_msel_program_instructions[] = {
     0xa7e3, //  0: mov    osr, null              [7]
     0x7788, //  1: out    pindirs, 8      side 0 [7]
-    0x270d, //  2: wait   0 gpio, 13             [7]
+    0x270c, //  2: wait   0 gpio, 12             [7]
     0x00c9, //  3: jmp    pin, 9
     0xa0c3, //  4: mov    isr, null
     0x4008, //  5: in     pins, 8
     0xc020, //  6: irq    wait 0
             //     .wrap_target
-    0x3f8d, //  7: wait   1 gpio, 13      side 1 [7]
+    0x3f8c, //  7: wait   1 gpio, 12      side 1 [7]
     0x0700, //  8: jmp    0                      [7]
     0xa742, //  9: nop                           [7]
     0xc004, // 10: irq    nowait 4
