@@ -124,9 +124,9 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  * - - - - - - -
  *      : On Main Logic Device
  *      10..11: MMU Registers Upper address b15..14 select block - R/W (b0 DC)
- *      12..13: Board Control - R/W (b0 DC)
- *      14..15: Break 1&2n Control - WO (b0 DC)
- *      16..17: SR Reason, ZID init'ed, SBC-Mode ind - RO (b0 DC)
+ *      12..13: SR Reason, ZID init'ed, SBC-Mode ind - RO (b0 DC)
+ *      14..15: Board Control - R/W (b0 DC)
+ *      18..19: Break 1&2n Control - WO (b0 DC)
  *      1E..1F: RP2040-Module - External (b0 CTRL/DATA)
  * - - - - - - -
  *      20..FF: Reserved for External Devices (224 ports)
@@ -196,7 +196,7 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  * ==========
  * Board Control and Status
  * ----------
- * Board Control (12) bits are:
+ * Board Control (14) bits are:
  *  0: Reset Request. Used in Debug or SBC mode to do a hard reset (RESET_REQ_B)
  *  1: Breakpoint 1, use Data+Don't-Care
  *  2: Breakpoint 2n, use Data+Don't-Care
@@ -269,7 +269,7 @@ PIN 13 = b1_aeq;        /* Address match for breakpoint 1               */
 PIN 14 = brk_deq;       /*  Data equal (input from 1504)                */
 PIN 12 = bn_aeq;        /* Breakpoint 2..n Address match                */
 PIN 78 = !extbrkrq;     /* External input to request Break              */
-PIN 30 = pcrd_din;        /* PC Latched data bit in                     */
+PIN 30 = pcrd_din;      /* PC Latched data bit in                       */
 
 /************************************************************************/
 /* Input/Output                                                         */
@@ -311,7 +311,7 @@ PIN 69  = !zbreq;     /* To the Z80 */
 PIN 19  = !mod_sel;     /* RP2040 Module Select                             */
 /* */
 PIN 45  = sbc_io;       /* Local I/O Addr Range and Op (SBC and ZID)        */
-PIN     = zid_io;       /* Local I/O Addr Range and Op (ZID only)           */
+PIN 27  = zid_io;       /* Local I/O Addr Range and Op (ZID only)           */
 /* */
 PIN 41  = !tdbus_en;    /* Target Data Bus Enable                           */
 PIN 17  = !tdbus_in;    /* Target Data Bus Direction                        */
@@ -440,7 +440,7 @@ FIELD databus       = [d7..0];
 FIELD ioaddr        = [addr7..1];	/* A0 is not connected */
 
 /** Board and Breakpoint Control */
-$DEFINE BRKOP_SEL   (zid_io & ioaddr:'b'xxx1010x)   /* 14: BRK1 & 2n Operation  */
+$DEFINE BRKOP_SEL   (zid_io & ioaddr:'b'xxx1100x)   /* 18: BRK1 & 2n Operation  */
 $DEFINE B1_OP_DATA      [d2..0]     /* BP1 Operation (Break Operation (0)) */
 $DEFINE B1_OP_RQADDR    [d3]        /* BP1 Require Address */
 $DEFINE B2_OP_DATA      [d6..4]     /* BP2 Operation (Break Operation (0)) */
@@ -480,15 +480,18 @@ $DEFINE B2OP_AM     [b2op2..0]:4
 $DEFINE B2OP_PW     [b2op2..0]:5
 $DEFINE B2OP_PR     [b2op2..0]:6
 $DEFINE B2OP_AP     [b2op2..0]:7
+
+
 /* Status/data byte for: Special Reset From, HardBRK, SoftBRK, SS, or ATTN */
-FIELD brk_pc_info   = [zid_init_R,sbcmode,tgtmode_R,attn,sr_frmhbrk_R,sr_frmsbrk_R,'b'0,pcrd_din];
-$DEFINE BRKPC_RD    (zid_io & ioaddr:'b'xxx1011x & zrd) /* 16: Break Reason, Saved PC bit RD */
+/*  ZID-Init'ed, SBC-Mode, Target-Mode-State_at_ATTN, ATTN, SPRST-HardBrk, SPRST-SoftBrk, SYNC-Only, PC-Latch-Data */
+FIELD brk_pc_info   = [zid_init_R,sbcmode,attn_tms_R,attn,sync_only_R,sr_frmhbrk_R,sr_frmsbrk_R,pcrd_din];
+$DEFINE BRKPC_RD    (zid_io & ioaddr:'b'xxx1001x & zrd) /* 12: Break Reason, Saved PC bit RD */
 
 /** Data byte for our control bits */
 FIELD ctrl1_info    = [zid_init_R,sngl_step_R,sngl_op_R,softbrk_en_R,sync_only_R,b2ud_R,b1ud_R,rst_req_R];
-$DEFINE CTRL1_RD    (sbc_io & ioaddr:'b'xxx1001x & zrd) /* 12: BD-CTRL RD */
-$DEFINE CTRL1_WR    (sbc_io & ioaddr:'b'xxx1001x & zwr) /* 12: BD-CTRL WR */
-$DEFINE ZIDC1_WR    (zid_io & ioaddr:'b'xxx1001x & zwr) /* 12: BD-CTRL ZID ONLY WR */
+$DEFINE ZIDC1_RD    (zid_io & ioaddr:'b'xxx1010x & zrd) /* 14: BD-CTRL RD */
+$DEFINE ZIDC1_WR    (zid_io & ioaddr:'b'xxx1010x & zwr) /* 14: BD-CTRL ZID ONLY WR */
+$DEFINE CTRL1_WR    (sbc_io & ioaddr:'b'xxx1010x & zwr) /* 14: BD-CTRL WR, SBC can request RESET */
 
 
 /** MMU */
@@ -553,7 +556,7 @@ zop_force.ar    = zrfsh;
 /** Local Z80 NMI and INT request generation */
 znmi            = (tgtmode_R & tnmi    /* Target running and it has an NMI (no target NMI in Debug Mode) */
                 & !(sngl_op_R # sngl_step_R)) /* but not during Single-OP/STEP */
-                 # (attn & !tgtmode_R & !attn_tms_R);  /* In Debug Mode and not running target when RP Module wants attention */
+                 # (attn & !tgtmode_R & !attn_tms_R & zid_init_R);  /* RP Module wants attention, in Debug Mode, ZID Init'ed */
 
 zint            = (tgtmode_R & tint   /* Target INT gated to Z80 only when in Target Mode */
                 & !(sngl_op_R # sngl_step_R)); /* but not during Single-OP/STEP */
@@ -572,7 +575,7 @@ mem_op     = zmreq & (zrd # zwr);   /* Used to clock Operation Counter  */
 mem_op.oe  = ON;
 
 /** MMU Register Init/Write */
-mmu_io          = (sbc_io & ioaddr:'b'xxx1011x);  /* n016: Top 2 bits of 16-bit address select register */
+mmu_io          = (sbc_io & ioaddr:'b'xxx1000x);  /* n010: Top 2 bits of 16-bit address select register */
 /* */
 [mapA3..0].ap   =  [d3..0] & [addr15..14]:0000 & mmu_io & zwr;
 [mapA3..0].ar   = ![d3..0] & [addr15..14]:0000 & mmu_io & zwr;
@@ -689,8 +692,8 @@ b2ar_R.ck       = BRKOP_SEL;
 b2ar_R.ar       = lrst_R;
 
 
-/** Board Control (06)
-/* RESET request - Available to SBC (b0) */
+/** Board Control - ZID RW, SBC R and W:b0 (06)
+/* RESET request - SBC can write (b0) */
 rst_req_R.d	    = RESET_REQ_B;
 rst_req_R.ck	= CTRL1_WR;
 rst_req_R.ar	= lrst_R;
@@ -804,11 +807,11 @@ databus     =  ((mmu_io & zrd & [addr15..14]:0000) & maprdAdata)   /* Reading th
              # ((mmu_io & zrd & [addr15..14]:8000) & maprdCdata)
              # ((mmu_io & zrd & [addr15..14]:C000) & maprdDdata)
              # (zop_force & ZFOP)               /* Forced OP during Special Reset               */
-             # (BRKPC_RD & brk_pc_info)                /* Break/ATTN information                       */
-             # (CTRL1_RD & ctrl1_info)          /* Read of our Control bits                     */
+             # (BRKPC_RD & brk_pc_info)         /* Break/ATTN information                       */
+             # (ZIDC1_RD & ctrl1_info)          /* Read of our Control bits                     */
             ;
 databus.oe  = (mmu_io & zrd)
              # (zop_force)
              # (BRKPC_RD)
-             # (CTRL1_RD)
+             # (ZIDC1_RD)
             ;                           /* Enable data bits onto the Data Bus for any of those    */

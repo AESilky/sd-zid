@@ -8,9 +8,15 @@
         "editor.tabSize": 4,
         "editor.insertSpaces": true,
         "editor.detectIndentation": false,
-        "[fit][pld]": {
+        "[makefile]": {
+            "editor.insertSpaces": false,
             "editor.tabSize": 8,
-            "editor.insertSpaces": false
+            "editor.detectIndentation": false
+        },
+        "[fit][pld]": {
+            "editor.insertSpaces": false,
+            "editor.tabSize": 8,
+            "editor.detectIndentation": false
         },
         "search.exclude": {
             "**/*.fit": true

@@ -2,13 +2,17 @@
 # Copyright 2025-26 AESilky
 # SPDX-License-Identifier: MIT License
 #
-.PHONY: all clean
+.PHONY: all clean print-
 
-ZID_MAIN			:= zid_main		# U18 - Main logic
-ZID_BRKPCL			:= zid_brkpcl	# U15 - Breakpoint Address Compare, PC Latch
-ZID_BDATA_GPIO 		:= zid_bd_gpio	# U22 - Breakpoint Data Compare, SBC GPIO
+# U18 - Main logic
+ZID_MAIN			:= zid_main
+# U15 - Breakpoint Address Compare, PC Latch
+ZID_BRKPCL			:= zid_brkpcl
+# U22 - Breakpoint Data Compare, SBC GPIO
+ZID_BDATA_GPIO 		:= zid_bd_gpio
 
-BPEXP_DISPKBD		:= dispkbd		# U1 Expansion Backplane - Display Select, Keyboard Control
+# U1 Expansion Backplane - Display Select, Keyboard Control
+BPEXP_DISPKBD		:= dispkbd
 
 
 JEDECS		:= $(ZID_BRKPCL).jed $(ZID_BDATA_GPIO).jed $(ZID_MAIN).jed $(BPEXP_DISPKBD).jed
@@ -16,12 +20,15 @@ JEDECS		:= $(ZID_BRKPCL).jed $(ZID_BDATA_GPIO).jed $(ZID_MAIN).jed $(BPEXP_DISPK
 CUPL		:= cupl.exe
 FIT1502		:= fit1502.exe
 FIT1504		:= fit1504.exe
-FIT1508		:= fit1508.exe		# C:/Wincupl/WinCupl/Fitters/fit1508.exe
+# C:/Wincupl/WinCupl/Fitters/fit1508.exe
+FIT1508		:= fit1508.exe
 
-CUPLOPTS		:= -kbm2nlxj	# 22Vxx, 16Vxx: Quine-McCluskey minimization
-CUPLOPTS15XX	:= -ksm4lj  	# ATF15xx: Optimize product term usage (-ks)
-								#  Don't expand XOR (-kx let fitter use XOR gate),
-								#  m4 Espresso minimization (Good for fitter designs)
+# 22Vxx, 16Vxx: Quine-McCluskey minimization
+CUPLOPTS		:= -kbm2nlxj
+# ATF15xx: Optimize product term usage (-ks)
+#  Don't expand XOR (-kx let fitter use XOR gate),
+#  m4 Espresso minimization (Good for fitter designs)
+CUPLOPTS15XX	:= -ksm4lj
 
 FITOPTS_CMN		:= -CPUL -JTAG ON
 FITOPTS_1502	:= -tech ATF1502AS
@@ -50,3 +57,6 @@ $(BPEXP_DISPKBD).jed: $(BPEXP_DISPKBD).tt2 makefile
 
 clean:
 	rm -f *.abs *.doc *.fit *.io *.jed *.log *.lst *.oed *.pin *.pla *.sim *.tt2 *.tt3
+
+print-%:
+	@echo $* = "$($*)"
