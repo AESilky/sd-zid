@@ -354,7 +354,7 @@ void term_init() {
     term_get_name(_term_name, _TERM_NAME_MAX_);
     // Set the terminal type to one we want
     term_set_type(VT_220_TYPE_SPEC, VT_220_ID_SPEC);
-    term_set_size(48, 80);
+    //term_set_size(48, 80); 
     term_color_default();
     term_cursor_on(true);
 }

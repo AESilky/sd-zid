@@ -18,15 +18,41 @@
 //
 #include "pico/binary_info.h"
 #include "pico/status_led.h"
+#include "hardware/watchdog.h"
 
 #include <stdio.h>
+
+
+// Interrupt callback function for RESET
+void gpio_reset_irq(uint gpio, uint32_t events) {
+    if (events & GPIO_IRQ_EDGE_FALL) {
+        watchdog_reboot(0, 0, 2);
+        watchdog_start_tick(2);
+    }
+}
+
 
 
 int main() {
     // useful information for picotool
     bi_decl(bi_program_description("SilkyDESIGN RP System Module w/ Debug Op Controller"));
 
-    // Board/base level initialization
+    // GP14 is used as a Reset input.
+    // Initialize that (single) GPIO pin as an input and hang on it if it is LOW
+    //
+    // Once the pin is high set it as an interrupt source that will cause a board reset.
+    gpio_init(CTRL_RST);
+    gpio_set_function(CTRL_RST, GPIO_FUNC_SIO);
+    gpio_set_dir(CTRL_RST, GPIO_IN);
+    gpio_pull_up(CTRL_RST);     // Needed when the module isn't in the ZID board
+    while (gpio_get(CTRL_RST) == 0) {
+        sleep_us(300);
+    }
+    // Reset input is now HIGH, we can continue
+    //  Enable the interrupt and register the callback
+    gpio_set_irq_enabled_with_callback(CTRL_RST, GPIO_IRQ_EDGE_FALL, true, &gpio_reset_irq);
+
+    // Now do the Board level initialization
     if (board_init() != 0) {
         board_panic("Board init failed.");
     }

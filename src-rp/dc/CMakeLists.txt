@@ -3,6 +3,7 @@ add_library(dc INTERFACE)
 
 target_sources(dc INTERFACE
     dc.c
+    dccfg.c
     dcmsg.c
     z80reg.c
     dmcomm.c

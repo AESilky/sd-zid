@@ -13,8 +13,9 @@
 #include "cmt.h"
 #include "dbusc.h"
 #include "dc.h"
-#include "dmcomm.h"
+#include "dccfg.h"
 #include "dcmsg.h"
+#include "dmcomm.h"
 #include "nbase.h"
 #include "num.h"
 #include "shell.h"
@@ -39,6 +40,7 @@
 //
 const cmd_handler_entry_t cmds_altscr_entry;
 const cmd_handler_entry_t cmds_clrwait_entry;
+const cmd_handler_entry_t cmds_dmcancel_entry;
 const cmd_handler_entry_t cmds_dmgetregs_entry;
 const cmd_handler_entry_t cmds_dmputregs_entry;
 const cmd_handler_entry_t cmds_dmsim_entry;
@@ -46,6 +48,7 @@ const cmd_handler_entry_t cmds_dmsim_entry;
 // NORMAL Commands
 //
 const cmd_handler_entry_t cmds_dec_entry;
+const cmd_handler_entry_t cmds_dasm_entry;
 const cmd_handler_entry_t cmds_dump_entry;
 const cmd_handler_entry_t cmds_dumpa_entry;
 const cmd_handler_entry_t cmds_examine_entry;
@@ -57,6 +60,11 @@ const cmd_handler_entry_t cmds_load_entry;
 const cmd_handler_entry_t cmds_out_entry;
 const cmd_handler_entry_t cmds_step_entry;
 const cmd_handler_entry_t cmds_cpu_entry;
+
+/**
+ * @brief Completion Function prototype
+ */
+typedef void (*cmplt_fn)(void* vp);
 
 // ====================================================================
 // Local Constants
@@ -72,6 +80,9 @@ const char nl = '\n';
 const char nul = '\0';
 const char sp = ' ';
 const char ul = '_';
+
+const char mtstr[] = "";
+const char sc[] = ";";
 //
 const char* const dash_s = "-";
 const char* const dot_s = ".";
@@ -140,10 +151,11 @@ typedef struct AI_VALS_ {
 typedef struct CMD_DASM_CTX_ {
     zda_ctx_t ctx;          // Disassembler Context
     uint16_t caddr;         // Current address
-    uint16_t stmt_cnt;      // Number of statements left to disassemble
     uint8_t buf[Z80INST_MAX_BYTES]; // Data buffer
     uint8_t bi;             // Data byte index
     uint8_t bc;             // Data byte count (retrieved/left)
+    int stmt_cnt;           // Number of statements left to disassemble
+    cmplt_fn on_cmplt;      // Completion function
 } cmddasm_ctx_s;
 
 // ====================================================================
@@ -152,15 +164,27 @@ typedef struct CMD_DASM_CTX_ {
 
 static addrcnt_vals_s _addrcnt_vals;
 static addrind_vals_s _addrind_vals;
+static dccfg_t _gconfig;                // GLOBAL/BASE Configuration
+static dccfg_t _oconfig;                // Override Configuration
+static dccfg_t _wconfig;                // Working Configuration
 static cmddasm_ctx_s _da_ctx;           // Disassembler Context
 static bool _dasm_pc;                   // Disassemble PC on CPU display
-static uint16_t _dump_addr;
-static uint16_t _dump_addr_prev;
+static uint16_t _dasm_addr;             // Disassemble address
+static uint16_t _dump_addr;             // Dump address
+static uint16_t _dump_addr_prev;        // Previous dump address
 #define PRNBUFEND 80
 #define PRNBUFLEN 81
 static char _prnbuf[PRNBUFLEN];
 static bool _uc;                        // Upper case
 static val_prvdr_fn _val_provider;
+
+
+// ====================================================================
+// Local/Private Declarations
+// ====================================================================
+static void _disasm_c(cmt_msg_t* msg);
+static void _disasm_err();
+
 
 // ====================================================================
 // Local/Private Methods
@@ -210,31 +234,72 @@ static const char* _flagbits(zregBv_t f) {
 
 // === Standard Methods
 
+static void _disasm_ab() {
+    // Print the address and bytes (adding blank space for non-bytes)
+    int bi = 0; // Byte index
+    int mtb = 4; // Assume 4 total bytes
+    num_valstr_nb_eb(_prnbuf, _da_ctx.ctx.addr, RS_WORD, _uc);
+    SHPF("%s ", _prnbuf);
+    while (bi < _da_ctx.ctx.bi) {
+        num_valstr_nb_eb(_prnbuf, _da_ctx.ctx.d[bi], RS_BYTE, true);
+        SHPF("%s ", _prnbuf);
+        bi++; mtb--;
+    }
+    int blnkbytewdth = ((nbase_width(RS_BYTE) + 1) * mtb); // White space for missing bytes
+    // print blanks for empty bytes
+    if (mtb) {
+        SHPS(dcm_sps(blnkbytewdth));
+    }
+}
+static void _disasm_cmplt() {
+    if (_da_ctx.on_cmplt) {
+        _da_ctx.on_cmplt((void*)((uint32_t)_da_ctx.caddr));
+        _da_ctx.on_cmplt = NULL;
+    }
+    dc_prompt_en(true);
+    shell_prompt_again();
+}
 /** Continue disassembly with data */
 static void _disasm_c_d(cmt_msg_t* msg) {
     // Continue the disassembly, now with data
     uint8_t* vbuf = msg->data.bptr;
     uint16_t addr = _da_ctx.caddr;
-    uint8_t b = *vbuf++; _da_ctx.bc--; _da_ctx.caddr++;
-    int8_t s;
-    if (_da_ctx.ctx.status == 0) {
+    uint8_t b = *vbuf;
+    int8_t s = _da_ctx.ctx.status;
+    if (s == 0) {
+        _da_ctx.bc--; _da_ctx.caddr++;
         s = zda_begin(&(_da_ctx.ctx), addr, b, _uc);
     }
     while (s > 0 && _da_ctx.bc) {
-        b = *vbuf++; _da_ctx.bc--;
+        b = *vbuf++; _da_ctx.bc--; _da_ctx.caddr++;
         s = zda_next(&(_da_ctx.ctx), b);
     }
     if (s < 0) {
-        //_disasm_err();
+        _disasm_err();
+        _disasm_cmplt();
         goto ERR_;
     }
     else if (s == 0) {
         // The statement is complete. Print it.
-
+        _disasm_ab(); // Print address and bytes
+        // Print the statement and the comment
+        const char* cmnt_ind = (*_da_ctx.ctx.comment ? sc : mtstr);
+        SHPF("%s\t\t%s%s\n", _da_ctx.ctx.stmt, cmnt_ind, _da_ctx.ctx.comment);
+        // See if we should disassemble more statements
+        _da_ctx.stmt_cnt--;
+        if (_da_ctx.stmt_cnt > 0) {
+            s = 1; // Indicate that we need another byte (for below)
+        }
+        else {
+            // We are done
+            _disasm_cmplt();
+        }
     }
-    else {
-        // The statement isn't complete, but we need more data.
-
+    if (s > 0) {
+        // The statement isn't complete or we should do another
+        //  we need more data.
+        _da_ctx.bc = s;
+        _disasm_c(msg);
     }
 ERR_:
     return;
@@ -244,9 +309,21 @@ static void _disasm_c(cmt_msg_t* msg) {
     // Continue the disassembly to get the data
     uint16_t addr = _da_ctx.caddr;
     uint8_t bc = _da_ctx.bc;
-    // Read the data from 'addr' to start the disassembly
+    // Read the data from 'addr' to start/continue the disassembly
     dc_mp_opbuf_fill(addr, bc);
     dm_mem_get(bc, _disasm_c_d);
+}
+static void _disasm_err() {
+    _disasm_ab(); // Print address and bytes
+    int s = _da_ctx.ctx.status;
+    if (s == ZDAE_INVALID_INSTRUCTION) {
+        zda_invalid(&(_da_ctx.ctx));
+        SHPF("%s\t; %s", _da_ctx.ctx.stmt, _da_ctx.ctx.comment);
+    }
+    else {
+        SHPF("Disassembler error: %d", s);
+    }
+    SHPC(nl);
 }
 /**
  * @brief Disassemble from a starting address for a number of statements
@@ -254,10 +331,12 @@ static void _disasm_c(cmt_msg_t* msg) {
  * @param addr Address to start from
  * @param count The number of statements to disassemble
  * @param uc Uppercase flag (true for uppercase)
+ * @param on_cmplt Completion function called when complete
  */
-static void _disasm(uint16_t addr, uint16_t count, bool uc) {
+static void _disasm(uint16_t addr, uint16_t count, bool uc, cmplt_fn on_cmplt) {
     _da_ctx.stmt_cnt = count;
     _da_ctx.caddr = addr;
+    _da_ctx.on_cmplt = on_cmplt;
     _da_ctx.bc = 1;     // A single byte is needed to start
     _da_ctx.ctx.status = 0; // Set the disassembly context status to 0 to start
     _disasm_c(NULL);
@@ -569,13 +648,6 @@ static void _handle_dm_putregs(cmt_msg_t* msg) {
 // Run After Handlers
 // ====================================================================
 
-static void _runaft_dm_simulate(void* u) {
-    if (!dm_available()) {
-        dm_simulate(true);
-        shell_printf("\nDM being set to SIMULATED\n");
-    }
-}
-
 
 // ====================================================================
 // Command Executors
@@ -594,6 +666,19 @@ static int _exec_clrwait(int argc, char** argv, const char* unparsed) {
         return (-1);
     }
     dbus_clear_wait();
+    return (retval);
+}
+
+static int _exec_dm_cancel(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    argc--; argv++; // Move past the command
+    if (argc > 0) {
+        // We don't take any arguments.
+        cmd_help_display(&cmds_dmcancel_entry, HELP_DISP_USAGE);
+        return (-1);
+    }
+    dmc_op_cancel();
+    dc_prompt_en(true); // Turn the prompt on as a way to restore after a missed operation
     return (retval);
 }
 
@@ -669,8 +754,6 @@ static int _exec_cpu(int argc, char** argv, const char* unparsed) {
         return (-1);
     }
     dcc_cpudisp();
-    // As a way to fix a missed operation, turn the prompt back on
-    dc_prompt_en(true);
     return (retval);
 }
 
@@ -716,6 +799,52 @@ static int _exec_dec(int argc, char** argv, const char* unparsed) {
     SHPF("%s: %s\n", dest->name, _prnbuf);
 _finally:
     return (retval);
+}
+
+static void _dasm_oc(void* vp) {
+    // Disassembler passes the 'next address'
+    _dasm_addr = (uint16_t)((uint32_t)vp);
+}
+static int _exec_dasm(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    argc--;argv++; // Move past command
+    if (argc > 2) {
+        // We take 0, 1, or 2 arguments.
+        cmd_help_display(&cmds_dasm_entry, HELP_DISP_USAGE);
+        return (-1);
+    }
+    uint16_t addr = _dasm_addr;
+    uint16_t cnt = 16;
+    if (argc > 0) {
+        // If location is ".", use the last ending address for the start.
+        if (strcmp(*argv, dot_s) != 0) {
+            valstatus_t status;
+            uint32_t v = _val_provider(*argv, RS_WORD, &status);
+            if (status != VP_OK) {
+                shell_printferr("%s location\n", dcm_invalid_arg);
+                retval = 1;
+                goto _finally;
+            }
+            addr = (uint16_t)v;
+        }
+        argc--;argv++;
+    }
+    if (argc > 0) {
+        // Get the count
+        valstatus_t status;
+        uint32_t v = _val_provider(*argv, RS_WORD, &status);
+        if (status != VP_OK) {
+            shell_printferr("%s count\n", dcm_invalid_arg);
+            retval = 2;
+            goto _finally;
+        }
+        cnt = (uint16_t)v;
+    }
+    // Past the sources of any errors
+    dc_prompt_en(false);
+    _disasm(addr, cnt, _uc, _dasm_oc);
+_finally:
+    return retval;
 }
 
 static void _dump_c(cmt_msg_t* msg) {
@@ -778,9 +907,9 @@ static void _dump_c(cmt_msg_t* msg) {
     }
     _dump_addr = addr;
     SHPC(nl);
+    nbase_set(nbs);     // Put the original base back
     dc_prompt_en(true);
     shell_prompt_again();
-    nbase_set(nbs);
 }
 static int _exec_dump(int argc, char** argv, const char* unparsed) {
     int retval = 0;
@@ -1325,7 +1454,9 @@ void dcc_cpudisp() {
     SHPF("\n%s\n%s\n", _regallwstr(), sbcind);
     nbase_set(nb);
     if (_dasm_pc) {
-        _disasm(regpc_gv(), 1, _uc);
+        // The PC address should be disassembled, so disable the prompt
+        dc_prompt_en(false);
+        _disasm(regpc_gv(), 1, _uc, NULL);
     }
 }
 
@@ -1343,7 +1474,7 @@ void dcc_set_valprov(val_prvdr_fn fn) {
 
 const cmd_handler_entry_t cmds_altscr_entry = {
     _exec_s2test,
-    4,
+    5,
     ".altscr",
     "[0|1]",
     "TEST VT/XTERM Alt-Screen: 1 switch to #2, 0 switch to #1"
@@ -1357,12 +1488,12 @@ const cmd_handler_entry_t cmds_clrwait_entry = {
     "Clear the WAIT signal and re-initialize MSEL and AUTO-RDWR PIO SMs (for dev/test)"
 };
 
-const cmd_handler_entry_t cmds_dmsim_entry = {
-    _exec_dm_simulate,
+const cmd_handler_entry_t cmds_dmcancel_entry = {
+    _exec_dm_cancel,
     6,
-    ".dmsim",
-    "[0|1]",
-    "Simulate interactions with DM (for dev)"
+    ".dmcancel",
+    0,
+    "Cancel an outstanding DM operation (for dev)"
 };
 
 const cmd_handler_entry_t cmds_dmgetregs_entry = {
@@ -1381,6 +1512,13 @@ const cmd_handler_entry_t cmds_dmputregs_entry = {
     "Send all registers to the DM (for test)"
 };
 
+const cmd_handler_entry_t cmds_dmsim_entry = {
+    _exec_dm_simulate,
+    6,
+    ".dmsim",
+    "[0|1]",
+    "Simulate interactions with DM (for dev)"
+};
 
 const cmd_handler_entry_t cmds_cpu_entry = {
     _exec_cpu,
@@ -1398,6 +1536,16 @@ const cmd_handler_entry_t cmds_dec_entry = {
     "Decrement a destination. Optionally by a value."
 };
 
+const cmd_handler_entry_t cmds_dasm_entry = {
+    _exec_dasm,
+    2,
+    "dasm",
+    "[loc [count]]",
+    "Disassemble memory starting from 'loc' for 'count' statements. Dot (.) can be used\n\
+  for the location to allow specifying count while continuing a disassembly.\n\
+  The default count is 16 statements."
+};
+
 const cmd_handler_entry_t cmds_dump_entry = {
     _exec_dump,
     1,
@@ -1405,9 +1553,10 @@ const cmd_handler_entry_t cmds_dump_entry = {
     "[loc [count]]",
     "Dump memory starting from 'loc' for 'count' bytes. Dot (.) can be used\n\
   for the location to allow specifying count while continuing a dump.\n\
+  Minus (-) can be used to back up one page.\n\
   The default count is 256 bytes (1 page). If the base is HEX, the dump\n\
   also includes ASCII characters.\n\
-   SEE: DASCII to dump characters and control codes"
+   SEE: DASCII to dump characters and control codes in extended format"
 };
 
 const cmd_handler_entry_t cmds_dumpa_entry = {
@@ -1502,15 +1651,24 @@ const cmd_handler_entry_t cmds_step_entry = {
 
 
 void dccmds_modinit() {
-    // Register our commands    
+    // Init our settings
+    dccfg_load(&_gconfig, 0);   // Load the GLOBAL Config
+    dccfg_load(&_oconfig, 1);   // Load the OVERRIDE Config
+    dccfg_overlay(&_wconfig, &_gconfig, &_oconfig);
+    _dasm_pc = true;    // Start with disassembling the PC on CPU display
+    _uc = true;         // Start with Upper Case enabled
+    // Register our commands  
+    //  DOT (.) Commands  
     cmd_register(&cmds_altscr_entry);
     cmd_register(&cmds_clrwait_entry);
+    cmd_register(&cmds_dmcancel_entry);
     cmd_register(&cmds_dmgetregs_entry);
     cmd_register(&cmds_dmputregs_entry);
     cmd_register(&cmds_dmsim_entry);
-    //
+    //  Regular Commands
     cmd_register(&cmds_cpu_entry);
     cmd_register(&cmds_dec_entry);
+    cmd_register(&cmds_dasm_entry);
     cmd_register(&cmds_dump_entry);
     cmd_register(&cmds_dumpa_entry);
     cmd_register(&cmds_examine_entry);
@@ -1524,8 +1682,6 @@ void dccmds_modinit() {
     //
     // initialize the rest of the commands that we make available.
     //
-    _dasm_pc = true;    // Start with disassembling the PC on CPU display
-    _uc = true;         // Start with Upper Case enabled
     calccmds_modinit();
     dbusccmds_modinit();
     numcmds_modinit();
@@ -1533,9 +1689,4 @@ void dccmds_modinit() {
     //
     // Set things that modify the setups
     dcc_set_valprov(reg_num_valprov);  // Set the Z80 register & number provider
-
-    //
-    // Post a delay message to ourself to set the DM Simulate state based on the
-    // presence/absence of the DM at that point
-    cmt_run_after_ms(8000, _runaft_dm_simulate, NULL);
 }
