@@ -19,12 +19,12 @@ BOOT		.sect	W
 ; The Debug Monitor performs the board initialization and handles the Z80 Special Reset SPRST
 ; that is used to regain control from target code execution when a breakpoint is hit or the
 ; Debug Operation Controller (DOC) signals that it wants attention (ATTN). DOC ATTN is
-; signaled be an NMI when the system is in debug mode (haven't started, or have broken out of
-; target mode).
+; signaled by an NMI when the system is in debug mode (hasn't run target, or has broken out
+; of target mode).
 ;
 ; After board initialization is complete, the Debug Monitor does not use the alternate
 ; register set and doesn't disable or enable interrupts or change the interrupt mode
-; (as regular interrupts are not used in debug mode)). Therefore, when the user changes
+; (as regular interrupts are not used in debug mode). Therefore, when the user changes
 ; those registers, enables or disables interrupts, or changes the interrupt mode, those
 ; changes are immediately applied. This speeds up single-step operations and going into
 ; target mode.
@@ -73,16 +73,18 @@ id:		.byte	"ZID DEBUG MONITOR:"	; ID
 		.align	2
 ver:		.equ	$
 		.input	"version.inc"		; build date/version
-_ver:		.byte	0
+_ver:		.byte	0			;  add a NUL in case we want to print
 nmivec:		.org	boot+66h
-		jp	rdyforcmd		; DOC ATTN when in Debug Mode uses NMI
+		push	af			; NMI is DOC ATTN in Debug Mode
+		in	a,(BRDCTRL)		; Read board control to
+		res	ZNMI_EN_B,a		;   disable NMI
+		out	(BRDCTRL),a
+		pop	af
+		jp	rdyforcmd
 
 		.align	4
 		;--------------------------------------------------------------
 		; Break|ATTN handler from RST8 (for debugging with ZED)
-		; ! ZZZ the breadboard doesn't have the PC latch, so
-		; ! we'll (try to) get the PC off the stack and then handle
-		; ! like a SPRST
 		;
 bar8hdlr:	.equ	$
 		ld	(tempsp),sp
@@ -95,20 +97,24 @@ bar8hdlr:	.equ	$
 
 		.org	boot+0100h
 		;--------------------------------------------------------------
-		; This could be a Single-Step, Break, or DOC asking for attention
+		; This could be a Single-Step, Break, or DOC asking for attention from Target mode
 		; Or it could be a FULL RESET
-		; Treat as SS/BRK or ATTN until we figure out for sure (save AF and SP)
+		; Treat as SS/BRK/ATTN until we figure out for sure (save AF and SP)
 		;
 bahdlr:		.equ	$
 		ld	(tempsp),sp
 		ld	sp,tempsp
 		push	af			; we can now use AF and SP
-dbzent:		in	a,(PCADDR_RD)		; read the PC-b0 and status. this will allow us to see if the
-		ld	(brk_pc_inf),a		; reset is from a BRK or ATTN. Or,
-		bit	ZIDINITD_B,a		; if the ZID isn't initialized treat as Full Reset
-		jp	z,doinit		;  Do the initialization
+dbzent:		in	a,(SPRSTINFO)		; read the PC-b0 and status. this will allow us to see if the
+		ld	(brk_pc_inf),a		; reset is from a BRK/SS or ATTN, or if it is a full reset.
+		bit	ZNMI_EN_B,a		; When we initialize and the DOC is ready we set the NMI Enable bit...
+		jp	z,doinit		;  so, if not set do full initialization (treat as Hard Reset)
+		;
+		; We have enabled NMI, which means that we have initialized already,
+		; so this should be a Special Reset...
+		;
 		; Check for SS, Break, or ATTN
-		; First, see if it is SS (as BRK will also be indicated for SS)
+		; See if it is SS first (as BRK will also be indicated for SS)
 		in	a,(BRDCTRL)
 		bit	SSTEP_B,a
 		jr	nz,_ss
@@ -116,14 +122,16 @@ dbzent:		in	a,(PCADDR_RD)		; read the PC-b0 and status. this will allow us to se
 		ld	a,(brk_pc_inf)
 		and	SR_ISHBRK_M|SR_ISSBRK_M|ATTN_ON_M
 		jr	nz,_brkattn
-		; Odd, It wasn't SS, BRK, or ATTN, but Init'ed bit was on??? Go (re)init...
+		; Odd, It wasn't SS, BRK, or ATTN, but NMI Enable bit was on??? Go (re)init...
+		xor	a			; clear all the board control bits
+		out	(BRDCTRL),a
 		jp	doinit
 _ss:
 		ld	(sspflag),a		; SS flag to non-zero
-		; Clear the Single-Step control bit
-		and	~SSTEP_M
-		out	(BRDCTRL),a
 _brkattn:	; SS/BRK or Attention Common
+		in	a,(BRDCTRL)		; Clear the NMI
+		and	SBRK_EN_M|SYNCONLY_M|BRK2USED_M|BRK1USED_M	; Keep the control bits, clear NMI-EN & SS
+		out	(BRDCTRL),a
 		; Save the rest of the registers
 		ld	sp,rpushiy_		; Target SP already in 'tempsp' and af pushed on tempsp
 		push	iy
@@ -151,29 +159,30 @@ _brkattn:	; SS/BRK or Attention Common
 		; Read in and build up the saved PC
 		ld	a,(zflag)
 		bit	zf_dbzed,a
-		; ZZZ For now, always using pushed PC jr	z,sr1		; Special Reset => (not RST8 (ZED/SELF) debugging)
+		;jr	z,sr1		; Special Reset => (not RST8 (ZED/SELF) debugging)
 		;
 		; Debugging using RST8 rather than SPRST (to allow ZED to be used)
-		;  try to get the PC from the stack (pushed by the RST8)
 		;
 		res	zf_dbzed,a	; clear the DB-ZED flag for next BRK/ATTN
 		ld	(zflag),a
+		in	a,(SR_PC_H)
+		ld	d,a
+		in	a,(SR_PC_L)
+		ld	e,a
 		ld	sp,tempaf	; get the target 'sp' and 'af' saved initially
 		pop	bc		; 'AF' into BC
 		ld	sp,dbmstk	; set our stack (for the calls below)
-		ld	hl,(tempsp)	; get the saved SP into HL
-		; try to get the PC
-		ld	e,(hl)		; low byte
-		inc	hl
-		ld	d,(hl)		; high byte
 		; Since the forced RST8 instruction was executed, the pushed PC is actually 1 too much
 		dec	de		; Now DE has the correct PC
+		ld	hl,(tempaf)
+		inc	hl
 		inc	hl		; Now HL has correct SP
 		ld	(tempsp),hl	; save for resuming
 		; registers now match what SPRST builds up below: PC in DE, SP in HL, AF in BC
 		jr	sr2		;  so bypass the PC read & build steps
 		;	
 sr1:		; bit-15 was read to get the break status, get it back and build up the rest
+		; NOTE: The CPLD provides the saved PC via two port reads 'SR_PC_H' (06h) 'SR_PC_L' (05h)
 		xor	a
 		ld	d,a
 		ld	e,a
@@ -184,7 +193,7 @@ pcrd1:		and	00000001b
 		sla	d
 		or	d
 		ld	d,a
-		in	a,(PCADDR_RD)	; each read reads 1 bit from 14 to 0 (15 was read at reset)
+		in	a,(SPRSTINFO)	; each read reads 1 bit from 14 to 0 (15 was read at reset)
 		djnz	pcrd1
 		; do the lower byte
 		ld	b,8
@@ -192,12 +201,16 @@ pcrd2:		and	00000001b
 		sla	e
 		or	e
 		ld	e,a
-		in	a,(PCADDR_RD)
+		in	a,(SPRSTINFO)
 		djnz	pcrd2
 		; DE now contains the PC saved by the Special Reset
 		ld	sp,tempaf	; get the target 'sp' and 'af' saved initially
 		pop	bc		; 'af' into bc
 		pop	hl		; 'sp'
+		;
+		; Read the saved PC from the CPLD to see if they match (just for debugging)
+		in	a,(SR_PC_H)
+		in	a,(SR_PC_L)
 		;
 sr2:		; target: PC in DE, SP in HL, AF in BC
 		ld	sp,regsav2
@@ -284,7 +297,7 @@ tgtstep:	; set operation to Single-Step
 		;
 		; Common 'HOP' code for GO and Single-Step
 		;
-tgthop:		; put the JP instruction in ram for the Target hop, skip, jump
+tgthop:		; put the JP instruction in ram for the Target HOP, SKIP, JUMP
 		ld	a,JP_OP
 		ld	(tgtskip),a
 		ld	a,DMTGTGO	; Tell DOC we are going to Target Mode (RUN or SingleStep)
@@ -323,7 +336,7 @@ tgthop1:	ld	sp,rstgtgo_	; get ready to get AF
 		nop			; [mem_op: 9]
 					; done with HOP. Now...
 		jp	tgtskip		; skip & jump to target [mem_op: 10,11,12]
-					; (SKIP,JUMP are [mem_op: 13,14,15 - 16 in TGT])
+					; (SKIP,JUMP are [mem_op: 13,14,15 - 16 is in TGT])
 
 		.align	4		; to aid debugging
 	.stitle	"Target Write Byte"
@@ -523,8 +536,8 @@ _tinbyte:	ld	sp,dbmstk
 ;; @Return
 ;;	NO - This goes IDLE waiting for wake-up by DOC
 ;;
-doc_wrdy:	ld	a,DMINIT
-		ld	hl,sflag
+doc_wrdy:	ld	a,DMINITOK
+		ld	hl,is_sbc
 		or	(hl)
 		ld	e,a
 _dwr1:		out	(RPMCTRL),a
@@ -545,6 +558,11 @@ _dwr_w1:	dec	a
 		jr	_dwr1		
 
 		.align	4
+;;
+;; =============
+;; `doc_opdone` sets A to OPERATION DONE OKAY status and falls into `doc_statsend`
+doc_opdone:	ld	a,DMOPDONE
+;;
 ;; =============
 ;; Send DOC our status and then go IDLE
 ;;
@@ -553,16 +571,21 @@ _dwr_w1:	dec	a
 ;; @Return
 ;;	NO - This goes IDLE waiting for wake-up by DOC
 ;;
-;; `doccmddone` sets A to OPERATION DONE OKAY status and falls into `doc_statsend`
-doc_opdone:	ld	a,DMOPDONE
-doc_statsend:	ld	hl,sflag
+doc_statsend:	ld	hl,is_sbc
 		or	(hl)
 		out	(RPMCTRL),a
 go_idle:	ld	sp,dbmstk
+		; wait for ATTN to clear, so we can set NMI Enable back on
+attn_clr_chk:	in	a,(SPRSTINFO)
+		bit	ATTN_ON_B,a
+		jr	nz,attn_clr_chk
+		in	a,(BRDCTRL)
+		set	ZNMI_EN_B,a	; Now we can allow NMI
+		out	(BRDCTRL),a
 idle:		jr	idle		; Wait for the DOC to ask us to do something
 
 		.align	4
-doc_cmdrd:	ld	hl,sflag
+doc_cmdrd:	ld	hl,is_sbc
 		or	(hl)
 		out	(RPMCTRL),a	; on ATTN this returns quickly. DMBRKHIT takes longer due to waking DOC up.
 		in	a,(RPMCTRL)
@@ -840,7 +863,7 @@ set_im2:	im	2
 		.align	4
 	.stitle	"Initialization"
 ;; =============
-;; Debug Monitor (and board) Initialization.
+;; Board and Debug Monitor Initialization.
 ;;
 ;; The board has just done a Full Reset (power on or push button)
 ;; Initialize the required functionality of the board and set up the Debug Monitor (DM)
@@ -852,21 +875,16 @@ set_im2:	im	2
 ;; To initialize, we do:
 ;; 1) RAM Test (verify the operation of the DM section of the RAM)
 ;; 2) Fill RAM with 0 (assuming the test passed)
-;; 3) Determine the number of Breakpoint Address Units
-;; 4) Initialize memory structures for the breakpoint units (both 1 and 2N)
-;; 5) Set the CPLD flag indicating that ZID-DM Init is completed
-;; 6) Notify the DOC that initialization is complete, or that it failed
+;; 3) Initialize memory structures for the breakpoint units (both 1 and 2N)
+;; 4) Notify the DOC that initialization is complete, or that it failed
 ;;
-;; This is the only place that we use the IY register. Once initialization is complete
-;; only the primary base registers are used.
-;;
-doinit:		ld	iy,init2	; IY holds the address to return to (as we clobber ram)
-		ld	hl,DB_RAMBASE
-		ld	c,DB_RAMPC
+doinit:		ld	iy,init1	; IY holds return address (no CALL, we clobber ram)
+		ld	hl,DB_RAMBASE	; Start address
+		ld	c,DB_RAMPC	; Number of pages
 		jp	ramchk_ns	; test our ram (note that we don't test the whole board)
-		jr	z,init2		;  passed...
+init1:		jr	z,init2		;  passed...
 		; !!! MEMORY ERROR !!!
-		; HL hold address of error, A expected, E read
+		; HL has address of error, A expected, E read
 		; continuously write and read it (read to D to not mess up E)
 imemerr:	ld	(hl),a
 		ld	d,(hl)
@@ -878,50 +896,25 @@ init2:		; fill ram with 0
 		ld	bc,(DB_RAMPC*ONE_PAGE)-1
 		ldir
 		;
-		; Determine how many Breakpoint Address Units (BAU) there are.
-		; 1 & 2 are on the main board, so they should be there, but
-		; the check has to shift through them, so we check them as well.
-		;
-		xor	a
-		ld	e,a		; keep the count in E
-		; to test, we shift an enable bit through the address enable
-		; registers and check the feedback at every other enable
-		; (the high enable)
-		;
-		; first, clear the enables
-		out	(BRKENCLR),a	; (the data doesn't matter)
-		dec	a		; put a 1 in bit 7 for the enable
-		out	(BRKENCLK),a	; shift an enable into Break-1 addr low enable
-		xor	a		;  only run a single enable bit through the registers
-		out	(BRKENCLK),a	;  high enable
-		ld	b,14		; this is the most we support
-initbrkt:	in	a,(PCADDR_RD)	; this includes the break hardware detect bit
-		and	BRK_HWD_M
-		jr	z,initbrkc	; if the read bit is zero (pin HIGH) the hardware isn't there
-		; hardware is there
-		inc	e		; bump the count
-		xor	a		;  make sure to shift in a 0 to the lower level
-		out	(BRKENCLK),a	;  next - low enable
-		out	(BRKENCLK),a	;  next - high enable
-		djnz	initbrkt
-initbrkc:	; we have the hardware breakpoint count in E
-		ld	a,e
-		ld	(baucnt),a
-		;
-		; see if the target is the SBC (same board)
-		in	a,(PCADDR_RD)
+		; see if the target is the SBC (our same board)
+		in	a,(SPRSTINFO)
 		and	SBCMODE_M
 		ld	b,SBCMODE_B
 initsbcf:	srl	a		; move the SBC indicator into bit 0
 		djnz	initsbcf
-		ld	(sflag),a	; save it. it is added to our status when we send to DOC.
+		ld	(is_sbc),a	; save it. it is added to our status when we send to DOC.
 		;
-		; that's it (the CPLD takes care of most of the init)
-		; Setting the ZID initialized bit in the CPLD also allows
-		; NMI via the DOC ATTN.
+		; That's it (the CPLD takes care of most of the init)
 		;
-		; No need to read and modify, as the SBC can't have run yet.
-		ld	a,ZIDINIT_M	; indicate that we are ready (allows NMI from DOC)
+		; We set the NMI Enable bit when we are ready to accept an interrupt from the DOC
+		; (ATTN). NMI is only generated from ATTN when we are already in Debug mode.
+		; We leave it set when we go into Target mode, so we can use it as an
+		; indicator that we've already initialized. The CPLD won't generate an NMI when
+		; ATTN causes a Special Reset to interrupt us out of Target Mode until ATTN is
+		; cleared by the DOC and then asserted again.
+		;
+		; No need to read and modify, as break conditions haven't been set yet.
+		ld	a,ZNMI_EN_M	; Enable NMI from DOC (also used to indicate we are initialized)
 		out	(BRDCTRL),a
 		; now let DOC know that we've initialized
 		;  and go idle...

@@ -4,7 +4,7 @@
 #
 
 # Define a variable with the current date/time
-.PHONY:	all BIN LIBS clean cleanall listcode listmap liststo
+.PHONY:	all BIN LIBS clean cleanall listcode listmap liststo list-
 
 BUILD_DT 	:= $(shell date +"\"%Y%m%d-%H:%M\"")
 
@@ -61,6 +61,9 @@ listmap:
 
 liststo:	
 	enscript $(PRNOPTS) storage.lst 
+
+list-%:
+	enscript $(PRNOPTS) $*
 
 clean:
 	rm -f *.lst *.map *.obj *.bin
