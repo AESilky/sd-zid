@@ -95,6 +95,10 @@ PINNODE = [bdeq7..0];       /*   data bits equal                        */
 FIELD databus       = [d7..0];
 FIELD ioaddr        = [addr3..0];	/* A7..4 handled by sbc_io          */
 
+/** Target Go Counter               */
+FIELD tgc           = [tgc3..0];
+$DEFINE TGTGO_WR    (zid_io & ioaddr:'b'0111 & wr)  /* 07: Target GO            */
+
 /** Board and Breakpoint Control    */
 FIELD brkdata       = [bd7..0];
 FIELD brkdx         = [bdx7..0];
@@ -107,12 +111,8 @@ $DEFINE GPIN_DATA    [d7..4]
 $DEFINE GPOUT_DATA   [d3..0]
 $DEFINE GPIN_BITS    [gp7..4]
 $DEFINE GPOUT_BITS   [gp3..0]
-$DEFINE GP_RD       (sbc_io & ioaddr:'b'11xx & rd)  /* 0C-0F: SBC Gen-Purpose RD */
-$DEFINE GP_WR       (sbc_io & ioaddr:'b'11xx & wr)  /* 0C-0F: SBC Gen-Purpose WR */
-
-/** Target Go Counter               */
-FIELD tgc           = [tgc3..0];
-$DEFINE TGTGO_WR    (zid_io & ioaddr:'b'0111 & wr)  /* 07: Target GO            */
+$DEFINE GP_RD       (sbc_io & ioaddr:'b'110x & rd)  /* 0C-0D: SBC Gen-Purpose RD */
+$DEFINE GP_WR       (sbc_io & ioaddr:'b'110x & wr)  /* 0C-0D: SBC Gen-Purpose WR */
 
 
 /************************************************************************/
