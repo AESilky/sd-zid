@@ -2,7 +2,7 @@
 # Copyright 2025-26 AESilky
 # SPDX-License-Identifier: MIT License
 #
-.PHONY:	all clean cleanall LIBS listcode listmap ROM
+.PHONY:	all clean cleanall LIBS listcode listmap list- ROM
 
 # Define a variable with the current date/time
 BUILD_DT 	:= $(shell date +"\"%Y%m%d-%H:%M\"")
@@ -65,6 +65,9 @@ listmap:
 
 liststo:	
 	enscript $(PRNOPTS) storage.lst 
+
+list-%:
+	enscript $(PRNOPTS) $*
 
 clean:
 	rm -f *.lst *.map *.obj *.bin

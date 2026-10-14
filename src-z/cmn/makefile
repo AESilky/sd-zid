@@ -2,7 +2,7 @@
 # Copyright 2025-26 AESilky
 # SPDX-License-Identifier: MIT License
 #
-.PHONY:	all clean cleanall listbrd liststd
+.PHONY:	all clean cleanall listbrd liststd list-
 
 # Define a variable with the current date/time
 BUILD_DT 	:= $(shell date +"\"%Y%m%d-%H:%M\"")
@@ -40,6 +40,9 @@ listbrd:
 
 liststd:	
 	enscript $(PRNOPTS) stddef.lst 
+
+list-%:
+	enscript $(PRNOPTS) $*
 
 clean:
 	rm -f *.obj *.lst
