@@ -14,6 +14,42 @@ extern "C" {
 #include "stdint.h"
 #include "hardware/pio.h"
 
+// ============================================================================
+// PIO Byte-Swapped TX FIFO Aliases (For 8-bit DMA streaming to Right-Shift SMs)
+// ============================================================================
+
+// PIO0 Alias Addresses
+/** @brief PIO0-SM0 Single Byte DMA TXFIFO address (for PIO shift-right config) */
+#define PIO0_TXF0_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO0_BASE + 0x40))
+/** @brief PIO0-SM1 Single Byte DMA TXFIFO address (for PIO shift-right config) */
+#define PIO0_TXF1_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO0_BASE + 0x44))
+/** @brief PIO0-SM2 Single Byte DMA TXFIFO address (for PIO shift-right config) */
+#define PIO0_TXF2_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO0_BASE + 0x48))
+/** @brief PIO0-SM3 Single Byte DMA TXFIFO address (for PIO shift-right config) */
+#define PIO0_TXF3_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO0_BASE + 0x4c))
+
+// PIO1 Alias Addresses
+/** @brief PIO1-SM0 Single Byte DMA TXFIFO address (for PIO shift-right config) */
+#define PIO1_TXF0_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO1_BASE + 0x40))
+/** @brief PIO1-SM1 Single Byte DMA TXFIFO address (for PIO shift-right config) */
+#define PIO1_TXF1_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO1_BASE + 0x44))
+/** @brief PIO1-SM2 Single Byte DMA TXFIFO address (for PIO shift-right config) */
+#define PIO1_TXF2_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO1_BASE + 0x48))
+/** @brief PIO1-SM3 Single Byte DMA TXFIFO address (for PIO shift-right config) */
+#define PIO1_TXF3_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO1_BASE + 0x4c))
+
+/**
+ * @brief Dynamically calculates the low-byte TX FIFO alias address for DMA configuration.
+ * @param pio The PIO instance pointer (pio0 or pio1)
+ * @param sm The state machine index (0 to 3)
+ * @return A volatile uint8_t* pointer to the low-byte hardware FIFO register address
+ */
+static inline volatile uint8_t* pio_get_tx_byte_fifo_alias(PIO pio, uint sm) {
+    // The low-byte FIFO alias write window starts exactly 0x30 bytes 
+    // after the standard memory-mapped TX FIFO array address.
+    return (volatile uint8_t*)((uintptr_t)&pio->txf[sm] + 0x30);
+}
+
 /**
  * @brief Structure containing the PIO SM program offset and configuration.
  *
@@ -91,6 +127,20 @@ typedef pio_sm_config(*piosmcfg_fn)(uint offset);
  * @return pio_sm_pocfg Structure containing the 'pio', 'sm', 'offset', and 'sm cfg'. The offset is negative if there was an error.
  */
 extern pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, bool cfgpins, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp, int mov_status);
+
+/**
+ * @brief Preload the X and Y registers of a PIO State Machine.
+ * @ingroup pio_sm
+ * 
+ * This loads the X and Y registers of a PIO State Machine.
+ * 
+ * 
+ * @param pio The PIO instance to use
+ * @param sm The State Machine number to use
+ * @param x_val The 32 bit value for X
+ * @param y_val The 32 bit value for Y
+ */
+extern void pio_sm_preload_xy(PIO pio, uint sm, uint32_t x_val, uint32_t y_val);
 
 /**
  * @brief Get the PIO State Machine PC value.

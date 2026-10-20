@@ -4,6 +4,26 @@
     {
       "name": "Pico Debug Probe",
       "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/docsbc_db.elf",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "gdbPath": "${env:ARM_GDB_PATH}",
+      "showDevDebugOutput": "raw",
+      "device": "RP2040",
+      "configFiles": [
+        "interface/cmsis-dap.cfg",
+        "target/rp2040.cfg"
+      ],
+      "svdFile": "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
+      "runToEntryPoint": "main",
+      "openOCDLaunchCommands": [
+        "adapter speed 1000"
+      ]
+    },
+    {
+      "name": "Pico DP - CMake Target",
+      "cwd": "${workspaceFolder}",
       "executable": "${command:cmake.launchTargetPath}",
       "request": "launch",
       "type": "cortex-debug",

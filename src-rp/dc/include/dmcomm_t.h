@@ -25,7 +25,6 @@ typedef struct DMC_CMD_REQ_ {
     uint16_t send_cnt2;   /* Count of bytes to be sent */
     volatile uint8_t* recv_buf; /* Pointer to buffer for data to be put in (not used if cnt 0)*/
     uint16_t recv_cnt;   /* Count of bytes to receive */
-    msg_handler_fn on_complete;
 } dmc_cmd_req_t;
 
 #endif // DMCOMM_T_H_

@@ -108,7 +108,7 @@ static cmd_state_t _cmd_state = CMD_SNOOZING;
 
 static int _cmd_cls(int argc, char** argv, const char* unparsed) {
     if (argc > 1) {
-        cmd_help_display(&_cmd_cls_entry, HELP_DISP_USAGE);
+        cmd_help_display(&_cmd_cls_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     term_clear(true);
@@ -122,7 +122,7 @@ static int _cmd_dec(int argc, char** argv, const char* unparsed) {
     argv++; argc--; // Move past the command name
     if (argc < 1) {
         // We need at least 1 value to convert
-        cmd_help_display(&_cmd_dec_entry, HELP_DISP_USAGE);
+        cmd_help_display(&_cmd_dec_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     bool valid;
@@ -205,7 +205,7 @@ static int _cmd_hex(int argc, char** argv, const char* unparsed) {
     argv++; argc--; // Move past the command name
     if (argc < 1) {
         // We need at least 1 value to convert
-        cmd_help_display(&_cmd_hex_entry, HELP_DISP_USAGE);
+        cmd_help_display(&_cmd_hex_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     bool valid;
@@ -230,7 +230,7 @@ static int _cmd_hex(int argc, char** argv, const char* unparsed) {
 
 static int _cmd_keys(int argc, char** argv, const char* unparsed) {
     if (argc > 1) {
-        cmd_help_display(&_cmd_keys_entry, HELP_DISP_USAGE);
+        cmd_help_display(&_cmd_keys_entry, HELP_INVALID_USAGE);
         return (-1);
     }
 #ifdef SD_CARD_SUPPORTED
@@ -432,7 +432,13 @@ const cmd_state_t cmd_get_state() {
 void cmd_help_display(const cmd_handler_entry_t* cmd, const cmd_help_display_format_t type) {
     term_color_pair_t tc = shell_color_get();
     term_color_default();
-    if (HELP_DISP_USAGE == type) {
+    cmd_help_display_format_t typ = type;
+    if (HELP_INVALID_USAGE == typ) {
+        // Invalid Usage. Ring the BELL and then treat like DISP_USAGE
+        shell_putc(BEL);
+        typ = HELP_DISP_USAGE;
+    }
+    if (HELP_DISP_USAGE == typ) {
         shell_puts("Usage: ");
     }
     int name_min = cmd->min_match;
@@ -446,14 +452,14 @@ void cmd_help_display(const cmd_handler_entry_t* cmd, const cmd_help_display_for
     bool alias = (cmd->usage && (CMD_ALIAS_INDICATOR == *cmd->usage));
     if (!alias) {
         shell_printf("%s %s\n", name_rest, cmd->usage);
-        if (cmd->description && (HELP_DISP_LONG == type || HELP_DISP_USAGE == type)) {
+        if (cmd->description && (HELP_DISP_LONG == typ || HELP_DISP_USAGE == typ)) {
             shell_printf("  %s\n", cmd->description);
         }
     }
     else {
         const char* aliased_for_name = ((cmd->usage) + 1);
         shell_printf("%s  Alias for: %s\n", name_rest, aliased_for_name);
-        if (HELP_DISP_NAME != type) {
+        if (HELP_DISP_NAME != typ) {
             // Find the aliased entry
             const cmd_handler_entry_t* aliased_cmd = NULL;
             const cmd_handler_entry_t* cmd_chk;
@@ -471,7 +477,7 @@ void cmd_help_display(const cmd_handler_entry_t* cmd, const cmd_help_display_for
                 // Put the terminal colors back, and call this again with the aliased command
                 term_color_fg(tc.fg);
                 term_color_bg(tc.bg);
-                cmd_help_display(aliased_cmd, type);
+                cmd_help_display(aliased_cmd, typ);
             }
         }
     }

@@ -18,17 +18,17 @@ set(PICO_QUEUE_MAX_LEVEL 1)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   message(STATUS "Building in Debug mode. (EAS-MAC)")
   # Use fully-deoptimized debug build for true single-step and data viewing.
-  #set(PICO_DEOPTIMIZED_DEBUG 1)
-  # Add debug-specific compiler flags and definitions
-  #add_compile_options(
-  #  -O0     # No optimizations
-  #)
-  # Use optimized debug build to avoid timing problems.
-  set(PICO_DEOPTIMIZED_DEBUG 0)
+  set(PICO_DEOPTIMIZED_DEBUG 1)
   # Add debug-specific compiler flags and definitions
   add_compile_options(
-    -O1     # Some optimizations
+    -O0     # No optimizations
   )
+  # Use optimized debug build to avoid timing problems.
+  #set(PICO_DEOPTIMIZED_DEBUG 0)
+  # Add debug-specific compiler flags and definitions
+  #add_compile_options(
+  #  -O1     # Some optimizations
+  #)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
   message(STATUS "Building in Release mode. (EAS)")
   set(PICO_DEOPTIMIZED_DEBUG 0)
@@ -227,6 +227,8 @@ pico_add_extra_outputs(docsbc)
 #
 pico_set_program_name(docsbc_db "${NAME_BASE}_DB")
 pico_set_program_version(docsbc_db ${VERSION})
+# Add this directly below where you define your docsbc_db target:
+target_compile_options(docsbc_db PRIVATE -O0)
 target_compile_definitions(docsbc_db PUBLIC
   DEBUG_MODE=1
   SHELL_ENABLE
@@ -252,6 +254,7 @@ pico_add_extra_outputs(docsbc_db)
 #
 pico_set_program_name(docsbc_sat "${NAME_BASE}_SAT")
 pico_set_program_version(docsbc_sat ${VERSION})
+target_compile_options(docsbc_sat PRIVATE -O0)
 target_compile_definitions(docsbc_sat PUBLIC
 	DEBUG_MODE=1
     SATEST

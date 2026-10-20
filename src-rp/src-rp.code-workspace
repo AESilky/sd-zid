@@ -19,6 +19,7 @@
             "ctrlbus",
             "ctrlreg",
             "ctrls",
+            "dacpu",
             "dasm",
             "datard",
             "datarw",
@@ -28,6 +29,7 @@
             "dccmds",
             "dcmsg",
             "diagout",
+            "disasm",
             "dispr",
             "dmcomm",
             "docsbc",
@@ -96,10 +98,12 @@
             "ubnd",
             "valprov",
             "waitclr",
+            "waitdatadone",
             "waitpin",
             "wreg",
             "wrpin",
             "wrreq",
+            "xfer",
             "zbwv",
             "zreg",
             "zregbuf"
@@ -109,5 +113,31 @@
             "*.h": "c"
         },
         "cmake.useCMakePresets": "never",
+        "search.exclude": {
+            "**/build": true,
+            "**/.git": true,
+            "**/node_modules": true
+        },
+        "search.useIgnoreFiles": true,
+        "cmake.sourceDirectory": "/home/esilky/proj/sd-ziddc/src-rp",
+        "C_Cpp.errorSquiggles": "enabled",
+        "cmake.environment": {
+            "CFLAGS": "",
+            "CXXFLAGS": "",
+            "ASMFLAGS": "",
+            "LDFLAGS": "",
+            "PICO_SDK_PATH": "${env:PICO_SDK_PATH}",
+            "ARM_GDB_PATH": "/opt/homebrew/bin/arm-none-eabi-gdb",
+            "PICO_MULTICORE_DEBUG": "1"
+        },
+        "cmake.configureSettings": {
+            "PICO_SDK_PATH": "${env:PICO_SDK_PATH}"
+        },
+        "files.exclude": {
+            "**/build": false
+        },
+        "C_Cpp.files.exclude": {
+            "**/build": true
+        },
     }
 }

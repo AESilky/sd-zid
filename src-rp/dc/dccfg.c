@@ -27,6 +27,7 @@ static volatile bool _modinit_called;
 // Local/Private Method Declarations
 // ====================================================================
 
+#define SETVAL(C,M,T,V) {C->M.isset=true; C->M.v.T = V;}
 
 // ====================================================================
 // Run-After/Delay/Sleep Methods
@@ -44,20 +45,27 @@ static volatile bool _modinit_called;
 // Local/Private Methods
 // ====================================================================
 
-
-
 // ====================================================================
 // Public Methods
 // ====================================================================
 
-extern int dccfg_load(dccfg_t* cfg, int id) {
+void dccfg_cpy(dccfg_t* dest, dccfg_t* src) {
+    // Copy the values
+    if (src->dacpu.isset) SETVAL(dest, dacpu, bval, src->dacpu.v.bval);
+    if (src->nb.isset) SETVAL(dest, nb, val8, src->nb.v.val8);
+    if (src->uc.isset) SETVAL(dest, uc, bval, src->uc.v.bval);
+}
+
+int dccfg_load(dccfg_t* cfg, int id) {
     memset(cfg, 0, sizeof(dccfg_t));
     // ZZZ TEMP: Put some values in... All for ID=0, but not all for others
     if (id == 0) {
-        cfg->uc.isset = true;
-        cfg->uc.v.bval = false;
+        cfg->dacpu.isset = true;
+        cfg->dacpu.v.bval = true;
         cfg->nb.isset = true;
         cfg->nb.v.val8 = (uint8_t)NB_HEX;
+        cfg->uc.isset = true;
+        cfg->uc.v.bval = false;
     }
     else {
         cfg->uc.isset = true;
@@ -67,7 +75,8 @@ extern int dccfg_load(dccfg_t* cfg, int id) {
 }
 
 void dccfg_overlay(dccfg_t* dest, dccfg_t* cfg1, dccfg_t* cfg2) {
-
+    dccfg_cpy(dest, cfg1);
+    dccfg_cpy(dest, cfg2);
 }
 
 // ====================================================================

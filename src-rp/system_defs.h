@@ -92,16 +92,16 @@ extern "C" {
 //
 #ifndef PIO_DEFS            // Defaults for PIO use
 #define PIO_DEFS
-#define PIOBLK_DBUS_AUTO        pio1            // PIO Block 1 is used for automatic databus control
-#define PIO_BCA_MSEL_SM         0               // State Machine 0 is used to watch MOD_SEL-
-#define PIO_BCA_DATA_SM         1               // State Machine 1 is used for DATA operations
-#define PIOBLK_DBUS_MAN         pio0            // PIO Block 0 is used for manual databus reads/writes
-#define PIO_BCM_OUT_SM          2               // State Machine 2 is used to manually transfer data out
-#define PIO_BCM_IN_SM           3               // State Machine 3 is used to manually transfer data in
-#define SYSIRQ_PIO_ACTRL        PIO1_IRQ_0      // PIO IRQ 0 used to signal Control Operation Request
-#define SYSIRQ_PIO_ADATA_DR     PIO1_IRQ_1      // PIO IRQ 1 used to signal DATA-RD Data Needed
-#define PIO_BCA_TOHOST_DREQ     DREQ_PIO1_TX1   // TXFIFO for reads from host
-#define PIO_BCA_FROMHOST_DREQ   DREQ_PIO1_RX1   // RXFIFO for writes from host
+#define PIOBLK_DBUS             pio1            // PIO Block 1 is used for databus control
+#define PIOFUNC_DBUS            GPIO_FUNC_PIO1  // The GPIO 'Function' for the block
+#define PIO_DB_MODSEL_SM        0               // State Machine 0 is used to watch MOD_SEL- and control WAIT-
+#define PIO_DB_CD_SM            1               // State Machine 1 is used to select CTRL/DATA operation
+#define PIO_DB_CTRL_SM          2               // State Machine 2 is used for CTRL (ADDR=0) operations
+#define PIO_DB_DATA_SM          3               // State Machine 3 is used for DATA (ADDR=1) operations
+#define SYSIRQ_PIO_CTRL_OP      PIO1_IRQ_0      // PIO IRQ 0 used to signal that a CTRL Operation is being performed
+#define SYSIRQ_PIO_DATA_OP      PIO1_IRQ_1      // PIO IRQ 1 used to signal that a DATA Operation is being performed
+#define PIO_DB_TOHOST_DREQ      DREQ_PIO1_TX3   // TXFIFO for reads from host
+#define PIO_DB_FROMHOST_DREQ    DREQ_PIO1_RX3   // RXFIFO for writes from host
 #endif
 
 // IRQ Inputs

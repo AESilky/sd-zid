@@ -21,36 +21,27 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef enum ctrl_hdlr_action_ {
+    CHA_NOT_HANDLED = 0,    // The handler didn't handle this READ
+    CHA_VALUE_SET,          // Handler supplied a value
+    CHA_VALUE_TBD,          // Handler will write a value later
+} ctrl_hdlr_action_t;
 /**
- * @brief Function prototype for a CTRL register access IRQ handler.
+ * @brief Function prototype for a CTRL register read access IRQ handler.
  * @ingroup databus
  * 
- * @param ctrl Control Bits read from the CTRL PIO-SM
- * @param host_rd True if the operation was READ, false for WRITE
- * @param d Pointer to data value written if the operation was Host WRITE
- *      Handler should set to value put on bus if Hose READ
- * @return True if handled (no further processing needed), False if not
+ * The handler is called during a CTRL READ operation (the Host is reading
+ * the CTRL Port). If `CHA_NOT_HANDLED` is returned the default CTRL STATUS
+ * value is put on the bus for the host. If `CHA_VALUE_SET` is returned the
+ * value set in `d` is put on the bus. If `CHA_VALUE_TBD` is returned the
+ * operation is left in process (the Host is held by WAIT). In this final
+ * case a call must be made to `cbus_value_write` to provide a value and 
+ * release the Host.
+ * 
+ * @param d Pointer to data to set for value to put on bus
+ * @return Handler Action
  */
-typedef bool (*ctrlreg_irq_fn)(uint8_t ctrl, bool host_rd, uint8_t* d);
-
-
-/** @brief ADDR bit (mask) for CTRL */
-#define CTRL_ADDR_BIT_M    0x01
-/** @brief RD- bit (mask) for CTRL */
-#define CTRL_RD_BIT_M      0x02
-/** @brief MSEL- bit (mask) for CTRL */
-#define CTRL_MSEL_BIT_M    0x04
-
-/**
- * @brief Databus transfer operation type (RD, WR, UNKNOWN)
- * @ingroup databus
- *
- */
-typedef enum {
-    DBXFER_UNKNOWN = 0,
-    DBXFER_TOHOST = 1,
-    DBXFER_FROMHOST = 2
-} dbxfer_op_t;
+typedef ctrl_hdlr_action_t (*ctrlrd_irq_fn)(uint8_t* d);
 
 /**
  * @brief Get the state of the ATTN bit
@@ -58,7 +49,7 @@ typedef enum {
  * 
  * @return bool true if the ATTN bit is ON 
  */
-extern bool attn_get();
+extern bool attn_is_on();
 
 /**
  * @brief Set the ATTN (INTRQ) pin ON|OFF
@@ -67,6 +58,17 @@ extern bool attn_get();
  * @param on true=on false=off 
  */
 extern void attn_set_on(bool on);
+
+/**
+ * @brief Provide a CTRL value for the bus. Only used if a Host Read is pending.
+ * @ingroup databus
+ *
+ * This method is used to provide a value when a CTRL READ handler indicated that
+ * the value was TDB when it was called during a CTRL READ operation.
+ *
+ * @param v
+ */
+extern void cbus_value_write(uint8_t v);
 
 /**
  * @brief Cancel any inprocess/pending data bus operations
@@ -107,28 +109,28 @@ extern void dbus_clear_wait();
  * 
  * @param hdlr 
  */
-extern void dbus_ctrl_hdlr_set(ctrlreg_irq_fn hdlr);
+extern void dbus_ctrl_hdlr_set(ctrlrd_irq_fn hdlr);
+
+/**
+ * @brief The last value written to the CTRL port
+ * @ingroup databus
+ * 
+ * This returns 0 until a value is written.
+ * 
+ * @return uint8_t Last value written or 0
+ */
+extern uint8_t dbus_ctrl_last_write();
 
 /**
  * @brief Set the value returned from a CTRL port read.
  * @ingroup databus
  * 
- * This value is returned when the host reads from the control port.
+ * This value is returned when the host reads from the control port
+ * and a 'control read' handler isn't set or the operation isn't handled.
  * 
  * @param v Value
  */
 extern void dbus_ctrl_status_set(uint8_t v);
-
-/**
- * @brief Check if the Data Bus direction is OUT.
- * @ingroup databus
- *
- * @return true It is OUT
- * @return false It is IN
- */
-static inline bool dbus_is_out() {
-    return gpio_get_dir(DATA0); // We check DATA-0. All DATA bits direction are set as one.
-}
 
 /**
  * @brief Get the value of the last unexpected WRITE operation by the host.
@@ -155,7 +157,7 @@ extern uint8_t dbus_last_wr_val();
  * @param count Number of bytes
  * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
  */
-extern void dbus_prep_recv(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt);
+extern void dbus_prep_recv(volatile uint8_t* buf, int count);
 
 /**
  * @brief Prepare to send data from a buffer onto the bus.
@@ -171,9 +173,8 @@ extern void dbus_prep_recv(volatile uint8_t* buf, int count, msg_handler_fn on_c
  *
  * @param buf Pointer to buffer
  * @param count Number of bytes
- * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
  */
-extern void dbus_prep_send1(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt);
+extern void dbus_prep_send1(volatile uint8_t* buf, int count);
 
 /**
  * @brief Prepare to send data from two buffers, one following the other.
@@ -189,9 +190,8 @@ extern void dbus_prep_send1(volatile uint8_t* buf, int count, msg_handler_fn on_
  * @param cnt1 First byte count
  * @param buf2 Second buffer
  * @param cnt2 Second byte count
- * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
  */
-extern void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* buf2, int cnt2, msg_handler_fn on_cmplt);
+extern void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* buf2, int cnt2);
 
 /**
  * @brief Prepare to send data from a buffer and then receive data into a buffer.
@@ -209,9 +209,8 @@ extern void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* 
  * @param scnt Send byte count
  * @param rbuf Receive buffer
  * @param rcnt Receive byte count
- * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
  */
-extern void dbus_prep_sendrecv(volatile uint8_t* sbuf, int scnt, volatile uint8_t* rbuf, int rcnt, msg_handler_fn on_cmplt);
+extern void dbus_prep_sendrecv(volatile uint8_t* sbuf, int scnt, volatile uint8_t* rbuf, int rcnt);
 
 /**
  * @brief Start a send, send-send, or send-receive data operation
@@ -231,7 +230,7 @@ extern void dbus_start_dataop();
  * 
  * @param v Value to return
  */
-extern void dbus_rd_def(uint8_t v);
+extern void dbus_data_defval_set(uint8_t v);
 
 /**
  * @brief Release the MSEL detection PIO-SM from its held state.
@@ -246,18 +245,10 @@ extern void dbus_rd_def(uint8_t v);
 extern void dbus_release_msel();
 
 /**
- * @brief Write a value to the Data Bus for a Control Port Read.
+ * @brief Print the status of the four PIO State Machines that control the Data Bus.
  * @ingroup databus
- *
- * This should only be used by an IRQ Handler handling a CTRL
- * register access operation to put a value on the bus to be read by
- * the host.
- * 
- * To write to the LEDs use `led_control`. To set/clear ATTN use `attn_set_on`.
- *
- * @param v The value to put on the bus
  */
-extern void dbus_ctrl_val_put(uint8_t v);
+extern void dbus_status_print();
 
 #define LED_RED 0x08
 #define LED_YELLOW1 0x10
