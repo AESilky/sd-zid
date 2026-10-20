@@ -89,6 +89,18 @@ extern bool dc_prompt_en(bool enbl);
 extern void dc_uppercase(bool uc);
 
 /**
+ * @brief Use the Debugger's or Target's memory and ports for get/put operations
+ * @ingroup debugcontrol
+ * 
+ * This sends a command to the debug monitor to tell it to use its own memory
+ * and ports for get/put operations (for debug monitor troubleshooting) or use
+ * the target's memory and ports (normal operation).
+ * 
+ * @param use_dbgr_mp True to use the DM memory/ports. False to use the Target memory/ports
+ */
+extern void dm_dbgr_mp(bool use_dbgr_mp);
+
+/**
  * @brief Get all the Z80 registers from the Debug Monitor.
  * @ingroup debugcontrol
  *

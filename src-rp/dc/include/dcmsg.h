@@ -48,6 +48,9 @@ GLOBL CMSG dcm_tgtsbc   MSGV("SBC");
 
 GLOBL CMSG dcm_done MSGV("DONE");
 GLOBL CMSG dcm_invalid_arg MSGV("Invalid argument");
+GLOBL CMSG dcm_addr MSGV("address");
+GLOBL CMSG dcm_count MSGV("count");
+GLOBL CMSG dcm_loc MSGV("location");
 GLOBL CMSG dcm_invalid_argtm MSGV("Too many arguments");
 GLOBL CMSG dcm_invalid_dest MSGV("Invalid destination");
 GLOBL CMSG dcm_mem_get_err MSGV("Error getting target memory");

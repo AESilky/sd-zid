@@ -61,18 +61,14 @@
 static volatile bool _modinit_called;
 
 // IRQ Handlers
-static volatile ctrlreg_irq_fn _ctrl_hdlr;
-
-// Operation (EXEC MSG) Handlers
-static msg_handler_fn _on_din_cmplt;
-static msg_handler_fn _on_dout_cmplt;
+static volatile ctrlrd_irq_fn _ctrl_hdlr;
 
 // PIO and SM Configurations
 //
-static pio_sm_pocfg _msel_pocfg;        // Handles Module Select, Addr, RD/WR
-static pio_sm_pocfg _datarw_pocfg;      // Automated read/write (Data reg)
-static pio_sm_pocfg _mrd_pocfg;         // Used to manually read from the data bus
-static pio_sm_pocfg _mwr_pocfg;         // Used to manually write to the data bus
+static pio_sm_pocfg _modsel_pocfg;      // Handles Module Select, RD/WR (DBUS direction)
+static pio_sm_pocfg _cd_pocfg;          // CTRL/DATA Detect
+static pio_sm_pocfg _ctrl_pocfg;        // Handle CTRL operations
+static pio_sm_pocfg _data_pocfg;        // Handle DATA operations
 
 // DMA Channels and Configurations
 static uint _dma_to_start;              // DMA channel to start for the prep'ed operation R/S/SR/SS
@@ -92,9 +88,9 @@ static volatile msg_id_t _dma_drcvdone_msg; // Message to post when the DMA has 
 static volatile int _rd_default_cnt;
 static volatile int _wr_default_cnt;
 
-static volatile uint8_t _ctrl_status;           // Location used for CTRL READ operations
-static volatile uint8_t _def_ctrlbuf;           // Location used for unexpected CTRL operations
-static volatile uint8_t _def_databuf;           // Location used for unexpected DATA operations
+static volatile uint8_t _ctrl_default_status;           // Default value for CTRL READ operations
+static volatile uint8_t _ctrl_last_write;               // The last value written to the CTRL register
+static volatile uint8_t _def_databuf;                   // Value used for unexpected DATA operations
 
 #define IO_ATTN_M   0b00000001
 #define IO_MODINT_M 0b00000010
@@ -106,9 +102,7 @@ static volatile uint8_t _eop_val;                // Backing value of the Expansi
 // Local/Private Method Declarations
 // ====================================================================
 
-static void _dbus_to_ctrl(bool b);
 static void _eop_write(uint8_t v);
-static uint8_t _man_read();
 void dbus_cancel_recv();
 void dbus_cancel_send();
 
@@ -145,39 +139,28 @@ void _irq_dma_pio() {
         // indicate it was a RD by the Host
         cmt_msg_init(&msg, _dma_dsnddone_msg);
         msg.data.value8u = _def_databuf;
-        postAPPMsg(&msg);
+        postHWRTMsg(&msg);
         _dma_dsnddone_msg = MSG_DBUS_DREAD_UNEXPECTED;
     }
     if (dma_channel_get_irq0_status(_dmaR_from_pio)) {
         // Disable the SM while we handle the end of transfer
-        pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, false);
-        pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, false);
+        pio_sm_set_enabled(_modsel_pocfg.pio, _modsel_pocfg.sm, false);
         //
         dma_channel_acknowledge_irq0(_dmaR_from_pio);
-        // indicate it was a WR from the Host
-        if (_on_din_cmplt) {
-            cmt_exec_init(&msg, _on_din_cmplt);
-            _on_din_cmplt = NULL;
-        }
-        else {
-            cmt_msg_init(&msg, _dma_drcvdone_msg);
-            msg.data.value8u = _def_databuf;
-        }
-        postAPPMsg(&msg);
-        //Reenable the SM
-        pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, true);
-        pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, true);
-        // Drain the RX FIFO
-        while (!pio_sm_is_rx_fifo_empty(_datarw_pocfg.pio, _datarw_pocfg.sm)) {
-            (void)pio_sm_get(_datarw_pocfg.pio, _datarw_pocfg.sm); // Read and discard value
-        }
-        // Set the message to unexpected write
+        cmt_msg_init(&msg, _dma_drcvdone_msg);
+        msg.data.value8u = _def_databuf;
+        postHWRTMsg(&msg);
         _dma_drcvdone_msg = MSG_DBUS_DWRITE_UNEXPECTED;
+        //Reenable the SM
+        pio_sm_set_enabled(_modsel_pocfg.pio, _modsel_pocfg.sm, true);
+        // Drain the RX FIFO
+        while (!pio_sm_is_rx_fifo_empty(_data_pocfg.pio, _data_pocfg.sm)) {
+            (void)pio_sm_get(_data_pocfg.pio, _data_pocfg.sm); // Read and discard value
+        }
         // Reconfigure it for 'idle' operation and start it
         dma_channel_hw_addr(_dmaR_from_pio)->transfer_count = 1;
         dma_channel_hw_addr(_dmaR_from_pio)->al2_write_addr_trig = (uintptr_t)&_def_databuf;
     }
-    irq_set_enabled(SYSIRQ_DMA_TF_PIO, true);
 }
 
 /**
@@ -185,66 +168,83 @@ void _irq_dma_pio() {
  *
  * Called when the PIO has detected a RD/WR for the Control Port (A:0)
  *
- * By default this posts MSG_DBUS_CTRL_ACCESS after releasing the MSEL
- * SM.
+ * For READ:
+ * A handler can be registered for the READ operation to provide a byte value.
+ * If a handler isn't registered or doesn't provide a value a default value is provided.
  * 
- * A handler can be registered. If a handler is registered it is called
- * to handle the data portion of the IRQ. Note that the MSEL PIO-SM is stalled
- * by this IRQ and must be released.
+ * For WRITE:
+ * This reads the value and posts it in a MSG_DBUS_CTRL_WRITE message.
  */
-void _irq_pio_ctrl_handler() {
-    irq_set_enabled(SYSIRQ_PIO_ACTRL, false);
+void _irqp_ctrl_op_hdlr() {
     cmt_msg_t msg;
-    bool handled = false;
-    uint32_t ctrlbus = pio_sm_get(_msel_pocfg.pio, _msel_pocfg.sm);
-    uint8_t ctrl = (uint8_t)(ctrlbus & 0x07);  // MSEL,RD,ADDR
-    uint8_t v = _ctrl_status;
-    // Verify that it is a valid CTRL operation
-    if ((ctrl & (CTRL_MSEL_BIT_M | CTRL_ADDR_BIT_M)) == 0) {
-        // Set the DBUS for use by the manual READ/WRITE PIO
-        _dbus_to_ctrl(true);
-        bool host_rd = ((ctrl & CTRL_RD_BIT_M) == 0); // Bus signals are active LOW
-        if (!host_rd) {
-            v = _man_read();
-        }
+    uint8_t v;
+    // Read the active interrupt status mask for Line 0
+    uint32_t irq_flags = _ctrl_pocfg.pio->irq;
+    uint32_t clear_mask = 0; // Collect IRQ flags to clear
+
+    // Check if PIO_CTRLDATA_NEEDED (IRQ0) fired (Host is waiting for a CTRL Read byte)
+    if (irq_flags & (1u << PIO_CTRLDATA_NEEDED)) {
+        ctrl_hdlr_action_t handled = CHA_NOT_HANDLED;
         if (_ctrl_hdlr) {
-            handled = _ctrl_hdlr(ctrl, host_rd, &v);
+            handled = _ctrl_hdlr(&v);
         }
-        if (!handled) {
-            if (host_rd) {
-                dbus_ctrl_val_put(_ctrl_status);       // The HOST is reading, put data on the bus
-            }
-            msg.data.value16u = ctrl << 8;
-            msg.data.value16u |= v;
-            cmt_msg_init(&msg, MSG_DBUS_CTRL_ACCESS);
-            postAPPMsg(&msg);
+        bool setval_now = true;
+        switch (handled) {
+            case CHA_NOT_HANDLED:
+                v = _ctrl_default_status;
+                break;
+            case CHA_VALUE_SET:
+                break;
+            case CHA_VALUE_TBD:
+                setval_now = false;
+                break;
         }
+        if (setval_now) {
+            // Direct 8-bit write to the standard TX FIFO address pointer
+            *(volatile uint8_t*)&_ctrl_pocfg.pio->txf[_ctrl_pocfg.sm] = v;
+            clear_mask |= (1u << PIO_CTRLDATA_NEEDED); // clear to allow SM to proceed
+        }
+        msg.data.value16u = (uint16_t)(((uint8_t)handled << 8) | v);
+        cmt_msg_init(&msg, MSG_DBUS_CTRL_READ);
+        postHWRTMsg(&msg);
     }
-    pio_interrupt_clear(_msel_pocfg.pio, PIO_BCA_CTRL);
-    irq_set_enabled(SYSIRQ_PIO_ACTRL, true);
-    //pio_sm_clear_fifos(_msel_pocfg.pio, _msel_pocfg.sm);
-    _dbus_to_ctrl(false); // DBUS back to auto RD/WR PIO
+
+    // Check if PIO_CTRLDATA_RDY (IRQ1) fired (Host completed a CTRL Write byte)
+    if (irq_flags & (1u << PIO_CTRLDATA_RDY)) {
+        uint8_t v = (uint8_t)_ctrl_pocfg.pio->rxf[_ctrl_pocfg.sm];
+        clear_mask |= (1u << PIO_CTRLDATA_RDY); // clear to allow SM to proceed
+        _ctrl_last_write = v;
+        msg.data.value8u = v;
+        cmt_msg_init(&msg, MSG_DBUS_CTRL_WRITE);
+        postHWRTMsg(&msg);
+    }
+    // Single-cycle Write-1-to-Clear operation for SM flags
+    if (clear_mask) {
+        _ctrl_pocfg.pio->irq = clear_mask;
+    }
 }
 
 
 /**
- * @brief IRQ Handler for READ Operation when Data is required (needed).
+ * @brief IRQ Handler for an unexpected DATA Operation (READ). Data is required.
  *
  * Called when the RD PIO-SM is triggered and data isn't available.
- * Supplies the value from _def_databuf and posts a 
+ * Supplies the value from _def_databuf and posts a message
  */
-void _irq_pio_rddr_handler() {
-    //uint32_t piodb = pio_debug_get(_datarw_pocfg.pio);
-    // Write the data
-    pio_sm_put(_datarw_pocfg.pio, _datarw_pocfg.sm, (uint32_t)_def_databuf);
-    // Clear its IRQ to allow it to run
-    pio_interrupt_clear(_datarw_pocfg.pio, PIO_BCA_RDDR);
+void _irqp_data_op_hdlr() {
+    volatile uint32_t irq_flags = _data_pocfg.pio->irq;
 
+    if (irq_flags & (1u << PIO_DATADATA_NEEDED)) {      // Unexpected Data Read (IRQ2)
+        // Write the default data value by a direct 8-bit write to the TX FIFO address
+        *(volatile uint8_t*)&_ctrl_pocfg.pio->txf[_ctrl_pocfg.sm] = _def_databuf;
+        // Release the SM to allow it to process the byte
+        _data_pocfg.pio->irq = (1u << PIO_DATADATA_NEEDED);
+    }
+    // Post a message indicating that an unexpected DATA RD was performed
     cmt_msg_t msg;
     cmt_msg_init(&msg, MSG_DBUS_DREAD_UNEXPECTED);
     msg.data.value8u = _def_databuf;
-    postAPPMsg(&msg);
-    irq_set_enabled(SYSIRQ_PIO_ADATA_DR, true); // Re-enable the system int
+    postHWRTMsg(&msg);
 }
 
 
@@ -252,161 +252,129 @@ void _irq_pio_rddr_handler() {
 // Local/Private Methods
 // ====================================================================
 
-static pio_sm_pocfg _cb_msel_pio_init() {
-    pio_sm_set_enabled(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, false);
-
+static pio_sm_pocfg _cb_cd_pio_init() {
     pio_sm_pocfg smpocfg;
-    smpocfg.pio = PIOBLK_DBUS_AUTO;
-    smpocfg.sm = PIO_BCA_MSEL_SM;
+    smpocfg.pio = PIOBLK_DBUS;
+    smpocfg.sm = PIO_DB_CD_SM;
+
+    pio_sm_set_enabled(smpocfg.pio, smpocfg.sm, false);
 
     // install the program in the PIO shared instruction space
-    smpocfg.offset = pio_add_program(smpocfg.pio, &cb_msel_program);
+    smpocfg.offset = pio_add_program(smpocfg.pio, &db_ctrldata_program);
     if (smpocfg.offset < 0) {
         return smpocfg;      // the program could not be added
     }
 
     // configure the PIO/SM
-    smpocfg.sm_cfg = cb_msel_program_get_default_config(smpocfg.offset);
+    smpocfg.sm_cfg = db_ctrldata_program_get_default_config(smpocfg.offset);
     //
-    sm_config_set_out_pins(&smpocfg.sm_cfg, DATA0, DATA_BUS_WIDTH); // for PINDIRS
-    sm_config_set_out_shift(&smpocfg.sm_cfg, true, false, DATA_BUS_WIDTH);
-    sm_config_set_sideset_pin_base(&smpocfg.sm_cfg, CTRL_WAITRQ);
-    sm_config_set_in_pins(&smpocfg.sm_cfg, CTRL_ADDR);
     sm_config_set_jmp_pin(&smpocfg.sm_cfg, CTRL_ADDR);
-    sm_config_set_in_shift(&smpocfg.sm_cfg, false, true, 8);
-    sm_config_set_fifo_join(&smpocfg.sm_cfg, PIO_FIFO_JOIN_NONE);
     sm_config_set_clkdiv(&smpocfg.sm_cfg, 1.0f);
     //
-    pio_set_irq0_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
-    pio_set_irq1_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
-    pio_interrupt_clear(smpocfg.pio, smpocfg.sm);
-    //
     pio_sm_init(smpocfg.pio, smpocfg.sm, smpocfg.offset, &smpocfg.sm_cfg);
-    pio_sm_clear_fifos(smpocfg.pio, smpocfg.sm);
 
     return smpocfg;
 }
 
-static pio_sm_pocfg _cb_autodata_pio_init() {
-    pio_sm_set_enabled(PIOBLK_DBUS_AUTO, PIO_BCA_DATA_SM, false);
-
+static pio_sm_pocfg _cb_ctrl_pio_init() {
     pio_sm_pocfg smpocfg;
-    smpocfg.pio = PIOBLK_DBUS_AUTO;
-    smpocfg.sm = PIO_BCA_DATA_SM;
+    smpocfg.pio = PIOBLK_DBUS;
+    smpocfg.sm = PIO_DB_CTRL_SM;
 
-    //pio_sm_set_consecutive_pindirs(smpocfg.pio, smpocfg.sm, DATA0, DATA_BUS_WIDTH, false);
-
-    // ZZZ DEBUG START
-    gpio_init(GP28);
-    gpio_set_dir(GP28, GPIO_OUT);
-    gpio_set_slew_rate(GP28, GPIO_SLEW_RATE_FAST);
-    gpio_set_drive_strength(GP28, GPIO_DRIVE_STRENGTH_12MA);
-    pio_gpio_init(smpocfg.pio, GP28);
-    pio_sm_set_consecutive_pindirs(smpocfg.pio, smpocfg.sm, GP28, 1, true);
-    // ZZZ DEBUG END
+    pio_sm_set_enabled(smpocfg.pio, smpocfg.sm, false);
 
     // install the program in the PIO shared instruction space
-    smpocfg.offset = pio_add_program(smpocfg.pio, &cb_autodata_program);
+    smpocfg.offset = pio_add_program(smpocfg.pio, &db_ctrl_port_program);
     if (smpocfg.offset < 0) {
         return smpocfg;      // the program could not be added
     }
 
     // configure the PIO/SM
-    smpocfg.sm_cfg = cb_autodata_program_get_default_config(smpocfg.offset);
+    smpocfg.sm_cfg = db_ctrl_port_program_get_default_config(smpocfg.offset);
     //
-    // ZZZ DEBUG START
-    sm_config_set_sideset_pin_base(&smpocfg.sm_cfg, GP28);
-    // ZZZ DEBUG END
-    sm_config_set_out_pins(&smpocfg.sm_cfg, DATA0, DATA_BUS_WIDTH);
-    sm_config_set_out_shift(&smpocfg.sm_cfg, true, false, DATA_BUS_WIDTH);
     sm_config_set_in_pins(&smpocfg.sm_cfg, DATA0);
-    sm_config_set_in_shift(&smpocfg.sm_cfg, false, false, DATA_BUS_WIDTH);   // 8-bits, no auto-push
+    sm_config_set_in_shift(&smpocfg.sm_cfg, false, true, DATA_BUS_WIDTH);  // 8-bits, shift-left, auto-push
+    sm_config_set_out_pins(&smpocfg.sm_cfg, DATA0, DATA_BUS_WIDTH);
+    sm_config_set_out_shift(&smpocfg.sm_cfg, false, true, DATA_BUS_WIDTH); // 8-bits, shift-left, auto-pull
+    sm_config_set_fifo_join(&smpocfg.sm_cfg, PIO_FIFO_JOIN_NONE);
+    sm_config_set_jmp_pin(&smpocfg.sm_cfg, CTRL_RD);
+    sm_config_set_clkdiv(&smpocfg.sm_cfg, 1.0f);
+    //
+    irq_set_exclusive_handler(SYSIRQ_PIO_CTRL_OP, _irqp_ctrl_op_hdlr);
+    // Route both CTRL (Read Data Needed, Write Data Available) interrupts to line 0:
+    pio_set_irq0_source_enabled(smpocfg.pio, pis_interrupt0, true);
+    pio_set_irq0_source_enabled(smpocfg.pio, pis_interrupt1, true);
+    //
+    pio_sm_init(smpocfg.pio, smpocfg.sm, smpocfg.offset, &smpocfg.sm_cfg);
+
+    return smpocfg;
+}
+
+static pio_sm_pocfg _cb_data_pio_init() {
+    pio_sm_pocfg smpocfg;
+    smpocfg.pio = PIOBLK_DBUS;
+    smpocfg.sm = PIO_DB_DATA_SM;
+
+    pio_sm_set_enabled(smpocfg.pio, smpocfg.sm, false);
+
+    // install the program in the PIO shared instruction space
+    smpocfg.offset = pio_add_program(smpocfg.pio, &db_data_port_program);
+    if (smpocfg.offset < 0) {
+        return smpocfg;      // the program could not be added
+    }
+
+    // configure the PIO/SM
+    smpocfg.sm_cfg = db_data_port_program_get_default_config(smpocfg.offset);
+    //
+    sm_config_set_in_pins(&smpocfg.sm_cfg, DATA0);
+    sm_config_set_in_shift(&smpocfg.sm_cfg, false, true, DATA_BUS_WIDTH); // 8-bits, shift-left, auto-push
+    sm_config_set_out_pins(&smpocfg.sm_cfg, DATA0, DATA_BUS_WIDTH);
+    sm_config_set_out_shift(&smpocfg.sm_cfg, false, true, DATA_BUS_WIDTH); // 8-bits, shift-left, auto-pull
     sm_config_set_fifo_join(&smpocfg.sm_cfg, PIO_FIFO_JOIN_NONE);
     sm_config_set_jmp_pin(&smpocfg.sm_cfg, CTRL_RD);
     sm_config_set_mov_status(&smpocfg.sm_cfg, STATUS_TX_LESSTHAN, 1);
     sm_config_set_clkdiv(&smpocfg.sm_cfg, 1.0f);
     //
-    pio_set_irq0_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
-    pio_set_irq1_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
-    pio_interrupt_clear(smpocfg.pio, smpocfg.sm);
-    //
     pio_sm_init(smpocfg.pio, smpocfg.sm, smpocfg.offset, &smpocfg.sm_cfg);
-    pio_sm_clear_fifos(smpocfg.pio, smpocfg.sm);
+    //
+    irq_set_exclusive_handler(SYSIRQ_PIO_DATA_OP, _irqp_data_op_hdlr);
+    // Route internal PIO flag 2 out through physical line 1
+    pio_set_irq1_source_enabled(smpocfg.pio, pis_interrupt2, true);
 
     return smpocfg;
 }
 
-static pio_sm_pocfg _cb_mread_pio_init() {
+static pio_sm_pocfg _cb_modsel_pio_init() {
     pio_sm_pocfg smpocfg;
-    smpocfg.pio = PIOBLK_DBUS_MAN;
-    smpocfg.sm = PIO_BCM_IN_SM;
+    smpocfg.pio = PIOBLK_DBUS;
+    smpocfg.sm = PIO_DB_MODSEL_SM;
 
     pio_sm_set_enabled(smpocfg.pio, smpocfg.sm, false);
 
-    pio_sm_set_consecutive_pindirs(smpocfg.pio, smpocfg.sm, DATA0, DATA_BUS_WIDTH, false);
-
     // install the program in the PIO shared instruction space
-    smpocfg.offset = pio_add_program(smpocfg.pio, &cb_m_read_program);
+    smpocfg.offset = pio_add_program(smpocfg.pio, &db_modsel_program);
     if (smpocfg.offset < 0) {
         return smpocfg;      // the program could not be added
     }
 
     // configure the PIO/SM
-    smpocfg.sm_cfg = cb_m_read_program_get_default_config(smpocfg.offset);
+    smpocfg.sm_cfg = db_modsel_program_get_default_config(smpocfg.offset);
     //
-    sm_config_set_out_pins(&smpocfg.sm_cfg, DATA0, DATA_BUS_WIDTH); // for PINDIRS
-    sm_config_set_in_pins(&smpocfg.sm_cfg, DATA0);
-    sm_config_set_in_shift(&smpocfg.sm_cfg, false, true, DATA_BUS_WIDTH);   // 8-bits, auto-push
+    // Since 32 bits will be output, the out/pindir config is set to base 0
+    sm_config_set_out_pins(&smpocfg.sm_cfg, 0, 32);
+    sm_config_set_out_shift(&smpocfg.sm_cfg, false, false, 32);
+    sm_config_set_sideset_pin_base(&smpocfg.sm_cfg, CTRL_WAITRQ);
+    sm_config_set_jmp_pin(&smpocfg.sm_cfg, CTRL_RD);
     sm_config_set_fifo_join(&smpocfg.sm_cfg, PIO_FIFO_JOIN_NONE);
     sm_config_set_clkdiv(&smpocfg.sm_cfg, 1.0f);
     //
-    pio_set_irq0_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
-    pio_set_irq1_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
-    pio_interrupt_clear(smpocfg.pio, smpocfg.sm);
-    //
     pio_sm_init(smpocfg.pio, smpocfg.sm, smpocfg.offset, &smpocfg.sm_cfg);
 
-    return smpocfg;
-}
-
-static pio_sm_pocfg _cb_mwrite_pio_init() {
-    pio_sm_pocfg smpocfg;
-    smpocfg.pio = PIOBLK_DBUS_MAN;
-    smpocfg.sm = PIO_BCM_OUT_SM;
-
-    pio_sm_set_enabled(smpocfg.pio, smpocfg.sm, false);
-
-    pio_sm_set_consecutive_pindirs(smpocfg.pio, smpocfg.sm, DATA0, DATA_BUS_WIDTH, true);
-
-    // install the program in the PIO shared instruction space
-    smpocfg.offset = pio_add_program(smpocfg.pio, &cb_m_write_program);
-    if (smpocfg.offset < 0) {
-        return smpocfg;      // the program could not be added
-    }
-
-    // configure the PIO/SM
-    smpocfg.sm_cfg = cb_m_write_program_get_default_config(smpocfg.offset);
-    //
-    sm_config_set_out_pins(&smpocfg.sm_cfg, DATA0, DATA_BUS_WIDTH);
-    sm_config_set_out_shift(&smpocfg.sm_cfg, true, false, DATA_BUS_WIDTH);
-    sm_config_set_fifo_join(&smpocfg.sm_cfg, PIO_FIFO_JOIN_NONE);
-    sm_config_set_clkdiv(&smpocfg.sm_cfg, 1.0f);
-    //
-    pio_set_irq0_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
-    pio_set_irq1_source_enabled(smpocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + smpocfg.sm), false);
-    pio_interrupt_clear(smpocfg.pio, smpocfg.sm);
-    //
-    pio_sm_init(smpocfg.pio, smpocfg.sm, smpocfg.offset, &smpocfg.sm_cfg);
+    // Pre-load X and Y with PINDIRS masks for output and input (for 32 pins, though only 11 are being controlled)
+    //  X has data bus (and WAIT) output mask, and Y with all inputs (except WAIT)
+    pio_sm_preload_xy(smpocfg.pio, smpocfg.sm, 0x000023FC, 0x00002000);
 
     return smpocfg;
-}
-
-/** @brief Set the DBUS to the Control (manual) PIO, else to the Data (auto) PIO */
-static void _dbus_to_ctrl(bool ctrl) {
-    PIO pio = (ctrl ? PIOBLK_DBUS_MAN : PIOBLK_DBUS_AUTO);
-    for (uint i = 0; i < DATA_BUS_WIDTH; i++) {
-        pio_gpio_init(pio, DATA0 + i);
-    }
 }
 
 /** @brief Write a value to the Expansion Output Port */
@@ -414,55 +382,42 @@ static void _eop_write(uint8_t v) {
     // This must take control of the data bus so it can put a value on it
     // and hold the value while the IOE clock is pulsed.
     //
-    // To take control of the but we must:
-    // 1. stop the PIO SMs for the Auto operations
-    // 2. stop the PIO SMs for the Manual operations
-    // 3. configure the GPIOs for SIO and Output
-    // 4. put the value on the bus
-    //
-    // Once we have pulsed the IOE Clock we must put the PIO SMs
+    // Once we have pulsed the IOE Clock we must put the PIO SM
     // back to controlling the bus.
     //
-    piosm_reset(_datarw_pocfg);
-    piosm_reset(_msel_pocfg);
-    piosm_reset(_mrd_pocfg);
-    piosm_reset(_mwr_pocfg);
-    // Set up the Data Bus
-    for (uint i = 0; i < DATA_BUS_WIDTH; i++) {
+
+    // Stop the MODSEL SM clock so it ignores host bus actions
+    pio_sm_set_enabled(_modsel_pocfg.pio, _modsel_pocfg.sm, false);
+    // Switch the Data Pins to control by the CPU
+    for (int i = 0; i < DATA_BUS_WIDTH; i++) {
         gpio_init(DATA0 + i);
-        gpio_set_dir(DATA0 + i, GPIO_OUT);
-        gpio_set_drive_strength(DATA0 + i, GPIO_DRIVE_STRENGTH_12MA);
-        gpio_set_pulls(DATA0 + i, false, true);    // pull down
     }
-    uint32_t mask = 0xFF << DATA0;
-    uint32_t sv = (uint32_t)v << DATA0;
-    gpio_put_masked(mask, sv);
+
+    uint32_t data_pins_mask = (0xFF << DATA0);
+    uint32_t sv = ((uint32_t)v) << DATA0;
+    gpio_set_dir_out_masked(data_pins_mask);
+    gpio_put_masked(data_pins_mask, sv);
     gpio_put(CTRL_IOECLK, 0);   // Assure that we get a LOW to HIGH transition
     gpio_put(CTRL_IOECLK, 1);   // Latch the value
+    __asm volatile ( // 3 cycles of 8ns (@ sysclk = 125MHz) for a 24ns delay
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        );
     gpio_put(CTRL_IOECLK, 0);   // Leave IOECLK LOW
-    _eop_val = v;
+    _eop_val = v;               // Record the updated value
     //
-    // Put things back to normal PIO control
-    _dbus_to_ctrl(false);
-    pio_sm_set_enabled(_mrd_pocfg.pio, _mrd_pocfg.sm, true);
-    pio_sm_set_enabled(_mwr_pocfg.pio, _mwr_pocfg.sm, true);
-    pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, true); // Auto R/W needs to be before MSel
-    pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, true);
-}
-
-/** @brief Manually read a byte from the data bus */
-static uint8_t _man_read() {
-    uint32_t dbus;
-    // To read, set the interrupt bit that the PIOSM is waiting on,
-    pio_sm_clear_fifos(_mrd_pocfg.pio, _mrd_pocfg.sm);
-    pio_interrupt_clear(_mrd_pocfg.pio, _mrd_pocfg.sm);
-    // then read from the RXFIFO
-    while (pio_sm_is_rx_fifo_empty(_mrd_pocfg.pio, _mrd_pocfg.sm)) {
-        tight_loop_contents();
+    // Force CPU pins back to high-Z input state
+    gpio_set_dir_in_masked(data_pins_mask);
+    // Restore MULTIPLEXER control back to the PIO-SM
+    for (int i = 0; i < DATA_BUS_WIDTH; i++) {
+        gpio_set_function(DATA0 + i, PIOFUNC_DBUS);
     }
-    dbus = pio_sm_get(_mrd_pocfg.pio, _mrd_pocfg.sm);
-    uint8_t v = lowByte(dbus);
-    return v;
+    // Let MODSEL resume operation
+    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS, PIO_DB_MODSEL_SM, CTRL_WAITRQ, 1, true);
+    pio_sm_restart(_modsel_pocfg.pio, _modsel_pocfg.sm);
+    pio_sm_preload_xy(_modsel_pocfg.pio, _modsel_pocfg.sm, 0x000023FC, 0x00002000);
+    pio_sm_set_enabled(_modsel_pocfg.pio, _modsel_pocfg.sm, true);
 }
 
 
@@ -470,7 +425,7 @@ static uint8_t _man_read() {
 // Public Methods
 // ====================================================================
 
-bool attn_get() {
+bool attn_is_on() {
     bool b = ((_eop_val & IO_ATTN_M) != 0);
     return b;
 }
@@ -481,22 +436,37 @@ void attn_set_on(bool on) {
     _eop_write(epv);
 }
 
-void dbus_ctrl_hdlr_set(ctrlreg_irq_fn hdlr) {
+void cbus_value_write(uint8_t v) {
+    // Check that the CTRL_OP State Machine is still waiting for a value
+    // Read the active interrupt status mask for Line 0
+    uint32_t irq_flags = _ctrl_pocfg.pio->irq;
+
+    // Check if PIO_CTRLDATA_NEEDED (IRQ0) fired (Host is waiting for a CTRL Read byte)
+    if (irq_flags & (1u << PIO_CTRLDATA_NEEDED)) {
+        pio_sm_put(_ctrl_pocfg.pio, _ctrl_pocfg.sm, (uint32_t)v);
+        // Clear the IRQ flag so the SM can proceed
+        pio_interrupt_clear(pio1, PIO_CTRLDATA_NEEDED);
+    }
+}
+
+void dbus_ctrl_hdlr_set(ctrlrd_irq_fn hdlr) {
     _ctrl_hdlr = hdlr;
 }
 
+uint8_t dbus_ctrl_last_write() {
+    return _ctrl_last_write;
+}
+
 void dbus_ctrl_status_set(uint8_t v) {
-    _ctrl_status = v;
+    _ctrl_default_status = v;
 }
 
 uint8_t dbus_last_wr_val() {
     return _def_databuf;
 }
 
-extern void dbus_cancel_ops() {
+void dbus_cancel_ops() {
     attn_set_on(false);
-    dbus_cancel_recv();
-    dbus_cancel_send();
     dbus_clear_wait();
 }
 
@@ -541,54 +511,75 @@ void dbus_cancel_send() {
 }
 
 void dbus_clear_wait() {
-    // Stop the auto-data and msel PIO State Machines
-    pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, false);
-    pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, false);
-    piosm_reset(_datarw_pocfg);
-    piosm_reset(_msel_pocfg);
+    // Stop the PIO State Machines
+    pio_sm_set_enabled(_modsel_pocfg.pio, _modsel_pocfg.sm, false);
+    pio_sm_set_enabled(_cd_pocfg.pio, _cd_pocfg.sm, false);
+    pio_sm_set_enabled(_ctrl_pocfg.pio, _ctrl_pocfg.sm, false);
+    pio_sm_set_enabled(_data_pocfg.pio, _data_pocfg.sm, false);
+    // Clear all PIO IRQ bits
+    PIOBLK_DBUS->irq = 0xFF;
+    // Clear the FIFOs of the SMs that talk to the bus
+    pio_sm_clear_fifos(_ctrl_pocfg.pio, _ctrl_pocfg.sm);
+    pio_sm_clear_fifos(_data_pocfg.pio, _data_pocfg.sm);
+
     // Stop and cancel Receive and Send DMA operations
     dbus_cancel_recv();
     dbus_cancel_send();
     // De-assert WAIT
     gpio_init(CTRL_WAITRQ);
     gpio_set_function(CTRL_WAITRQ, GPIO_FUNC_SIO);
-    gpio_put(CTRL_WAITRQ, CTRL_WAITRQ_OFF);
     gpio_set_dir(CTRL_WAITRQ, GPIO_OUT);
+    gpio_put(CTRL_WAITRQ, CTRL_WAITRQ_OFF);
     // Now set WAIT back to PIO control
-    pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_WAITRQ);
-    // Re-enable the auto-data and msel PIO State Machines
-    pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, true);
-    pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, true);
+    pio_gpio_init(PIOBLK_DBUS, CTRL_WAITRQ);
+
+    // Re-enable the PIO State Machines
+    pio_sm_restart(_data_pocfg.pio, _data_pocfg.sm);
+    pio_sm_clkdiv_restart(_data_pocfg.pio, _data_pocfg.sm);
+    pio_sm_restart(_ctrl_pocfg.pio, _ctrl_pocfg.sm);
+    pio_sm_clkdiv_restart(_ctrl_pocfg.pio, _ctrl_pocfg.sm);
+    pio_sm_restart(_cd_pocfg.pio, _cd_pocfg.sm);
+    pio_sm_clkdiv_restart(_cd_pocfg.pio, _cd_pocfg.sm);
+    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS, PIO_DB_MODSEL_SM, CTRL_WAITRQ, 1, true);
+    pio_sm_restart(_modsel_pocfg.pio, _modsel_pocfg.sm);
+    pio_sm_clkdiv_restart(_modsel_pocfg.pio, _modsel_pocfg.sm);
+    pio_sm_preload_xy(_modsel_pocfg.pio, _modsel_pocfg.sm, 0x000023FC, 0x00002000);
+    pio_sm_set_enabled(_data_pocfg.pio, _data_pocfg.sm, true);
+    pio_sm_set_enabled(_ctrl_pocfg.pio, _ctrl_pocfg.sm, true);
+    pio_sm_set_enabled(_cd_pocfg.pio, _cd_pocfg.sm, true);
+    pio_sm_set_enabled(_modsel_pocfg.pio, _modsel_pocfg.sm, true);
 }
 
-void dbus_prep_recv(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt) {
-    _on_din_cmplt = on_cmplt;
+void dbus_data_defval_set(uint8_t v) {
+    _def_databuf = v;
+}
+
+void dbus_prep_recv(volatile uint8_t* buf, int count) {
     // Configure FROM PIO DMA channel to read from the RXFIFO and write to the input buffer.
     //
     // First cancel any current operation
     dbus_cancel_recv();
-    pio_sm_clear_fifos(_datarw_pocfg.pio, _datarw_pocfg.sm);
+    pio_sm_clear_fifos(_data_pocfg.pio, _data_pocfg.sm);
     //
     // Now configure for new one
     dma_channel_configure(_dmaR_from_pio, &_dmaR_cfg,
         buf,                            // Put into indicated buffer
-        (uint8_t*)&_datarw_pocfg.pio->rxf[_datarw_pocfg.sm],   // Read from PIO-SM
+        (volatile uint8_t*)&_data_pocfg.pio->rxf[_data_pocfg.sm],   // Read from PIO-SM
         count,
         false);                         // Don't start yet
     _dma_drcvdone_msg = MSG_DBUS_DWRITE_XFER_DONE;
 }
 
-void dbus_prep_send1(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt) {
-    _on_dout_cmplt = on_cmplt;
+void dbus_prep_send1(volatile uint8_t* buf, int count) {
     // Configure TO PIO DMA channel to read from the supplied buffer and send to the TXFIFO.
     //
     // First cancel any current operation
     dbus_cancel_send();
-    pio_sm_clear_fifos(_datarw_pocfg.pio, _datarw_pocfg.sm);
+    pio_sm_clear_fifos(_data_pocfg.pio, _data_pocfg.sm);
     //
     // Now configure for new one
     dma_channel_configure(_dmaS_to_pio, &_dmaS_cfg,
-        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        (volatile uint8_t*)&pio1->txf[3],   // Write to PIO-SM (low byte)
         buf,
         count,
         false);                         // Don't start yet
@@ -597,22 +588,21 @@ void dbus_prep_send1(volatile uint8_t* buf, int count, msg_handler_fn on_cmplt) 
     _dma_dsnddone_msg = MSG_DBUS_DREAD_XFER_DONE;
 }
 
-void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* buf2, int cnt2, msg_handler_fn on_cmplt) {
-    _on_dout_cmplt = on_cmplt;
+void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* buf2, int cnt2) {
     // Configure TO PIO DMA channel to read from the supplied buffer and send to the TXFIFO.
     //
     // First cancel any current operation
     dbus_cancel_send();
-    pio_sm_clear_fifos(_datarw_pocfg.pio, _datarw_pocfg.sm);
+    pio_sm_clear_fifos(_data_pocfg.pio, _data_pocfg.sm);
     //
     // Now configure for new one
     dma_channel_configure(_dmaSS_to_pio, &_dmaSS_cfg,
-        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        (volatile uint8_t*)&pio1->txf[3],   // Write to PIO-SM (low byte)
         buf1,
         cnt1,
         false);                         // Don't start yet
     dma_channel_configure(_dmaS_to_pio, &_dmaS_cfg,
-        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        (volatile uint8_t*)&pio1->txf[3],   // Write to PIO-SM (low byte)
         buf2,
         cnt2,
         false);                         // Don't start yet
@@ -621,29 +611,34 @@ void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* buf2, i
     _dma_dsnddone_msg = MSG_DBUS_DREAD_XFER_DONE;
 }
 
-void dbus_prep_sendrecv(volatile uint8_t* sbuf, int scnt, volatile uint8_t* rbuf, int rcnt, msg_handler_fn on_cmplt) {
-    _on_dout_cmplt = on_cmplt;
+void dbus_prep_sendrecv(volatile uint8_t* sbuf, int scnt, volatile uint8_t* rbuf, int rcnt) {
     // Configure TO PIO DMA channel to read from the supplied buffer and send to the TXFIFO.
     //
     // First cancel any current operation
     dbus_cancel_send();
     dbus_cancel_recv();
-    pio_sm_clear_fifos(_datarw_pocfg.pio, _datarw_pocfg.sm);
+    pio_sm_clear_fifos(_data_pocfg.pio, _data_pocfg.sm);
     //
     // Now configure for new one
     dma_channel_configure(_dmaSR_to_pio, &_dmaSR_cfg,
-        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        (volatile uint8_t*)&pio1->txf[3],   // Write to PIO-SM (low byte)
         sbuf,
         scnt,
         false);                         // Don't start yet
     dma_channel_configure(_dmaR_from_pio, &_dmaR_cfg,
         rbuf,                            // Put into indicated buffer
-        (uint8_t*)&_datarw_pocfg.pio->rxf[_datarw_pocfg.sm],   // Read from PIO-SM
+        (volatile uint8_t*)&_data_pocfg.pio->rxf[_data_pocfg.sm],   // Read from PIO-SM
         rcnt,
         false);                         // Don't start yet
     _dma_to_start = _dmaSR_to_pio;      // We start the SR dma. It triggers the R dma when done.
     _dma_to_irqen = _dmaR_from_pio;
     _dma_drcvdone_msg = MSG_DBUS_DWRITE_XFER_DONE;
+}
+
+void dbus_release_msel() {
+    // Clear the interrupt bit that is holding the MSEL PIO-SM
+    //uint8_t c = piosm_pc(_modsel_pocfg);
+    pio_interrupt_clear(_modsel_pocfg.pio, PIO_CTRLDATA_RDY);
 }
 
 void dbus_start_dataop() {
@@ -654,21 +649,15 @@ void dbus_start_dataop() {
     dma_channel_start(_dma_to_start);
 }
 
-void dbus_rd_def(uint8_t v) {
-    _def_databuf = v;
-}
+void dbus_status_print() {
+    uint8_t modsel_pc = piosm_pc(_modsel_pocfg);
+    uint8_t cd_pc = piosm_pc(_cd_pocfg);
+    uint8_t ctrl_pc = piosm_pc(_ctrl_pocfg);
+    uint8_t data_pc = piosm_pc(_data_pocfg);
+    uint32_t irq_flags = PIOBLK_DBUS->irq;
 
-void dbus_release_msel() {
-    // Clear the interrupt bit that is holding the MSEL PIO-SM
-    //uint8_t c = piosm_pc(_msel_pocfg);
-    pio_interrupt_clear(_msel_pocfg.pio, PIO_BCA_CTRL);
-}
-
-void dbus_ctrl_val_put(uint8_t v) {
-    // To write, clear the interrupt bit that the PIOSM is waiting on (allows PINDIRS to be set to out),
-    pio_sm_clear_fifos(_mwr_pocfg.pio, _mwr_pocfg.sm);
-    pio_interrupt_clear(_mwr_pocfg.pio, _mwr_pocfg.sm);
-    pio_sm_put(_mwr_pocfg.pio, _mwr_pocfg.sm, (uint32_t)v);
+    shell_printf("MODSEL: %02X\n    CD: %02X\n  CTRL: %02X\n  DATA: %02X\n", modsel_pc, cd_pc, ctrl_pc, data_pc);
+    shell_printf("IRQ FLAGS: %08X\n", irq_flags);
 }
 
 void led_control(uint8_t leds) {
@@ -688,37 +677,46 @@ int dbusc_modinit() {
         board_panic("!!! dbusc_modinit: Called more than once !!!");
     }
     _modinit_called = true;
-
+    _eop_val = 0;
     int retval = 0;
 
+    // Assure all DBUS State Machines are stopped
+    pio_sm_set_enabled(PIOBLK_DBUS, PIO_DB_CTRL_SM, false);
+    pio_sm_set_enabled(PIOBLK_DBUS, PIO_DB_DATA_SM, false);
+    pio_sm_set_enabled(PIOBLK_DBUS, PIO_DB_CD_SM, false);
+    pio_sm_set_enabled(PIOBLK_DBUS, PIO_DB_MODSEL_SM, false);
+
+    // Initialize the DBUS PINS
     gpio_init(CTRL_ADDR);
     gpio_set_dir(CTRL_ADDR, GPIO_IN);
-    pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_ADDR);
+    pio_gpio_init(PIOBLK_DBUS, CTRL_ADDR);
     gpio_init(CTRL_RD);
     gpio_set_dir(CTRL_RD, GPIO_IN);
-    pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_RD);
+    pio_gpio_init(PIOBLK_DBUS, CTRL_RD);
     gpio_init(CTRL_MODSEL);
     gpio_set_dir(CTRL_MODSEL, GPIO_IN);
-    pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_MODSEL);
-    pio_gpio_init(PIOBLK_DBUS_AUTO, CTRL_WAITRQ);
+    pio_gpio_init(PIOBLK_DBUS, CTRL_MODSEL);
+    pio_gpio_init(PIOBLK_DBUS, CTRL_WAITRQ);
 
     // Set up the Data Bus
     for (uint i = 0; i < DATA_BUS_WIDTH; i++) {
         gpio_init(DATA0 + i);
         gpio_set_dir(DATA0 + i, GPIO_IN);
-        gpio_set_drive_strength(DATA0 + i, GPIO_DRIVE_STRENGTH_12MA);
+        gpio_set_drive_strength(DATA0 + i, GPIO_DRIVE_STRENGTH_4MA);
         gpio_set_pulls(DATA0 + i, false, true);    // pull down
     }
-    _dbus_to_ctrl(true);
-    pio_sm_set_enabled(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, false);
-    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, DATA0, DATA_BUS_WIDTH, false);
-    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_ADDR, 1, false);
-    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_RD, 1, false);
-    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_MODSEL, 1, false);
-    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS_AUTO, PIO_BCA_MSEL_SM, CTRL_WAITRQ, 1, true);
+    // Set Data Bus control function to the PIO 
+    for (int i = 0; i < DATA_BUS_WIDTH; i++) {
+        gpio_set_function(DATA0 + i, PIOFUNC_DBUS);
+    }
+    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS, PIO_DB_MODSEL_SM, DATA0, DATA_BUS_WIDTH, false); // For PINDIRS control
+    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS, PIO_DB_MODSEL_SM, CTRL_ADDR, 1, false);
+    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS, PIO_DB_MODSEL_SM, CTRL_RD, 1, false);
+    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS, PIO_DB_MODSEL_SM, CTRL_MODSEL, 1, false);
+    pio_sm_set_consecutive_pindirs(PIOBLK_DBUS, PIO_DB_MODSEL_SM, CTRL_WAITRQ, 1, true);
 
     // Init the default read buffer
-    dbus_rd_def(0x55);
+    dbus_data_defval_set(0x55);
 
     // Get the Read and Write DMA channels. Panic if not available.
     _dmaS_to_pio = dma_claim_unused_channel(true);
@@ -727,43 +725,48 @@ int dbusc_modinit() {
     _dmaSS_to_pio = dma_claim_unused_channel(true);
 
     // Initialize the state machines
-    _mrd_pocfg = _cb_mread_pio_init();
-    if (_mrd_pocfg.offset < 0) {
-        return (_mrd_pocfg.offset); // Indicate error
+    _cd_pocfg = _cb_cd_pio_init();
+    if (_cd_pocfg.offset < 0) {
+        return (_cd_pocfg.offset); // Indicate error
     }
-    _mwr_pocfg = _cb_mwrite_pio_init();
-    if (_mwr_pocfg.offset < 0) {
-        return (_mwr_pocfg.offset); // Indicate error
+    _ctrl_pocfg = _cb_ctrl_pio_init();
+    if (_ctrl_pocfg.offset < 0) {
+        return (_ctrl_pocfg.offset); // Indicate error
     }
-    _msel_pocfg = _cb_msel_pio_init();
-    if (_msel_pocfg.offset < 0) {
-        return (_msel_pocfg.offset); // Indicate error
+    _data_pocfg = _cb_data_pio_init();
+    if (_data_pocfg.offset < 0) {
+        return (_data_pocfg.offset); // Indicate error
     }
-    _datarw_pocfg = _cb_autodata_pio_init();
-    if (_datarw_pocfg.offset < 0) {
-        return (_datarw_pocfg.offset); // Indicate error
+    _modsel_pocfg = _cb_modsel_pio_init();
+    if (_modsel_pocfg.offset < 0) {
+        return (_modsel_pocfg.offset); // Indicate error
     }
 
     //
     // Init the PIO WR and RD DMA to read/write from/to the PIO when data is ready or a read is requested
+    // NOTE: There are 4 Channels:
+    //  1. One that is configured just to receive from the host into a buffer
+    //  2. One that is configured just to send from a buffer to the host
+    //  3. One that is configured to send from a buffer and then trigger a 2nd to receive into a buffer
+    //  4. One that is configured to send from a buffer and then trigger a 2nd to transfer from a different buffer
     //
     // 
     _dmaR_cfg = dma_channel_get_default_config(_dmaR_from_pio); //Get configurations for data writes
     channel_config_set_transfer_data_size(&_dmaR_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
     channel_config_set_read_increment(&_dmaR_cfg, false); // Read increment to false (read from PIO)
     channel_config_set_write_increment(&_dmaR_cfg, true); // Write increment to true (advance in wr-buffer)
-    channel_config_set_dreq(&_dmaR_cfg, PIO_BCA_FROMHOST_DREQ); // PIO-SM rx-fifo not empty.
+    channel_config_set_dreq(&_dmaR_cfg, PIO_DB_FROMHOST_DREQ); // PIO-SM rx-fifo not empty.
     // Configure PIO WR DMA channel to read from the RXFIFO and write to the input buffer.
-    dbus_prep_recv(&_def_databuf, 1, NULL);
+    dbus_prep_recv(&_def_databuf, 1);
     //
     _dmaS_cfg = dma_channel_get_default_config(_dmaS_to_pio); //Get configurations for data reads
     channel_config_set_transfer_data_size(&_dmaS_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
     channel_config_set_read_increment(&_dmaS_cfg, true); // Read increment to true (advance through rd-buffer)
     channel_config_set_write_increment(&_dmaS_cfg, false); // Write increment to false (write to PIO)
-    channel_config_set_dreq(&_dmaS_cfg, PIO_BCA_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
+    channel_config_set_dreq(&_dmaS_cfg, PIO_DB_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
     // Configure PIO RD DMA channel to read from the output buffer and write to the TXFIFO.
     dma_channel_configure(_dmaS_to_pio, &_dmaS_cfg,
-        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        (volatile uint8_t*)&pio1->txf[3],   // Write to PIO-SM (low byte)
         &_def_databuf,                   // Default value
         1,                              // Can't do a single byte, as it wants to fill the FIFO.
         false);                         // Don't start yet
@@ -772,11 +775,11 @@ int dbusc_modinit() {
     channel_config_set_transfer_data_size(&_dmaSR_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
     channel_config_set_read_increment(&_dmaSR_cfg, true); // Read increment to true (advance through rd-buffer)
     channel_config_set_write_increment(&_dmaSR_cfg, false); // Write increment to false (write to PIO)
-    channel_config_set_dreq(&_dmaSR_cfg, PIO_BCA_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
+    channel_config_set_dreq(&_dmaSR_cfg, PIO_DB_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
     channel_config_set_chain_to(&_dmaSR_cfg, _dmaR_from_pio);  // Trigger Receive Channel when done
     // Configure PIO RD DMA channel to read from the output buffer and write to the TXFIFO.
     dma_channel_configure(_dmaSR_to_pio, &_dmaSR_cfg,
-        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        (volatile uint8_t*)&pio1->txf[3],   // Write to PIO-SM (low byte)
         &_def_databuf,                   // Default value
         1,                              // Can't do a single byte, as it wants to fill the FIFO.
         false);                         // Don't start yet
@@ -785,48 +788,37 @@ int dbusc_modinit() {
     channel_config_set_transfer_data_size(&_dmaSS_cfg, DMA_SIZE_8); //Set data transfer size to 8 bits
     channel_config_set_read_increment(&_dmaSS_cfg, true); // Read increment to true (advance through rd-buffer)
     channel_config_set_write_increment(&_dmaSS_cfg, false); // Write increment to false (write to PIO)
-    channel_config_set_dreq(&_dmaSS_cfg, PIO_BCA_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
+    channel_config_set_dreq(&_dmaSS_cfg, PIO_DB_TOHOST_DREQ); //Set the transfer request signal to the PIO-SM tx-fifo empty.
     channel_config_set_chain_to(&_dmaSS_cfg, _dmaS_to_pio);  // Trigger Send Channel2 when done
     // Configure PIO RD DMA channel to read from the output buffer and write to the TXFIFO.
     dma_channel_configure(_dmaSS_to_pio, &_dmaSS_cfg,
-        (uint8_t*)&_datarw_pocfg.pio->txf[_datarw_pocfg.sm],   // Write to PIO-SM
+        (volatile uint8_t*)&pio1->txf[3],   // Write to PIO-SM (low byte)
         &_def_databuf,                   // Default value
         1,                              // Can't do a single byte, as it wants to fill the FIFO.
         false);                         // Don't start yet
 
     // Disable the IRQs for now
-    irq_set_enabled(SYSIRQ_PIO_ACTRL, false);
-    irq_set_enabled(SYSIRQ_PIO_ADATA_DR, false);
+    irq_set_enabled(SYSIRQ_PIO_CTRL_OP, false);
+    irq_set_enabled(SYSIRQ_PIO_DATA_OP, false);
     irq_set_enabled(SYSIRQ_DMA_TF_PIO, false);
-    pio_interrupt_clear(_msel_pocfg.pio, PIO_BCA_CTRL);
-    pio_interrupt_clear(_datarw_pocfg.pio, PIO_BCA_RDDR);
+    pio_interrupt_clear(_ctrl_pocfg.pio, PIO_CTRLDATA_RDY);
+    pio_interrupt_clear(_ctrl_pocfg.pio, PIO_CTRLDATA_NEEDED);
+    pio_interrupt_clear(_data_pocfg.pio, PIO_DATADATA_NEEDED);
 
     // No Data READs or WRITEs expected at this time
     _dma_dsnddone_msg = MSG_DBUS_DREAD_UNEXPECTED;
     _dma_drcvdone_msg = MSG_DBUS_DWRITE_UNEXPECTED;
 
-    // Set up for the interrupts generated by the PIO and DMAs
-    irq_set_exclusive_handler(SYSIRQ_PIO_ACTRL, _irq_pio_ctrl_handler);
-    irq_set_exclusive_handler(SYSIRQ_PIO_ADATA_DR, _irq_pio_rddr_handler);
+    // Set up for the interrupts generated by the DMAs
     irq_set_exclusive_handler(SYSIRQ_DMA_TF_PIO, _irq_dma_pio);
 
-    // PIO IRQ 0 is used when CTRL is accessed (RD or WR)
-    // PIO IRQ 1 is used when DATA RD (Auto) is performed and data is needed. 
-    pio_set_irq0_source_enabled(_msel_pocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + _msel_pocfg.sm), true);
-    pio_set_irq1_source_enabled(_datarw_pocfg.pio, (enum pio_interrupt_source)((uint)pis_interrupt0 + _datarw_pocfg.sm), true);
-
     //
-    // Start the PIO-SMs and DMAs
+    // Start the PIO-SMs
     //
-    // Need to start DataRW before MSEL
-    //
-    pio_sm_set_enabled(_mrd_pocfg.pio, _mrd_pocfg.sm, true);
-    pio_sm_set_enabled(_mwr_pocfg.pio, _mwr_pocfg.sm, true);
-    pio_sm_set_enabled(_datarw_pocfg.pio, _datarw_pocfg.sm, true);
-    pio_sm_set_enabled(_msel_pocfg.pio, _msel_pocfg.sm, true);
-    // Clear any spurious interrupts
-    pio_interrupt_clear(_msel_pocfg.pio, PIO_BCA_CTRL);
-    pio_interrupt_clear(_datarw_pocfg.pio, PIO_BCA_RDDR);
+    pio_sm_set_enabled(_ctrl_pocfg.pio, _ctrl_pocfg.sm, true);
+    pio_sm_set_enabled(_data_pocfg.pio, _data_pocfg.sm, true);
+    pio_sm_set_enabled(_cd_pocfg.pio, _cd_pocfg.sm, true);
+    pio_sm_set_enabled(_modsel_pocfg.pio, _modsel_pocfg.sm, true);
 
     // Tell the DMAs to raise their IRQ when the channel finishes a block
     dma_channel_set_irq0_enabled(_dmaR_from_pio, true);
@@ -840,8 +832,8 @@ int dbusc_modinit() {
     //dma_channel_start(_dma_to_pio);
 
     // Enable the CPU IRQs now
-    irq_set_enabled(SYSIRQ_PIO_ACTRL, true);
-    irq_set_enabled(SYSIRQ_PIO_ADATA_DR, true);
+    irq_set_enabled(SYSIRQ_PIO_CTRL_OP, true);
+    irq_set_enabled(SYSIRQ_PIO_DATA_OP, true);
     irq_set_enabled(SYSIRQ_DMA_TF_PIO, true);
 
     return (retval);

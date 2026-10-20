@@ -22,7 +22,7 @@ static int _exec_nbase(int argc, char** argv, const char* unparsed) {
 
     if (argc > 2) {
         // We only take 0 or 1 arguments.
-        cmd_help_display(&cmds_nbase_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_nbase_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     if (argc > 1) {

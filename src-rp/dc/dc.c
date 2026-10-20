@@ -36,8 +36,8 @@
 // Local Constants and types
 // ====================================================================
 
-#define DMSIM_STAT1DLY 180  // Delay before simulated status 1
-#define DMSIM_STATDLYINC 80  // Delay increment for additional status
+#define DMSIM_STAT1DLY 50   // Delay (ms) before simulated status 1
+#define DMSIM_STATDLYINC 5  // Delay increment for additional status
 
 // ====================================================================
 // Data Section
@@ -69,7 +69,7 @@ static bool _uc;                        // Upper case
 // Local/Private Method Declarations
 // ====================================================================
 
-static void _dm_cmd_send(dm_cmd_t cmd, volatile uint8_t* send_buf1, int send_cnt1, volatile uint8_t* send_buf2, int send_cnt2, volatile uint8_t* recv_buf, int recv_cnt, msg_handler_fn on_cmplt);
+static void _dm_cmd_send(dm_cmd_t cmd, volatile uint8_t* send_buf1, int send_cnt1, volatile uint8_t* send_buf2, int send_cnt2, volatile uint8_t* recv_buf, int recv_cnt);
 static void _dm_fatal_error();
 static void _dm_target_running();
 
@@ -133,6 +133,9 @@ static void _handle_dm_pget_done(cmt_msg_t* msg) {
     // Make sure we have a completion routine, otherwise nothing to do
     if (_dm_buf_rcv_cmplt) {
         cmt_msg_t msgcmplt;
+        if (_dm_simulate) {
+            *_dm_mp_opbuf.buf = _dm_sim_bval;
+        }
         msgcmplt.data.bptr = (uint8_t*)&_dm_mp_opbuf.buf;
         cmt_exec_init(&msgcmplt, _dm_buf_rcv_cmplt);
         postAPPMsg(&msgcmplt);
@@ -240,8 +243,7 @@ static void _dm_cmd_send(
     dm_cmd_t cmd,
     volatile uint8_t* send_buf1, int send_cnt1,
     volatile uint8_t* send_buf2, int send_cnt2,
-    volatile uint8_t* recv_buf, int recv_cnt,
-    msg_handler_fn on_cmplt) 
+    volatile uint8_t* recv_buf, int recv_cnt) 
 {
     cmt_msg_t msg;
     _dm_cmd = cmd;
@@ -252,7 +254,6 @@ static void _dm_cmd_send(
     msg.data.dmc_cmd_req.send_cnt2 = send_cnt2;
     msg.data.dmc_cmd_req.recv_buf = recv_buf;
     msg.data.dmc_cmd_req.recv_cnt = recv_cnt;
-    msg.data.dmc_cmd_req.on_complete = on_cmplt;
     cmt_msg_init(&msg, MSG_DMC_CMD_REQ);
     postHWRTMsg(&msg);
     //
@@ -373,47 +374,56 @@ void dc_uppercase(bool uc) {
     _uc = uc;
 }
 
+void dm_dbgr_mp(bool use_dbgr_mp) {
+    if (use_dbgr_mp) {
+        _dm_cmd_send(DCDBGRMP, NULL, 0, NULL, 0, NULL, 0);
+    }
+    else {
+        _dm_cmd_send(DCTGTMP, NULL, 0, NULL, 0, NULL, 0);
+    }
+}
+
 void dm_getallreg(msg_handler_fn on_cmplt) {
     _dc_op_complete = on_cmplt;
-    _dm_cmd_send(DCGREGALL, NULL, 0, NULL, 0, z80reg_buf_get(), ZREGALLBYTES, NULL);
+    _dm_cmd_send(DCGREGALL, NULL, 0, NULL, 0, z80reg_buf_get(), ZREGALLBYTES);
 }
 
 void dm_go(msg_handler_fn on_cmplt) {
     _dc_op_complete = on_cmplt;
     _prompten = false; // temp disable the prompt
-    _dm_cmd_send(DCGO, NULL, 0, NULL, 0, NULL, 0, NULL);
+    _dm_cmd_send(DCGO, NULL, 0, NULL, 0, NULL, 0);
 }
 
 void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt) {
     _dc_op_complete = on_cmplt;
     _prompten = false; // temp disable the prompt
     regpc_sv(pc);
-    _dm_cmd_send(DCGOWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, NULL);
+    _dm_cmd_send(DCGOWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0);
 }
 
 void dm_mem_get(uint16_t cnt, msg_handler_fn on_cmplt) {
     _dm_buf_rcv_cmplt = on_cmplt;
     _dc_op_complete = _handle_dm_mget_done;
-    _dm_cmd_send(DCGM, &(_dm_mp_opbuf.addrL), WORD+BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt, _handle_dm_mget_done);
+    _dm_cmd_send(DCGM, &(_dm_mp_opbuf.addrL), WORD+BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt);
 }
 
 void dm_mem_set(uint16_t cnt) {
-    _dm_cmd_send(DCPM, &(_dm_mp_opbuf.addrL), WORD+BYTE+cnt, NULL, 0, NULL, 0, NULL);
+    _dm_cmd_send(DCPM, &(_dm_mp_opbuf.addrL), WORD+BYTE+cnt, NULL, 0, NULL, 0);
 }
 
 void dm_port_get(uint16_t cnt, msg_handler_fn on_cmplt) {
     _dm_buf_rcv_cmplt = on_cmplt;
     _dc_op_complete = _handle_dm_pget_done;
-    _dm_cmd_send(DCGP, &(_dm_mp_opbuf.addrL), WORD+BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt, _handle_dm_pget_done);
+    _dm_cmd_send(DCGP, &(_dm_mp_opbuf.addrL), WORD+BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt);
 }
 
 void dm_port_put(uint16_t cnt) {
-    _dm_cmd_send(DCPP, &(_dm_mp_opbuf.addrL), WORD+BYTE+cnt, NULL, 0, NULL, 0, NULL);
+    _dm_cmd_send(DCPP, &(_dm_mp_opbuf.addrL), WORD+BYTE+cnt, NULL, 0, NULL, 0);
 }
 
 void dm_putallreg(msg_handler_fn on_cmplt) {
     _dc_op_complete = on_cmplt;
-    _dm_cmd_send(DCPREGALL, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, NULL);
+    _dm_cmd_send(DCPREGALL, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0);
 }
 
 void dm_simulate(bool simulate) {
@@ -427,14 +437,14 @@ bool dm_simulated() {
 void dm_step(msg_handler_fn on_cmplt) {
     _dc_op_complete = on_cmplt;
     _prompten = false; // temp disable the prompt
-    _dm_cmd_send(DCSTEP, NULL, 0, NULL, 0, NULL, 0, NULL);
+    _dm_cmd_send(DCSTEP, NULL, 0, NULL, 0, NULL, 0);
 }
 
 void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt) {
     _dc_op_complete = on_cmplt;
     _prompten = false; // temp disable the prompt
     regpc_sv(pc);
-    _dm_cmd_send(DCSTEPWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, NULL);
+    _dm_cmd_send(DCSTEPWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0);
 }
 
 bool dm_tgt_is_sbc() {

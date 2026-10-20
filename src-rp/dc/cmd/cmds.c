@@ -41,6 +41,7 @@
 const cmd_handler_entry_t cmds_altscr_entry;
 const cmd_handler_entry_t cmds_clrwait_entry;
 const cmd_handler_entry_t cmds_dmcancel_entry;
+const cmd_handler_entry_t cmds_dmdbgrmp_entry;
 const cmd_handler_entry_t cmds_dmgetregs_entry;
 const cmd_handler_entry_t cmds_dmputregs_entry;
 const cmd_handler_entry_t cmds_dmsim_entry;
@@ -49,6 +50,7 @@ const cmd_handler_entry_t cmds_dmsim_entry;
 //
 const cmd_handler_entry_t cmds_dec_entry;
 const cmd_handler_entry_t cmds_dasm_entry;
+const cmd_handler_entry_t cmds_disasm_entry;
 const cmd_handler_entry_t cmds_dump_entry;
 const cmd_handler_entry_t cmds_dumpa_entry;
 const cmd_handler_entry_t cmds_examine_entry;
@@ -164,18 +166,16 @@ typedef struct CMD_DASM_CTX_ {
 
 static addrcnt_vals_s _addrcnt_vals;
 static addrind_vals_s _addrind_vals;
-static dccfg_t _gconfig;                // GLOBAL/BASE Configuration
-static dccfg_t _oconfig;                // Override Configuration
-static dccfg_t _wconfig;                // Working Configuration
+static dccfg_t _gcfg;                // GLOBAL/BASE Configuration
+static dccfg_t _scfg;                // Override Configuration
+static dccfg_t _wcfg;                // Working Configuration
 static cmddasm_ctx_s _da_ctx;           // Disassembler Context
-static bool _dasm_pc;                   // Disassemble PC on CPU display
 static uint16_t _dasm_addr;             // Disassemble address
 static uint16_t _dump_addr;             // Dump address
 static uint16_t _dump_addr_prev;        // Previous dump address
 #define PRNBUFEND 80
 #define PRNBUFLEN 81
 static char _prnbuf[PRNBUFLEN];
-static bool _uc;                        // Upper case
 static val_prvdr_fn _val_provider;
 
 
@@ -238,7 +238,7 @@ static void _disasm_ab() {
     // Print the address and bytes (adding blank space for non-bytes)
     int bi = 0; // Byte index
     int mtb = 4; // Assume 4 total bytes
-    num_valstr_nb_eb(_prnbuf, _da_ctx.ctx.addr, RS_WORD, _uc);
+    num_valstr_nb_eb(_prnbuf, _da_ctx.ctx.addr, RS_WORD, _wcfg.uc.v.bval);
     SHPF("%s ", _prnbuf);
     while (bi < _da_ctx.ctx.bi) {
         num_valstr_nb_eb(_prnbuf, _da_ctx.ctx.d[bi], RS_BYTE, true);
@@ -268,7 +268,7 @@ static void _disasm_c_d(cmt_msg_t* msg) {
     int8_t s = _da_ctx.ctx.status;
     if (s == 0) {
         _da_ctx.bc--; _da_ctx.caddr++;
-        s = zda_begin(&(_da_ctx.ctx), addr, b, _uc);
+        s = zda_begin(&(_da_ctx.ctx), addr, b, _wcfg.uc.v.bval);
     }
     while (s > 0 && _da_ctx.bc) {
         b = *vbuf++; _da_ctx.bc--; _da_ctx.caddr++;
@@ -344,19 +344,19 @@ static void _disasm(uint16_t addr, uint16_t count, bool uc, cmplt_fn on_cmplt) {
 
 // fmtbyte_t (see: z80disasm.h)
 static void _fmt_byte(char* buf, uint8_t v) {
-    num_valstr_nb_eb(buf, v, RS_BYTE, _uc);
+    num_valstr_nb_eb(buf, v, RS_BYTE, _wcfg.uc.v.bval);
 }
 
 // fmtindex_t (see: z80disasm.h)
 static void _fmt_index(char* buf, int8_t v) {
     char sign = (v < 0 ? '-' : '+');
     *buf++ = sign;
-    num_valstr_nb_eb(buf, v, RS_BYTE, _uc);
+    num_valstr_nb_eb(buf, v, RS_BYTE, _wcfg.uc.v.bval);
 }
 
 // fmtword_t (see: z80disasm.h)
 static void _fmt_word(char* buf, uint16_t v) {
-    num_valstr_nb_eb(buf, v, RS_WORD, _uc);
+    num_valstr_nb_eb(buf, v, RS_WORD, _wcfg.uc.v.bval);
 }
 
 /**
@@ -622,6 +622,13 @@ static void _shell_inv_arg_at(int i, const char* rsn) {
     shell_putc(nl);
 }
 
+static void _shell_inv_arg_rsn(const char* rsn) {
+    shell_printferr(dcm_invalid_arg);
+    if (rsn)
+        shell_printferr(" %s", rsn);
+    shell_putc(nl);
+}
+
 static void _shell_inv_dest() {
     shell_printferr(dcm_invalid_dest);
     shell_putc(nl);
@@ -662,7 +669,7 @@ static int _exec_clrwait(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc > 0) {
         // We don't take any arguments.
-        cmd_help_display(&cmds_clrwait_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_clrwait_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     dbus_clear_wait();
@@ -674,11 +681,35 @@ static int _exec_dm_cancel(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc > 0) {
         // We don't take any arguments.
-        cmd_help_display(&cmds_dmcancel_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_dmcancel_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     dmc_op_cancel();
+    SHPS("Any waiting status on a DM operation is cancelled\n (the DM may still perform the operation).\n");
     dc_prompt_en(true); // Turn the prompt on as a way to restore after a missed operation
+    return (retval);
+}
+
+static int _exec_dm_dbgrmp(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    if (argc != 2) {
+        // We only take 1 argument.
+        cmd_help_display(&cmds_dmdbgrmp_entry, HELP_INVALID_USAGE);
+        return (-1);
+    }
+    bool v = bool_from_str(argv[1]);
+    const char* msg;
+    if (v) {
+        // Use the debugger's memory and ports (debugger troubleshooting)
+        dm_dbgr_mp(true);
+        msg = "debugger";
+    }
+    else {
+        // Use the target's memory and ports (normal operation)
+        dm_dbgr_mp(false);
+        msg = "target";
+    }
+    SHPF("Using the %s's memory and ports.\n", msg);
     return (retval);
 }
 
@@ -687,7 +718,7 @@ static int _exec_dm_getregs(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc > 0) {
         // We don't take any arguments.
-        cmd_help_display(&cmds_dmgetregs_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_dmgetregs_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     dm_getallreg(_handle_dm_getregs);
@@ -699,7 +730,7 @@ static int _exec_dm_putregs(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc > 0) {
         // We don't take any arguments.
-        cmd_help_display(&cmds_dmputregs_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_dmputregs_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     dm_putallreg(_handle_dm_putregs);
@@ -710,7 +741,7 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     if (argc > 2) {
         // We only take 0 or 1 arguments.
-        cmd_help_display(&cmds_dmsim_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_dmsim_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     bool v;
@@ -721,6 +752,7 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
     v = dm_simulated();
     const char* sim = (v ? "simulated" : "physical");
     SHPF("DM %s\n", sim);
+    dbus_status_print();
     return (retval);
 }
 
@@ -728,7 +760,7 @@ static int _exec_s2test(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     if (argc > 2) {
         // We only take 0 or 1 arguments.
-        cmd_help_display(&cmds_altscr_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_altscr_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     bool v;
@@ -750,7 +782,7 @@ static int _exec_cpu(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     if (argc > 1) {
         // We don't take any arguments.
-        cmd_help_display(&cmds_cpu_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_cpu_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     dcc_cpudisp();
@@ -762,7 +794,7 @@ static int _exec_dec(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc < 1 || argc > 2) {
         // We require 1 argument and can accept 2.
-        cmd_help_display(&cmds_dec_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_dec_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     // First argument is the destination
@@ -810,7 +842,7 @@ static int _exec_dasm(int argc, char** argv, const char* unparsed) {
     argc--;argv++; // Move past command
     if (argc > 2) {
         // We take 0, 1, or 2 arguments.
-        cmd_help_display(&cmds_dasm_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_dasm_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     uint16_t addr = _dasm_addr;
@@ -821,7 +853,7 @@ static int _exec_dasm(int argc, char** argv, const char* unparsed) {
             valstatus_t status;
             uint32_t v = _val_provider(*argv, RS_WORD, &status);
             if (status != VP_OK) {
-                shell_printferr("%s location\n", dcm_invalid_arg);
+                _shell_inv_arg_rsn(dcm_loc);
                 retval = 1;
                 goto _finally;
             }
@@ -834,7 +866,7 @@ static int _exec_dasm(int argc, char** argv, const char* unparsed) {
         valstatus_t status;
         uint32_t v = _val_provider(*argv, RS_WORD, &status);
         if (status != VP_OK) {
-            shell_printferr("%s count\n", dcm_invalid_arg);
+            _shell_inv_arg_rsn(dcm_count);
             retval = 2;
             goto _finally;
         }
@@ -842,7 +874,7 @@ static int _exec_dasm(int argc, char** argv, const char* unparsed) {
     }
     // Past the sources of any errors
     dc_prompt_en(false);
-    _disasm(addr, cnt, _uc, _dasm_oc);
+    _disasm(addr, cnt, _wcfg.uc.v.bval, _dasm_oc);
 _finally:
     return retval;
 }
@@ -916,7 +948,7 @@ static int _exec_dump(int argc, char** argv, const char* unparsed) {
     argc--;argv++; // Move past command
     if (argc > 2) {
         // We take 0, 1, or 2 arguments.
-        cmd_help_display(&cmds_dump_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_dump_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     uint16_t addr = _dump_addr;
@@ -933,7 +965,7 @@ static int _exec_dump(int argc, char** argv, const char* unparsed) {
             valstatus_t status;
             uint32_t v = _val_provider(*argv, RS_WORD, &status);
             if (status != VP_OK) {
-                shell_printferr("%s location\n", dcm_invalid_arg);
+                _shell_inv_arg_rsn(dcm_loc);
                 retval = 1;
                 goto _finally;
             }
@@ -946,7 +978,7 @@ static int _exec_dump(int argc, char** argv, const char* unparsed) {
         valstatus_t status;
         uint32_t v = _val_provider(*argv, RS_WORD, &status);
         if (status != VP_OK) {
-            shell_printferr("%s count\n", dcm_invalid_arg);
+            _shell_inv_arg_rsn(dcm_count);
             retval = 2;
             goto _finally;
         }
@@ -1030,7 +1062,7 @@ static int _exec_dumpa(int argc, char** argv, const char* unparsed) {
     argc--;argv++; // Move past command
     if (argc > 2) {
         // We take 0, 1, or 2 arguments.
-        cmd_help_display(&cmds_dumpa_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_dumpa_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     uint16_t addr = _dump_addr;
@@ -1041,7 +1073,7 @@ static int _exec_dumpa(int argc, char** argv, const char* unparsed) {
             valstatus_t status;
             uint32_t v = _val_provider(*argv, RS_WORD, &status);
             if (status != VP_OK) {
-                shell_printferr("%s location", dcm_invalid_arg);
+                _shell_inv_arg_rsn(dcm_loc);
                 retval = 1;
                 goto _finally;
             }
@@ -1054,7 +1086,7 @@ static int _exec_dumpa(int argc, char** argv, const char* unparsed) {
         valstatus_t status;
         uint32_t v = _val_provider(*argv, RS_WORD, &status);
         if (status != VP_OK) {
-            shell_printferr("%s count", dcm_invalid_arg);
+            _shell_inv_arg_rsn(dcm_count);
             retval = 2;
             goto _finally;
         }
@@ -1101,7 +1133,7 @@ static int _exec_examine(int argc, char** argv, const char* unparsed) {
     repsize_t sz;
     if (argc != 2) {
         // We require exactly 1 argument.
-        cmd_help_display(&cmds_examine_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_examine_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     argc--; argv++; // Move past the command
@@ -1124,7 +1156,7 @@ static int _exec_examine(int argc, char** argv, const char* unparsed) {
     addr_ind_t addr_ind;
     uint16_t addr = _get_addr16(*argv, &addr_ind);
     if (addr_ind == ADDR_INVALID) {
-        shell_printferr(dcm_invalid_arg);
+        _shell_inv_arg_rsn(dcm_addr);
         retval = -2;
         goto _finally;
     }
@@ -1148,7 +1180,7 @@ static int _exec_go(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc > 1) {
         // We can accept 1.
-        cmd_help_display(&cmds_go_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_go_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     // Argument is the PC
@@ -1199,14 +1231,14 @@ static int _exec_in(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc != 1) {
         // We require exactly 1 argument.
-        cmd_help_display(&cmds_in_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_in_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     // Argument is the port.
     addr_ind_t addr_ind;
     uint16_t addr = _get_port_addr(*argv, &addr_ind);
     if (addr_ind == ADDR_INVALID) {
-        shell_printferr(dcm_invalid_arg);
+        _shell_inv_arg_rsn(dcm_addr);
         retval = -2;
         goto _finally;
     }
@@ -1225,7 +1257,7 @@ static int _exec_inc(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc < 1 || argc > 2) {
         // We require 1 argument and can accept 2.
-        cmd_help_display(&cmds_inc_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_inc_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     // First argument is the destination
@@ -1268,7 +1300,7 @@ static int _exec_load(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     if (argc < 3) {
         // We require at least 2 arguments.
-        cmd_help_display(&cmds_load_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_load_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     argc--; argv++; // Move past the command
@@ -1282,7 +1314,7 @@ static int _exec_load(int argc, char** argv, const char* unparsed) {
         // It is a register, check that there is only 1 more argument (the value)
         argc--; argv++; // Move past the destination
         if (argc > 1) {
-            shell_printferr(dcm_invalid_argtm);
+            _shell_inv_arg_rsn(dcm_invalid_argtm);
             return (-1);
         }
         sz = reg->sz;
@@ -1306,7 +1338,7 @@ static int _exec_load(int argc, char** argv, const char* unparsed) {
     addr_ind_t addr_ind;
     uint16_t addr = _get_addr16(*argv, &addr_ind);
     if (addr_ind == ADDR_INVALID) {
-        shell_printferr(dcm_invalid_arg);
+        _shell_inv_arg_rsn(dcm_addr);
         retval = -2;
         goto _finally;
     }
@@ -1346,7 +1378,7 @@ static int _exec_out(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     if (argc < 3) {
         // We require at least 2 arguments.
-        cmd_help_display(&cmds_out_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_out_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     argc--; argv++; // Move past the command
@@ -1355,7 +1387,7 @@ static int _exec_out(int argc, char** argv, const char* unparsed) {
     addr_ind_t addr_ind;
     uint16_t addr = _get_port_addr(*argv, &addr_ind);
     if (addr_ind == ADDR_INVALID) {
-        shell_printferr(dcm_invalid_arg);
+        _shell_inv_arg_rsn(dcm_addr);
         retval = -2;
         goto _finally;
     }
@@ -1393,7 +1425,7 @@ static int _exec_step(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc > 1) {
         // We can accept 1.
-        cmd_help_display(&cmds_step_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_step_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     // Argument is the PC
@@ -1453,10 +1485,10 @@ void dcc_cpudisp() {
     SHPF(dcm_regwhdr);
     SHPF("\n%s\n%s\n", _regallwstr(), sbcind);
     nbase_set(nb);
-    if (_dasm_pc) {
+    if (_wcfg.dacpu.v.bval) {
         // The PC address should be disassembled, so disable the prompt
         dc_prompt_en(false);
-        _disasm(regpc_gv(), 1, _uc, NULL);
+        _disasm(regpc_gv(), 1, _wcfg.uc.v.bval, NULL);
     }
 }
 
@@ -1493,7 +1525,15 @@ const cmd_handler_entry_t cmds_dmcancel_entry = {
     6,
     ".dmcancel",
     0,
-    "Cancel an outstanding DM operation (for dev)"
+    "Cancel waiting state on an outstanding DM operation (for dev)"
+};
+
+const cmd_handler_entry_t cmds_dmdbgrmp_entry = {
+    _exec_dm_dbgrmp,
+    5,
+    ".dmmp",
+    "0|1",
+    "Use the DM's memory and ports for debug operations"
 };
 
 const cmd_handler_entry_t cmds_dmgetregs_entry = {
@@ -1538,8 +1578,16 @@ const cmd_handler_entry_t cmds_dec_entry = {
 
 const cmd_handler_entry_t cmds_dasm_entry = {
     _exec_dasm,
-    2,
+    3,
     "dasm",
+    "\001disasm",
+    0
+};
+
+const cmd_handler_entry_t cmds_disasm_entry = {
+    _exec_dasm,
+    3,
+    "disasm",
     "[loc [count]]",
     "Disassemble memory starting from 'loc' for 'count' statements. Dot (.) can be used\n\
   for the location to allow specifying count while continuing a disassembly.\n\
@@ -1649,19 +1697,19 @@ const cmd_handler_entry_t cmds_step_entry = {
 // Initialization/Start-Up Methods
 // ====================================================================
 
-
 void dccmds_modinit() {
     // Init our settings
-    dccfg_load(&_gconfig, 0);   // Load the GLOBAL Config
-    dccfg_load(&_oconfig, 1);   // Load the OVERRIDE Config
-    dccfg_overlay(&_wconfig, &_gconfig, &_oconfig);
-    _dasm_pc = true;    // Start with disassembling the PC on CPU display
-    _uc = true;         // Start with Upper Case enabled
+    dccfg_clr(&_wcfg);
+    dccfg_load(&_gcfg, 0);   // Load the GLOBAL Config
+    dccfg_load(&_scfg, 1);   // Load the SAVED Config
+    dccfg_overlay(&_wcfg, &_gcfg, &_scfg);
+    dc_uppercase(_wcfg.uc.v.bval);
     // Register our commands  
     //  DOT (.) Commands  
     cmd_register(&cmds_altscr_entry);
     cmd_register(&cmds_clrwait_entry);
     cmd_register(&cmds_dmcancel_entry);
+    cmd_register(&cmds_dmdbgrmp_entry);
     cmd_register(&cmds_dmgetregs_entry);
     cmd_register(&cmds_dmputregs_entry);
     cmd_register(&cmds_dmsim_entry);
@@ -1669,6 +1717,7 @@ void dccmds_modinit() {
     cmd_register(&cmds_cpu_entry);
     cmd_register(&cmds_dec_entry);
     cmd_register(&cmds_dasm_entry);
+    cmd_register(&cmds_disasm_entry);
     cmd_register(&cmds_dump_entry);
     cmd_register(&cmds_dumpa_entry);
     cmd_register(&cmds_examine_entry);

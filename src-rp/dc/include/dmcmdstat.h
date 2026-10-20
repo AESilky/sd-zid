@@ -60,10 +60,12 @@ typedef enum DM_CMDS_ {
     DCGOWREG        = 0xD1, //
     DCSTEP          = 0xD2, //
     DCSTEPWREG      = 0xD3, //
+    DCTGTMP         = 0xE0, // Use the Target's memory/ports for Get/Put operations (default)
+    DCDBGRMP        = 0xE1, // Use the Debugger's memory/ports for Get/Put operations
     DC_INITRDY      = DMNOP, // Status (not command) indicating we are ready
                              //  should be available for a read any time DM sends 80/81
                              //  The same value as NOP is used to make it easier to sync up
-    DC_DATARDUXPCTD = 0xEE  // There was an unexpected read from CTRL
+    DC_CTRLRDUNXPCTD = 0xEE  // There was an unexpected read from CTRL
 } dm_cmd_t;
 #define NOCMD ((dm_cmd_t)0)
 

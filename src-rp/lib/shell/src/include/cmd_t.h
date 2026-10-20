@@ -39,6 +39,8 @@ typedef enum _CMD_HELP_DISPLAY_FMT_ {
     HELP_DISP_LONG,
     /* Display the name and usage */
     HELP_DISP_USAGE,
+    /* Invalid Usage. Ring the bell then display usage (as `HELP_DISP_USAGE`) */
+    HELP_INVALID_USAGE
 } cmd_help_display_format_t;
 
 /**

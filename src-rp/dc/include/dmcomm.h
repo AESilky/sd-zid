@@ -61,6 +61,16 @@ extern void dmc_op_cancel();
 extern void dminit_status_set(uint8_t v);
 
 /**
+ * @brief Status of whether the target is the SBC (same board as debug monitor)
+ * @ingroup debugcontrol
+ * 
+ * This is updated with every status received from the Debug Monitor.
+ * 
+ * @return bool True if the target is the Single Board Computer (same board) 
+ */
+extern bool tgt_is_sbc();
+
+/**
  * @brief Initialize the module. Must be called once/only-once before module use.
  * @ingroup debugcontrol
  *

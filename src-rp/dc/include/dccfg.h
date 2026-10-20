@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <string.h>
 
 typedef struct cfgstr_s {
     size_t len;
@@ -40,9 +41,26 @@ typedef struct cfgsitem_s {
 } cfgsitem_t;
 
 typedef struct dccfg_s {
+    cfgitem_t dacpu;
     cfgitem_t nb;
     cfgitem_t uc;
 } dccfg_t;
+
+/**
+ * @brief Clear a configuration.
+ * @ingroup dccfg
+ * 
+ * @param cfg dccfg to clear 
+ */
+static inline void dccfg_clr(dccfg_t* cfg) {memset(cfg, 0, sizeof(dccfg_t));}
+
+/**
+ * @brief Copy a configuration from a source to a destination
+ *
+ * @param dest Destination
+ * @param src Source
+ */
+extern void dccfg_cpy(dccfg_t* dest, dccfg_t* src);
 
 /**
  * @brief Load the configuration for ID

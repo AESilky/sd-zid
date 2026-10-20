@@ -27,7 +27,7 @@ const cmd_handler_entry_t cmds_reboot_entry;
 static int _exec_bootldr(int argc, char** argv, const char* unparsed) {
     if (argc > 1) {
         // No arguments.
-        cmd_help_display(&cmds_bootldr_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_bootldr_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     shell_printf("Rebooting to LOADER...\n");
@@ -39,7 +39,7 @@ static int _exec_bootldr(int argc, char** argv, const char* unparsed) {
 static int _exec_reboot(int argc, char** argv, const char* unparsed) {
     if (argc > 1) {
         // No arguments.
-        cmd_help_display(&cmds_reboot_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmds_reboot_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     shell_printf("Rebooting...\n");

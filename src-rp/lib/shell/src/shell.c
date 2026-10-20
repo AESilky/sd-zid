@@ -393,6 +393,7 @@ int shell_printf(const char* format, ...) {
 int shell_printferr(const char* format, ...) {
     int pl = 0;
     if (_host_connected) {
+        putchar('\a');
         term_color_pair_t cs = shell_color_get();
         term_color_error();
         // if (_wraptext_on) {

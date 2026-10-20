@@ -96,3 +96,32 @@ pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, p
 
     return (smpocfg);
 }
+
+void pio_sm_preload_xy(PIO pio, uint sm, uint32_t x_val, uint32_t y_val) {
+    pio_sm_set_enabled(pio, sm, false);
+
+    pio_sm_clear_fifos(pio, sm);
+
+    // Prime the TX FIFO with both values back-to-back
+    pio_sm_put_blocking(pio, sm, x_val);
+    pio_sm_put_blocking(pio, sm, y_val);
+
+    // Ensure execution is at start and clock is running
+    pio_sm_restart(pio, sm);
+    pio_sm_set_enabled(pio, sm, true);
+
+    // Pull first value (x_val) from FIFO into OSR, then move to X
+    pio_sm_exec(pio, sm, pio_encode_pull(true, true)); // Blocking pull
+    pio_sm_exec(pio, sm, pio_encode_mov(pio_x, pio_osr));
+
+    // Pull second value (y_val) from FIFO into OSR, then move to Y
+    pio_sm_exec(pio, sm, pio_encode_pull(true, true)); // Blocking pull
+    pio_sm_exec(pio, sm, pio_encode_mov(pio_y, pio_osr));
+
+    // FREEZE THE STATE MACHINE
+    pio_sm_set_enabled(pio, sm, false);
+
+    // HARD RESET TO ZERO: Force the PC back to 0 and clear any partial execution states.
+    pio_sm_restart(pio, sm);
+    pio_sm_clkdiv_restart(pio, sm);
+}
