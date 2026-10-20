@@ -22,6 +22,8 @@ FIT1502		:= fit1502.exe
 FIT1504		:= fit1504.exe
 # C:/Wincupl/WinCupl/Fitters/fit1508.exe
 FIT1508		:= fit1508.exe
+# ATMISP **SECRET** command line switch to bypass the GUI! Note the '1' after the '.chn' file.
+# atmisp [filename].chn -1
 
 # 22Vxx, 16Vxx: Quine-McCluskey minimization
 CUPLOPTS		:= -kbm2nlxj
