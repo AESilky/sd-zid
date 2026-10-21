@@ -372,3 +372,15 @@ DCSTEP		.equ	0D2h
 ;
 DCSTEPWREG	.equ	0D3h
 
+; --------------
+; USE TARGET Mem/Port - Use the Target memory/ports for GET and PUT operations.
+; (the default)
+;
+DCTGTMP		.equ	0E0h
+
+; --------------
+; USE ZID Mem/Port - Use the ZID's memory/ports for GET and PUT operations.
+; 
+; This allows some diagnosing of the ZID's condition.
+;
+DCDBGRMP		.equ	0E1h

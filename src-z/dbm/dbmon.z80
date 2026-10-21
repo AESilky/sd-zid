@@ -489,7 +489,7 @@ _toutbyte:	ld	sp,dbmstk
 ;;	E: Byte input
 ;;**************
 tinbyte:	ld	a,(zflag)
-		bit	zf_usezid,a	; Use the ZID's memory?
+		bit	zf_usezid,a	; Use the ZID's ports?
 		jr	nz,inbytez	;  yes->
 		; set Single-Op
 		in	a,(BRDCTRL)
@@ -582,7 +582,7 @@ attn_clr_chk:	in	a,(SPRSTINFO)
 		in	a,(BRDCTRL)
 		set	ZNMI_EN_B,a	; Now we can allow NMI
 		out	(BRDCTRL),a
-idle:		jr	idle		; Wait for the DOC to ask us to do something
+idle:		halt		; Wait for the DOC to ask us to do something
 
 		.align	4
 doc_cmdrd:	ld	hl,is_sbc
@@ -721,6 +721,12 @@ doccmdprc:	; ZZZ - When we process more commands, maybe use a jump table?
 		cp	DCVER
 		jp	z,do_ver
 		;
+		cp	DCTGTMP
+		jp	z,use_tgt_mp
+		;
+		cp	DCDBGRMP
+		jp	z,use_zid_mp
+		;
 		;
 		; If the DOC just woke up, we might get its ready status
 		; in place of a command, so handle it by just saying
@@ -841,6 +847,17 @@ do_stepwreg:	; TARGET STEP with REGISTERS
 do_step:	; TARGET STEP (from the current PC)
 		jp	tgtstep
 
+		.align	2
+use_tgt_mp:	; Use TARGET Memory and Ports for Get/Put operations (the default)
+		ld	hl,zflag
+		res	zf_usezid,(hl)
+		jp	doc_opdone
+
+		.align	2
+use_zid_mp:	; Use ZID Memory and Ports for Get/Put operations (for troubleshooting)
+		ld	hl,zflag
+		set	zf_usezid,(hl)
+		jp	doc_opdone
 
 		.align	4
 	.stitle	"Debug Operations"
