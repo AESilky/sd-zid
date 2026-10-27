@@ -41,8 +41,6 @@ static volatile dm_cmd_t _dm_cmdstat;       // The command to send
 static volatile dm_cmd_t _dm_lastcmd;       // The command last sent (for debugging)
 static volatile dm_cmd_t _dm_cmd_ip;        // We are waiting for a command to be completed
 static volatile bool _dm_ctrlrd_expctd;     // We are expecting a DM read
-static volatile uint8_t _dminit_status_ret; // The status value to auto-send to DM when
-                                            // DMINIT is received (0 to not auto-send)
 
 
 // ====================================================================
@@ -52,7 +50,7 @@ static volatile uint8_t _dminit_status_ret; // The status value to auto-send to 
 static inline void _dm_cmd_prep(dm_cmd_t cmd, bool readexpected) {
     _dm_cmdstat = cmd;
     _dm_ctrlrd_expctd = readexpected;
-    _dm_cmd_ip = (cmd != DMNOP && cmd != DC_INITRDY ? cmd : NOCMD);
+    _dm_cmd_ip = (cmd != DMNOP);
 }
 
 
@@ -77,53 +75,9 @@ static void _handle_ctrl_read(cmt_msg_t* msg) {
             // It was from the DM, but we weren't expecting the read.
             // Just give it our 'We are ready' status
             // (something has to be written to release the host)
-            cbus_value_write(DC_INITRDY);
+            cbus_value_write(DMNOP);
             msg->abort = true; // don't run any additional handlers
         }
-    }
-}
-
-static void _handle_ctrl_write(cmt_msg_t* msg) {
-    // The host performed a WRITE to the CTRL port
-    uint8_t v = msg->data.value8u;
-    bool post_cmddone = false;
-    if (v & DM_CMDSTAT_IND) {
-        // Debug Monitor sent a status
-        _dm_alive = true;
-        _tgt_is_sbc = (v & DMSTATSBC_M);
-        dm_stat_val_t dms = (dm_stat_val_t)(v & ~DMSTATSBC_M);
-        if (dms == DMINIT) {
-            // It will be doing a read of our status, prep to return
-            // our status if non-zero
-            if (_dminit_status_ret) {
-                _dm_cmd_prep(_dminit_status_ret, true);
-            }
-        }
-        else if (dms == DMOPDONE) {
-            // For Operation Done, we post Command Done in addition to status.
-            post_cmddone = true;
-        }
-        else if (dms == DMBRT || dms == DMBRKHIT || dms == DMSSDONE) {
-            // For `Be Right There` (going from Target to Debug)
-            // Break Hit, or Single-Step Done,
-            // if there isn't a command waiting, temp set NOP as command.
-            if (!_dm_ctrlrd_expctd) {
-                _dm_cmd_prep(DMNOP, true);
-            }
-        }
-        // Post the message with the status
-        cmt_msg_t postmsg;
-        postmsg.data.value8u = v;
-        cmt_msg_init(&postmsg, MSG_DM_STATUSRCVD);
-        postAPPMsg(&postmsg);
-        if (post_cmddone) {
-            postmsg.data.value8u = _dm_lastcmd;
-            cmt_msg_init(&postmsg, MSG_DM_CMDDONE);
-            postAPPMsg(&postmsg);
-        }
-    }
-    else {
-        shell_printferr("CTRL Port WR: %02X\n", v);
     }
 }
 
@@ -176,13 +130,13 @@ static void _handle_dmc_cmd_req(cmt_msg_t* msg) {
 static void _handle_dbus_read_unexptd(cmt_msg_t* msg) {
     // Handled mostly for debugging
     // The host performed a READ from DATA when we weren't expecting it
-    shell_printferr("Unexpected Host DATA RD (value returned): %02X\n", msg->data.value8u);
+    shell_printferr("Unexpected: %u Host DATA RD(s)\n", msg->data.value32u);
 }
 
 static void _handle_dbus_write_unexptd(cmt_msg_t* msg) {
     // Handled mostly for debugging
     // The host performed a WRITE to DATA when we weren't expecting it
-    shell_printferr("Unexpected Host DATA WR: %02X\n", msg->data.value8u);
+    shell_printferr("Unexpected: %u Host DATA WR(s)\n", msg->data.value32u);
 }
 
 static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
@@ -219,7 +173,7 @@ static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
  *
  * @return True if we supplied a value (no more processing required)
  */
-ctrl_hdlr_action_t _ctrl_rd_hdlr(uint8_t* d) {
+static ctrl_hdlr_action_t _ctrl_rd_hdlr(uint8_t* d) {
     ctrl_hdlr_action_t handled = CHA_NOT_HANDLED;
     cmt_msg_t attn_off;
     cmt_exec_init(&attn_off, _handle_ctrlrd_attnoff);
@@ -232,23 +186,39 @@ ctrl_hdlr_action_t _ctrl_rd_hdlr(uint8_t* d) {
         _dm_cmdstat = DMNOP;
         _dm_ctrlrd_expctd = false;
     }
-    else {
-        // We aren't expecting a read, but see if the last write was
-        // the DM Initialized status value
-        uint8_t lcw = dbus_ctrl_last_write();
-         // It's not a guarantee, but see if the last CTRL WR was from the DM
-        if (lcw & DM_CMDSTAT_IND) {
-            // It was... See if it was their 'initialized' status
-            lcw &= ~DMSTATSBC_M;
-            if (DMINIT == lcw) {
-                *d = _dminit_status_ret;
-                handled = CHA_VALUE_SET;
+    return handled;
+}
+
+static ctrl_hdlr_action_t _ctrl_wr_hdlr(uint8_t v) {
+    // The host performed a WRITE to the CTRL port
+    ctrl_hdlr_action_t handled = CHA_NOT_HANDLED;
+    bool post_cmddone = false;
+    if (v & DM_CMDSTAT_IND) {
+        // Debug Monitor sent a status
+        handled = CHA_WRITE_HANDLED;
+        _dm_alive = true;
+        _tgt_is_sbc = (v & DMSTATSBC_M);
+        dm_stat_val_t dms = (dm_stat_val_t)(v & ~DMSTATSBC_M);
+        if (dms == DMOPDONE) {
+            // For Operation Done, we post Command Done in addition to status.
+            post_cmddone = true;
+        }
+        else if (dms == DMBRKHIT || dms == DMSSDONE) {
+            // For Break Hit or Single-Step Done,
+            // if there isn't a command waiting, temp set NOP as command.
+            if (!_dm_ctrlrd_expctd) {
+                _dm_cmd_prep(DMNOP, true);
             }
-            else {
-                *d = _dminit_status_ret;
-                handled = CHA_VALUE_SET;
-                _dm_lastcmd = DC_CTRLRDUNXPCTD;
-            }
+        }
+        // Post the message with the status
+        cmt_msg_t postmsg;
+        postmsg.data.value8u = v;
+        cmt_msg_init(&postmsg, MSG_DM_STATUSRCVD);
+        postAPPMsg(&postmsg);
+        if (post_cmddone) {
+            postmsg.data.value8u = _dm_lastcmd;
+            cmt_msg_init(&postmsg, MSG_DM_CMDDONE);
+            postAPPMsg(&postmsg);
         }
     }
     return handled;
@@ -279,11 +249,6 @@ void dmc_op_cancel() {
     _dm_cmd_prep(DMNOP, false);
 }
 
-void dminit_status_set(uint8_t v) {
-    _dminit_status_ret = v;
-    dbus_ctrl_status_set(v);
-}
-
 bool tgt_is_sbc() {
     return _tgt_is_sbc;
 }
@@ -298,20 +263,17 @@ int dmcomm_modinit() {
     }
     _modinit_called = true;
 
-    dminit_status_set(DC_INITRDY);
-    _dm_cmdstat = DC_INITRDY;
-    _dm_ctrlrd_expctd = true;   // Be ready for the host to read a command - send READY/NOP
-
     cmt_msg_hdlr_add(MSG_DBUS_CTRL_READ, _handle_ctrl_read);
-    cmt_msg_hdlr_add(MSG_DBUS_CTRL_WRITE, _handle_ctrl_write);
     cmt_msg_hdlr_add(MSG_DBUS_DREAD_UNEXPECTED, _handle_dbus_read_unexptd);
     cmt_msg_hdlr_add(MSG_DBUS_DREAD_XFER_DONE, _handle_dbus_xfer_done);
     cmt_msg_hdlr_add(MSG_DBUS_DWRITE_UNEXPECTED, _handle_dbus_write_unexptd);
     cmt_msg_hdlr_add(MSG_DBUS_DWRITE_XFER_DONE, _handle_dbus_xfer_done);
     cmt_msg_hdlr_add(MSG_DMC_CMD_REQ, _handle_dmc_cmd_req);
 
-    // Set our CTRL handler
-    dbus_ctrl_hdlr_set(_ctrl_rd_hdlr);
+    // Set our CTRL handlers
+    dbus_ctrl_rd_hdlr_set(_ctrl_rd_hdlr);
+    dbus_ctrl_wr_hdlr_set(_ctrl_wr_hdlr);
+
     // Set a default value for Data Bus READ operations.
     dbus_data_defval_set(0);
 

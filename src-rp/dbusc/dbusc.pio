@@ -34,8 +34,9 @@
 ; Control Bus - Monitor Module Select and Read
 ;
 ; For setting the Data Pin Directions
-; IX is initialized with 0000 0000 0000 0000 0000 0011 1111 1100 - 0x000003FC by the CPU
-; IY is initialized with 0x00000000 by the CPU
+; IX is initialized with 0000 0000 0000 0000 0010 0011 1111 1100 - 0x000023FC
+;       by the CPU (DBUS and WAIT as outputs)
+; IY is initialized with 0x00002000 by the CPU (all inputs except WAIT)
 ;
 ; 1. Waits for Module Select and Controls the WAIT- signal.
 ; 2. Sets the DATA Bus direction and triggers the Ctrl/Data state machine.
@@ -45,9 +46,9 @@
 ;
 PUBLIC start:
 .wrap_target
-    mov     osr,y                   side WAIT_ON 
-    out     pindirs,32                            [7]; Data Bus to input, WAIT on
-    wait    MSEL_ON gpio MSEL_GPIO                [7]; Wait for Module Select on
+    mov     osr,y                                   [7] 
+    out     pindirs,32                              [7]; Data Bus to input
+    wait    MSEL_ON gpio MSEL_GPIO  side WAIT_ON    [7]; Wait for Module Select, WAIT on
     // We are selected
     ; Look for RD/WR
     jmp     pin,cd_start                ; RD High is Host writing, DBUS IN is correct 
@@ -72,8 +73,8 @@ PUBLIC start:
 wrap_target:
     wait    THEN_CLR irq SM_CTRLDATA
     ; Check the ADDR pin
-    jmp     pin,data_op     ; HIGH - A1 (DATA)
-    irq     SM_CTRLOP       ; else LOW - A0 (CTRL)
+    jmp     pin,data_op     [7] ; HIGH - A1 (DATA)
+    irq     SM_CTRLOP           ; else LOW - A0 (CTRL)
     jmp     start
 data_op:
     irq     SM_DATAOP
@@ -96,7 +97,7 @@ PUBLIC start:
 data_out:
     ; Host is reading, the CPU supplies data
     irq     wait PIO_CTRLDATA_NEEDED    ; tell CPU we need data
-    out     pins,8                      ; put it on the bus
+    out     pins,8                  [7] ; put it on the bus
     jmp     done
 data_in:
     in      pins,8                      ; read data from the bus (auto-push)
@@ -120,12 +121,13 @@ PUBLIC start:
     ; Look at the READ pin.
     jmp     pin,data_in                 ; If RD- is 1 the data xfer is in (we get the data)
 data_out:
-    ; Host is reading. If expected DMA supplies data. If unexpected (no data ready) interrupt the CPU
-    mov     y,status                    ; get the TXFIFO EMPTY status
-    jmp     !y,drdy                     ; there is data ready =>
-    irq     wait PIO_DATADATA_NEEDED    ; tell CPU we need data
-drdy:
-    out     pins,8
+    ; Host is reading. 
+    ; If expected DMA supplies data.
+    ;  We set this interrupt, but it isn't enabled to the CPU if the DMA
+    ;  is expected to supply the data.
+    irq     nowait PIO_DATADATA_NEEDED  ; let the CPU know we are pulling data
+    out     pins,8                  [7] ; if the DMA isn't supplying data this blocks
+    irq     clear PIO_DATADATA_NEEDED   ; we got (and sent) the data
     jmp     done
 data_in:
     in      pins,8                      ; read data from the bus (auto-push)

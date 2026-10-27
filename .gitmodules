@@ -1,3 +1,6 @@
 [submodule "src-rp/lib/Csmap"]
 	path = src-rp/lib/Csmap
 	url = git@github.com:AESilky/f-Csmap.git
+[submodule "src-rp/lib/shell"]
+	path = src-rp/lib/shell
+	url = git@github.com:AESilky/sl-pshell.git

@@ -22,12 +22,13 @@ extern "C" {
 #include <stdint.h>
 
 typedef enum ctrl_hdlr_action_ {
-    CHA_NOT_HANDLED = 0,    // The handler didn't handle this READ
-    CHA_VALUE_SET,          // Handler supplied a value
-    CHA_VALUE_TBD,          // Handler will write a value later
+    CHA_NOT_HANDLED = 0,    // The handler didn't handle this OPERATION
+    CHA_VALUE_SET,          // Handler supplied a value for the READ
+    CHA_VALUE_TBD,          // Handler will write a value for the READ later
+    CHA_WRITE_HANDLED,      // Handler has processed the WRITE value
 } ctrl_hdlr_action_t;
 /**
- * @brief Function prototype for a CTRL register read access IRQ handler.
+ * @brief Function prototype for a CTRL register READ access IRQ handler.
  * @ingroup databus
  * 
  * The handler is called during a CTRL READ operation (the Host is reading
@@ -42,6 +43,23 @@ typedef enum ctrl_hdlr_action_ {
  * @return Handler Action
  */
 typedef ctrl_hdlr_action_t (*ctrlrd_irq_fn)(uint8_t* d);
+
+/**
+ * @brief Function prototype for a CTRL register WRITE access IRQ handler.
+ * @ingroup databus
+ *
+ * The handler is called during a CTRL READ operation (the Host is reading
+ * the CTRL Port). If `CHA_NOT_HANDLED` is returned the default CTRL STATUS
+ * value is put on the bus for the host. If `CHA_VALUE_SET` is returned the
+ * value set in `d` is put on the bus. If `CHA_VALUE_TBD` is returned the
+ * operation is left in process (the Host is held by WAIT). In this final
+ * case a call must be made to `cbus_value_write` to provide a value and
+ * release the Host.
+ *
+ * @param v The data value written to the CTRL port
+ * @return Handler Action
+ */
+typedef ctrl_hdlr_action_t(*ctrlwr_irq_fn)(uint8_t v);
 
 /**
  * @brief Get the state of the ATTN bit
@@ -99,17 +117,30 @@ extern void dbus_cancel_ops();
 extern void dbus_clear_wait();
 
 /**
- * @brief Set the handler for the Control Register access interrupt.
+ * @brief Set the handler for the Control Register READ access interrupt.
  * @ingroup databus
  * 
- * This method will be called when the host accesses the Control Register
- * (either RD or WR). It is the responsibility of this method to cause the
- * Control Register access mechanism to be reset. Until it is reset, no other
- * host initiated operations are possible.
+ * This method will be called when the host READs from the CTRL Register.
+ * It is the responsibility of this method to provide a value for the read.
+ * 
+ * This is called from within an IRQ Handler, so it should be QUICK!
  * 
  * @param hdlr 
  */
-extern void dbus_ctrl_hdlr_set(ctrlrd_irq_fn hdlr);
+extern void dbus_ctrl_rd_hdlr_set(ctrlrd_irq_fn hdlr);
+
+/**
+ * @brief Set the handler for the Control Register WRITE access interrupt.
+ * @ingroup databus
+ *
+ * This method will be called when the host WRITEs to the CTRL Register.
+ * The value written is provided as the parameter.
+ * 
+ * This is called from within an IRQ Handler, so it should be QUICK!
+ *
+ * @param hdlr The handler
+ */
+extern void dbus_ctrl_wr_hdlr_set(ctrlwr_irq_fn hdlr);
 
 /**
  * @brief The last value written to the CTRL port
@@ -122,15 +153,18 @@ extern void dbus_ctrl_hdlr_set(ctrlrd_irq_fn hdlr);
 extern uint8_t dbus_ctrl_last_write();
 
 /**
- * @brief Set the value returned from a CTRL port read.
+ * @brief Enable/disable the DBUS PIO-SMs that handle receiving and sending
+ * CTRL and DATA data.
  * @ingroup databus
+ *
+ * This is a master enable for the Data Bus processing. If the DBUS processing
+ * is disabled, no data can be sent or received through either the CTRL or
+ * DATA ports. Calls to methods that enable discrete operation return immediately
+ * (the operation is not enabled).
  * 
- * This value is returned when the host reads from the control port
- * and a 'control read' handler isn't set or the operation isn't handled.
- * 
- * @param v Value
+ * @param enable True to enable
  */
-extern void dbus_ctrl_status_set(uint8_t v);
+extern void dbus_enable(bool enable);
 
 /**
  * @brief Get the value of the last unexpected WRITE operation by the host.
@@ -231,18 +265,6 @@ extern void dbus_start_dataop();
  * @param v Value to return
  */
 extern void dbus_data_defval_set(uint8_t v);
-
-/**
- * @brief Release the MSEL detection PIO-SM from its held state.
- * @ingroup databus
- * 
- * This must be called to allow additional access to the data bus by the host
- * after a MSG_DBUS_CTRL_ACCESS has been posted. This will typically be done
- * after data has been read from the bus or put on the bus (to respond to the
- * CTRL port access) and data has been set up for a read from or write to the
- * data port (in the case of commands issued to CTRL).
- */
-extern void dbus_release_msel();
 
 /**
  * @brief Print the status of the four PIO State Machines that control the Data Bus.

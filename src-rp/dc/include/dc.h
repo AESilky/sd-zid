@@ -37,6 +37,15 @@ typedef struct DM_MP_OPBUF {
 } dc_mp_opbuf_t;
 
 /**
+ * @brief Get the Debug Controller Banner.
+ * @ingroup debugcontrol
+ * 
+ * 
+ * @return const char* The banner
+ */
+extern const char* dc_banner();
+
+/**
  * @brief Get the Memory/Port Operation Buffer.
  * @ingroup debugcontrol
  * 

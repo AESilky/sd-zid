@@ -97,6 +97,15 @@ pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, p
     return (smpocfg);
 }
 
+bool piosm_drain_rxfifo(pio_sm_pocfg smpocfg) {
+    int maxrds = 9;
+    while (maxrds && !pio_sm_is_rx_fifo_empty(smpocfg.pio, smpocfg.sm)) {
+        (void)pio_sm_get(smpocfg.pio, smpocfg.sm); // Read and discard value
+        maxrds--;
+    }
+    return (pio_sm_is_rx_fifo_empty(smpocfg.pio, smpocfg.sm));
+}
+
 void pio_sm_preload_xy(PIO pio, uint sm, uint32_t x_val, uint32_t y_val) {
     pio_sm_set_enabled(pio, sm, false);
 

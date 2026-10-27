@@ -33,9 +33,9 @@
 
 static __pio_const uint16_t db_modsel_program_instructions[] = {
             //     .wrap_target
-    0xb0e2, //  0: mov    osr, y          side 0
+    0xa7e2, //  0: mov    osr, y                 [7]
     0x6780, //  1: out    pindirs, 32            [7]
-    0x270c, //  2: wait   0 gpio, 12             [7]
+    0x370c, //  2: wait   0 gpio, 12      side 0 [7]
     0x00c6, //  3: jmp    pin, 6
     0xa0e1, //  4: mov    osr, x
     0x6080, //  5: out    pindirs, 32
@@ -77,7 +77,7 @@ static inline pio_sm_config db_modsel_program_get_default_config(uint offset) {
 static __pio_const uint16_t db_ctrldata_program_instructions[] = {
             //     .wrap_target
     0x20c5, //  0: wait   1 irq, 5
-    0x00c4, //  1: jmp    pin, 4
+    0x07c4, //  1: jmp    pin, 4                 [7]
     0xc006, //  2: irq    nowait 6
     0x0000, //  3: jmp    0
     0xc007, //  4: irq    nowait 7
@@ -117,7 +117,7 @@ static __pio_const uint16_t db_ctrl_port_program_instructions[] = {
     0x20c6, //  0: wait   1 irq, 6
     0x00c5, //  1: jmp    pin, 5
     0xc020, //  2: irq    wait 0
-    0x6008, //  3: out    pins, 8
+    0x6708, //  3: out    pins, 8                [7]
     0x0007, //  4: jmp    7
     0x4008, //  5: in     pins, 8
     0xc021, //  6: irq    wait 1
@@ -148,7 +148,7 @@ static inline pio_sm_config db_ctrl_port_program_get_default_config(uint offset)
 // ------------ //
 
 #define db_data_port_wrap_target 0
-#define db_data_port_wrap 8
+#define db_data_port_wrap 7
 #define db_data_port_pio_version 0
 
 #define db_data_port_offset_start 0u
@@ -156,21 +156,20 @@ static inline pio_sm_config db_ctrl_port_program_get_default_config(uint offset)
 static __pio_const uint16_t db_data_port_program_instructions[] = {
             //     .wrap_target
     0x20c7, //  0: wait   1 irq, 7
-    0x00c7, //  1: jmp    pin, 7
-    0xa045, //  2: mov    y, status
-    0x0065, //  3: jmp    !y, 5
-    0xc022, //  4: irq    wait 2
-    0x6008, //  5: out    pins, 8
-    0x0008, //  6: jmp    8
-    0x4008, //  7: in     pins, 8
-    0xc004, //  8: irq    nowait 4
+    0x00c6, //  1: jmp    pin, 6
+    0xc002, //  2: irq    nowait 2
+    0x6708, //  3: out    pins, 8                [7]
+    0xc042, //  4: irq    clear 2
+    0x0007, //  5: jmp    7
+    0x4008, //  6: in     pins, 8
+    0xc004, //  7: irq    nowait 4
             //     .wrap
 };
 
 #if !PICO_NO_HARDWARE
 static __pio_const struct pio_program db_data_port_program = {
     .instructions = db_data_port_program_instructions,
-    .length = 9,
+    .length = 8,
     .origin = -1,
     .pio_version = db_data_port_pio_version,
 #if PICO_PIO_VERSION > 0

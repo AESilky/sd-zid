@@ -19,13 +19,8 @@ typedef enum DM_STATUS_VAL_ {
     DMBRKHIT    = 0x8C,     // Breakpoint hit
     DMTGTGO     = 0x8E,     // DM transitioning to Target Mode
                             //  (don't interrupt for a bit)
-    DMBRT       = 0x90,     // Be Right There. Sent when ATTN requested
-                            //  indicating that DM is transitioning
-                            //  from Target to Debug and needs ATTN
-                            //  cleared to continue. DM will follow
-                            //  with DMOKCMDRD once the Target state
-                            //  has been taken care of.
-    DMRSTEXEC   = 0xC2,     //  DM executed a RST instruction (ERROR)
+    DMTESTDONE  = 0xB0,     // DM Auto-Test complete
+    DMRSTEXEC   = 0xBE,     // DM executed a RST instruction (ERROR)
 } dm_stat_val_t;
 #define DMSTATSBC_M 0x01    //  Bit added to status if target is SBC
 
@@ -33,39 +28,40 @@ typedef enum DM_STATUS_VAL_ {
 /**
  * The following are the Debug Monitor (DM) commands. The DM reads these from
  * the CTRL register after it has sent a status.
- * Note: The names match those used in the DM assembler code. Refer to the
+ * Note1: The names match those used in the DM assembler code. Refer to the
  *  DM assembler code for the full descriptions (not repeated here).
- * Also Note: DM command values always have Bit-7 set
+ * 
+ * Note2: DM command values always have Bit-7 set (80-FF)
+ *  Bit-7 clear and Bit-6 set is used for SBC function status (40-7F).
  */
 typedef enum DM_CMDS_ {
-    DMNOP           = 0xFA,
+    DMNOP           = 0x80,
     DCVER           = 0x81, //
+    DCTGTMP         = 0x82, // Use the Target's memory/ports for Get/Put operations (default)
+    DCDBGRMP        = 0x83, // Use the Debugger's memory/ports for Get/Put operations
+    //
+    DCATEST         = 0x84, // Auto Test
+    //
+    DCPBRKPNTS      = 0x85, // Breakpoint Configure
+    DCBRKPEN        = 0x86, // Breakpoint Enable/Disable
+    //
     DCGREGALL       = 0x88,	// 
     DCPREGALL       = 0x89,	// 
     DCGIEDV         = 0x8A,	// 
     DCPIEDV         = 0x8B,	// 
-    DCGREG          = 0x90,	//  10..1F
-    DCPREG          = 0xA0,	//  20..2F
-    DCGRP           = 0xB0,	//  30..33
-    DCPRP           = 0xB4,	//  34..37
-    DCGM            = 0xBA,	// Get mem byte(s)
-    DCPM            = 0xBB,	// Put mem byte(s)
-    DCGP            = 0xBC,	// Get port byte(s)
-    DCPP            = 0xBD,	// Put port byte(s)
-    DCGBRKCNT       = 0xC0,	// 
-    DCPBRKS1        = 0xC1, //
-    DCPBRK2NA       = 0xC2,	// 42..4E Break - 2..Break - 14
-    DCPBRK2NO       = 0xCF,	// 
-    DCGO            = 0xD0, //
-    DCGOWREG        = 0xD1, //
-    DCSTEP          = 0xD2, //
-    DCSTEPWREG      = 0xD3, //
-    DCTGTMP         = 0xE0, // Use the Target's memory/ports for Get/Put operations (default)
-    DCDBGRMP        = 0xE1, // Use the Debugger's memory/ports for Get/Put operations
-    DC_INITRDY      = DMNOP, // Status (not command) indicating we are ready
-                             //  should be available for a read any time DM sends 80/81
-                             //  The same value as NOP is used to make it easier to sync up
-    DC_CTRLRDUNXPCTD = 0xEE  // There was an unexpected read from CTRL
+    DCGREG          = 0x90,	//  90..9F
+    DCPREG          = 0xA0,	//  A0..AF
+    DCGRP           = 0xB0,	//  B0..B3
+    DCPRP           = 0xB4,	//  B4..B7
+    DCGM            = 0xB8,	// Get mem byte(s)
+    DCPM            = 0xB9,	// Put mem byte(s)
+    DCGP            = 0xBA,	// Get port byte(s)
+    DCPP            = 0xBB,	// Put port byte(s)
+    //
+    DCGO            = 0xBC, // Target GO
+    DCGOWREG        = 0xBD, // Go w/Registers
+    DCSTEP          = 0xBE, // STEP
+    DCSTEPWREG      = 0xBF, // Step w/Registers
 } dm_cmd_t;
 #define NOCMD ((dm_cmd_t)0)
 

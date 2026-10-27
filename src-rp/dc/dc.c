@@ -36,8 +36,9 @@
 // Local Constants and types
 // ====================================================================
 
-#define DMSIM_STAT1DLY 50   // Delay (ms) before simulated status 1
-#define DMSIM_STATDLYINC 5  // Delay increment for additional status
+#define DM_VERSION_LEN 16   // Buffer len to hold: YYYYMMDDvNNN.nn and terminating null
+#define DMSIM_STAT1DLY 30   // Delay (ms) before simulated status 1
+#define DMSIM_STATDLYINC 2  // Delay increment for additional status
 
 // ====================================================================
 // Data Section
@@ -54,13 +55,14 @@ static msg_handler_fn _dm_buf_rcv_cmplt;  //  buffer receive operation complete 
 static uint8_t _dm_sim_bval;            //  simulation byte value
 static uint16_t _dm_sim_wval;           //  simulation word value
 static dm_stat_val_t _dm_status;        // The Debug Monitor's status
+static volatile char _dm_ver[DM_VERSION_LEN];    // DM version
 dc_mp_opbuf_t _dm_mp_opbuf;             // DM memory/port operation buffer
 
 static dcm_t _mode;                     // The current mode (DEBUG/TARGET/ERROR)
 
 static bool _tgt_is_sbc;                // The target is the SBC (same board)
 
-static char _promptbuf[10];             // Buffer to build the prompt into
+static char _promptbuf[128];            // Buffer to build the prompt into
 static bool _prompten;                  // Flag to temporarily disable the prompt
 
 static bool _uc;                        // Upper case
@@ -92,7 +94,15 @@ static void _fmt_word(char* buf, uint16_t v);
 // Run-After/Delay/Sleep Methods
 // ====================================================================
 
+static void _dm_ver_cmplt(cmt_msg_t* msg) {
+    // The version has been received
+    _dm_ver[DM_VERSION_LEN - 1] = 0;
+}
 
+static void _handle_dm_version(void* d) {
+    _dc_op_complete = _dm_ver_cmplt;
+    _dm_cmd_send(DCVER, NULL, 0, NULL, 0, (volatile uint8_t*)_dm_ver, DM_VERSION_LEN - 1);
+}
 
 // ====================================================================
 // Message Handler Methods
@@ -147,6 +157,7 @@ static void _handle_dm_statusrcvd(cmt_msg_t* msg) {
     dm_stat_val_t v = (dm_stat_val_t)msg->data.value8u;
     if (v & DM_CMDSTAT_IND) {
         // Debug Monitor sent a status
+        _mode = DCM_DEBUG;
         _tgt_is_sbc = ((v & DMSTATSBC_M) != 0);
         dm_stat_val_t dms = (dm_stat_val_t)(v & ~DMSTATSBC_M);
         _dm_status = dms;
@@ -155,23 +166,15 @@ static void _handle_dm_statusrcvd(cmt_msg_t* msg) {
             // We set a value to auto-return by the DMCOMM module for this.
             // so nothing needed here
             break;
-        case DMBRT:
-            // DM is responding to our request, saying that it will
-            // `Be Right There...`
-            _mode = DCM_DEBUG;
-            break;
         case DMOKCMDRD:
             // DM is responding to us, saying it is ready for a command
-            _mode = DCM_DEBUG;
             break;
         case DMOPDONE:
             // DM is responding to us, saying it finished the command
-            _mode = DCM_DEBUG;
             // We also get a Command Done message.
             break;
         case DMSSDONE:
             // DM Single-Step (requested) done
-            _mode = DCM_DEBUG;
             if (_dm_simulate) {
                 // Simulate a step by incrementing the PC
                 zregWv_t pc = regpc_gv();
@@ -183,7 +186,6 @@ static void _handle_dm_statusrcvd(cmt_msg_t* msg) {
             break;
         case DMBRKHIT:
             // DM hit a breakpoint
-            _mode = DCM_DEBUG;
             // Get ALL the registers and let them know a break was hit
             dm_getallreg(_handle_dm_brkhit);
             break;
@@ -266,12 +268,6 @@ static void _dm_cmd_send(
         _dm_sim_wval--;
         cmt_msg_init(&msg, MSG_DM_STATUSRCVD);
         if (cmd != DCGO && cmd != DCGOWREG && cmd != DCSTEP && cmd != DCSTEPWREG) {
-            // If the current mode is TARGET and the command isn't GO/STEP, say BRT
-            if (_mode == DCM_TARGET) {
-                msg.data.value8u = DMBRT;
-                schedule_core1_msg_in_ms(delay, &msg);
-                delay += DMSIM_STATDLYINC;
-            }
             msg.data.value8u = DMOKCMDRD;
             schedule_core1_msg_in_ms(delay, &msg);
             delay += DMSIM_STATDLYINC;
@@ -359,6 +355,14 @@ static const char* _prompt_prov() {
 // ====================================================================
 // Public Methods
 // ====================================================================
+
+const char* dc_banner() {
+    // The banner is intended to be temporary, so we use the Prompt Buffer to build it.
+    strcpy(_promptbuf, dcm_banner);
+    strcat(_promptbuf, (const char*)_dm_ver);
+    strcat(_promptbuf, "\n\n");
+    return _promptbuf;
+}
 
 dc_mp_opbuf_t* dc_mp_opbuf_get() {
     return &_dm_mp_opbuf;
@@ -506,7 +510,7 @@ int dc_modinit() {
     retval = num_modinit();
     if (retval != 0) goto _fail;
 
-    // Clear our Z80 registers
+    // "Clear" our Z80 registers (non-zero values for debugging)
     regied_sv(0xFF); // F when pushed with I (using AF)
     regi_sv(0x55);   // Interrupt
     //
@@ -538,6 +542,8 @@ int dc_modinit() {
         _dm_mp_opbuf.buf[i] = lowByte(i);
     }
 
+    memset((void*)_dm_ver, 0, DM_VERSION_LEN);
+    cmt_run_after_ms(500, _handle_dm_version, NULL);
     _mode = DCM_DEBUG;
     //
     cmt_msg_hdlr_add(MSG_DM_CMDDONE, _handle_dm_cmddone);
@@ -545,8 +551,11 @@ int dc_modinit() {
     _prompten = true;
     shell_set_promptprov(_prompt_prov);
     _uc = true;     // Start with Upper Case enabled
-    dminit_status_set(DC_INITRDY);      // Status to be returned when DM initializes
     
+    // Now we are ready to work with the Debug Monitor (Z80). Go ahead and start
+    // the DBUS.
+    dbus_enable(true);
+
     return retval;
 
 _fail:
