@@ -38,7 +38,7 @@
 
 #define DM_VERSION_LEN 16   // Buffer len to hold: YYYYMMDDvNNN.nn and terminating null
 #define DMSIM_STAT1DLY 30   // Delay (ms) before simulated status 1
-#define DMSIM_STATDLYINC 2  // Delay increment for additional status
+#define DMSIM_STATnDLY  2   // Delay (ms) before simulated status 1
 
 // ====================================================================
 // Data Section
@@ -47,18 +47,15 @@
 static volatile bool _modinit_called;
 
 
-static msg_handler_fn _dc_op_complete;  // Handler to run when operation is complete
-
-static dm_cmd_t _dm_cmd;                // The command last sent
-static bool _dm_simulate;               // Simulate DM activity to allow stand-alone dev
-static msg_handler_fn _dm_buf_rcv_cmplt;  //  buffer receive operation complete method
+static dmc_cmd_op_t _dm_op_inproc;      // The DM operation requested/in-process
+static bool _dm_sim;                    // Simulate DM activity to allow stand-alone dev
 static uint8_t _dm_sim_bval;            //  simulation byte value
 static uint16_t _dm_sim_wval;           //  simulation word value
 static dm_stat_val_t _dm_status;        // The Debug Monitor's status
 static volatile char _dm_ver[DM_VERSION_LEN];    // DM version
-dc_mp_opbuf_t _dm_mp_opbuf;             // DM memory/port operation buffer
+dm_mp_opbuf_t _dm_mp_opbuf;             // DM memory/port operation buffer
 
-static dcm_t _mode;                     // The current mode (DEBUG/TARGET/ERROR)
+static dmmode_t _mode;                  // The current mode (UNKNOWN/DEBUG/TARGET/ERROR)
 
 static bool _tgt_is_sbc;                // The target is the SBC (same board)
 
@@ -71,8 +68,9 @@ static bool _uc;                        // Upper case
 // Local/Private Method Declarations
 // ====================================================================
 
-static void _dm_cmd_send(dm_cmd_t cmd, volatile uint8_t* send_buf1, int send_cnt1, volatile uint8_t* send_buf2, int send_cnt2, volatile uint8_t* recv_buf, int recv_cnt);
+static bool _dm_cmd_request(dm_cmd_t cmd, volatile uint8_t* send_buf1, int send_cnt1, volatile uint8_t* send_buf2, int send_cnt2, volatile uint8_t* recv_buf, int recv_cnt, msg_handler_fn on_cmplt);
 static void _dm_fatal_error();
+static void _dm_sim_update_buf();
 static void _dm_target_running();
 
 static void _handle_dm_ssdone(cmt_msg_t* msg);
@@ -100,8 +98,7 @@ static void _dm_ver_cmplt(cmt_msg_t* msg) {
 }
 
 static void _handle_dm_version(void* d) {
-    _dc_op_complete = _dm_ver_cmplt;
-    _dm_cmd_send(DCVER, NULL, 0, NULL, 0, (volatile uint8_t*)_dm_ver, DM_VERSION_LEN - 1);
+    _dm_cmd_request(DMVER, NULL, 0, NULL, 0, (volatile uint8_t*)_dm_ver, DM_VERSION_LEN - 1, _dm_ver_cmplt);
 }
 
 // ====================================================================
@@ -115,41 +112,13 @@ static void _handle_dm_brkhit(cmt_msg_t* msg) {
 }
 
 static void _handle_dm_cmddone(cmt_msg_t* msg) {
-    if (_dc_op_complete) {
-        cmt_msg_t msgoc;
-        msgoc.data.value8u = msg->data.value8u;
-        cmt_exec_init(&msgoc, _dc_op_complete);
-        postAPPMsg(&msgoc);
-        _dc_op_complete = NULL;
-    }
-    // Print DONE ???
-}
-
-static void _handle_dm_mget_done(cmt_msg_t* msg) {
-    // Make sure we have a completion routine, otherwise nothing to do
-    if (_dm_buf_rcv_cmplt) {
-        cmt_msg_t msgcmplt;
-        if (_dm_simulate) {
-            *_dm_mp_opbuf.buf = _dm_sim_bval;
-        }
-        msgcmplt.data.bptr = (uint8_t*)&_dm_mp_opbuf.buf;
-        cmt_exec_init(&msgcmplt, _dm_buf_rcv_cmplt);
-        postAPPMsg(&msgcmplt);
-        _dc_op_complete = NULL;
-    }
-}
-
-static void _handle_dm_pget_done(cmt_msg_t* msg) {
-    // Make sure we have a completion routine, otherwise nothing to do
-    if (_dm_buf_rcv_cmplt) {
-        cmt_msg_t msgcmplt;
-        if (_dm_simulate) {
-            *_dm_mp_opbuf.buf = _dm_sim_bval;
-        }
-        msgcmplt.data.bptr = (uint8_t*)&_dm_mp_opbuf.buf;
-        cmt_exec_init(&msgcmplt, _dm_buf_rcv_cmplt);
-        postAPPMsg(&msgcmplt);
-        _dc_op_complete = NULL;
+    // We get this message if the DM is being simulated.
+    //  Otherwise, the on_complete is executed directly
+    dmc_cmd_op_state_t state_was = _dm_op_inproc.state;
+    _dm_op_inproc.state = DMC_COS_COMPLETED;
+    if (state_was == DMC_COS_INPROCESS && _dm_op_inproc.on_cmplt) {
+        cmt_exec_init(msg, _dm_op_inproc.on_cmplt);
+        postAPPMsg(msg);
     }
 }
 
@@ -157,32 +126,55 @@ static void _handle_dm_statusrcvd(cmt_msg_t* msg) {
     dm_stat_val_t v = (dm_stat_val_t)msg->data.value8u;
     if (v & DM_CMDSTAT_IND) {
         // Debug Monitor sent a status
-        _mode = DCM_DEBUG;
+        _mode = DMM_DEBUG;
         _tgt_is_sbc = ((v & DMSTATSBC_M) != 0);
         dm_stat_val_t dms = (dm_stat_val_t)(v & ~DMSTATSBC_M);
         _dm_status = dms;
         switch (dms) {
-        case DMINIT:
+        case DMIDLE:
             // We set a value to auto-return by the DMCOMM module for this.
             // so nothing needed here
             break;
         case DMOKCMDRD:
             // DM is responding to us, saying it is ready for a command
+            if (_dm_sim) {
+                dm_cmd_t cmd = _dm_op_inproc.cmd;
+                if (cmd == DMGO || cmd == DMGOWREG || cmd == DMSTEP || cmd == DMSTEPWREG) {
+                    // GO and STEP have a different status
+                    msg->data.value8u = DMTGTGO;
+                }
+                else {
+                    msg->data.value8u = DMOPDONE;
+                }
+                int32_t delay = DMSIM_STATnDLY;
+                cmt_msg_init(msg, MSG_DM_STATUSRCVD);
+                schedule_core1_msg_in_ms(delay, msg);
+            }
             break;
         case DMOPDONE:
             // DM is responding to us, saying it finished the command
             // We also get a Command Done message.
+            if (_dm_sim) {
+                int32_t delay = DMSIM_STATnDLY;
+                // Pack the command (HB) and state (LB) into the `value16u`
+                msg->data.value16u = (uint16_t)((uint16_t)_dm_op_inproc.cmd << 8 | (uint16_t)(DMC_COS_COMPLETED & 0xff));
+                cmt_exec_init(msg, _dm_op_inproc.on_cmplt);
+                schedule_core1_msg_in_ms(delay, msg);
+            }
             break;
         case DMSSDONE:
             // DM Single-Step (requested) done
-            if (_dm_simulate) {
+            if (_dm_sim) {
                 // Simulate a step by incrementing the PC
                 zregWv_t pc = regpc_gv();
                 pc++;
                 regpc_sv(pc);
+                _handle_dm_ssdone(msg);
             }
-            // Get all the registers
-            dm_getallreg(_handle_dm_ssdone);
+            else {
+                // Get all the registers
+                dm_getallreg(_handle_dm_ssdone);
+            }
             break;
         case DMBRKHIT:
             // DM hit a breakpoint
@@ -191,30 +183,31 @@ static void _handle_dm_statusrcvd(cmt_msg_t* msg) {
             break;
         case DMTGTGO:
             // DM is going to Target Mode
-            _mode = DCM_TARGET;
+            _mode = DMM_TARGET;
             _dm_target_running();
             break;
         case DMCMDUK:
             // DM indicated that it doesn't know the command we sent
-            uint8_t last_cmd = dmc_last_cmd();
-            shell_printferr("%s [%02X]\n", dmm_cmd_unknown, last_cmd);
-            if (_dc_op_complete) {
+            dmc_cmd_op_t oip = dmc_op_current();
+            uint8_t cmd_ip = oip.cmd;
+            shell_printferr("%s [%02X]\n", dmm_cmd_unknown, cmd_ip);
+            if (oip.on_cmplt) {
                 cmt_msg_t msgoc;
-                msgoc.data.value8u = dms;
-                cmt_exec_init(&msgoc, _dc_op_complete);
+                // Pack the command (HB) and state (LB) into the `value16u`
+                msgoc.data.value16u = (uint16_t)((uint16_t)cmd_ip << 8 | (uint16_t)(DMC_COS_UNKNOWN & 0xff));
+                cmt_exec_init(&msgoc, oip.on_cmplt);
                 postAPPMsg(&msgoc);
-                _dc_op_complete = NULL;
             }
             break;
         case DMRSTEXEC:
             // DM executed a RSTxx that wasn't expected.
             // indicate we have a problem
-            _mode = DCM_ERROR;
+            _mode = DMM_ERROR;
             _dm_fatal_error();
             break;
         default:
-            _mode = DCM_ERROR;
-            shell_printferr("%s [%02X]\n", dmm_status_error, dms);
+            _mode = DMM_ERROR;
+            shell_printferr("\n%s [%02X]\n", dmm_status_error, (uint8_t)dms);
             break;
         }
     }
@@ -227,7 +220,7 @@ static void _handle_dm_ssdone(cmt_msg_t* msg) {
 }
 
 static void _handle_dm_status_unknown(cmt_msg_t* msg) {
-    shell_printferr("\n\n%s [%02X]\n", dmm_status_error, msg->data.value8u);
+    shell_printferr("\n\n%s [%02X].\n", dmm_status_error, msg->data.value8u);
     // De-assert ATTN
     attn_set_on(false);
 }
@@ -237,65 +230,64 @@ static void _handle_dm_status_unknown(cmt_msg_t* msg) {
 // ====================================================================
 
 /*
- * Request a command be sent to the Debug Monitor. This is posted as a message
- * to the Debug Monitor Communications module, which prepares any data
+ * Request a command be sent to the Debug Monitor.
+ * Calls the Debug Monitor Communications module, which prepares any data
  * transfers to/from the DM and pokes the DM to have it perform the operation.
  */
-static void _dm_cmd_send(
+static bool _dm_cmd_request(
     dm_cmd_t cmd,
     volatile uint8_t* send_buf1, int send_cnt1,
     volatile uint8_t* send_buf2, int send_cnt2,
-    volatile uint8_t* recv_buf, int recv_cnt) 
+    volatile uint8_t* recv_buf, int recv_cnt,
+    msg_handler_fn on_cmplt)
 {
-    cmt_msg_t msg;
-    _dm_cmd = cmd;
-    msg.data.dmc_cmd_req.cmd = cmd;
-    msg.data.dmc_cmd_req.send_buf1 = send_buf1;
-    msg.data.dmc_cmd_req.send_cnt1 = send_cnt1;
-    msg.data.dmc_cmd_req.send_buf2 = send_buf2;
-    msg.data.dmc_cmd_req.send_cnt2 = send_cnt2;
-    msg.data.dmc_cmd_req.recv_buf = recv_buf;
-    msg.data.dmc_cmd_req.recv_cnt = recv_cnt;
-    cmt_msg_init(&msg, MSG_DMC_CMD_REQ);
-    postHWRTMsg(&msg);
+    dmc_cmd_op_t dmc_cmd_op;
+    dmc_cmd_op.cmd = cmd;
+    dmc_cmd_op.on_cmplt = on_cmplt;
+    dmc_cmd_op.ctrlrd_expctd = true;
+    dmc_cmd_op.send_buf1 = send_buf1;
+    dmc_cmd_op.send_cnt1 = send_cnt1;
+    dmc_cmd_op.send_buf2 = send_buf2;
+    dmc_cmd_op.send_cnt2 = send_cnt2;
+    dmc_cmd_op.recv_buf = recv_buf;
+    dmc_cmd_op.recv_cnt = recv_cnt;
+    //
+    // Save it as our operation in progress
+    _dm_op_inproc = dmc_cmd_op;
     //
     // Are we simulating the DM?
-    if (_dm_simulate) {
+    if (!_dm_sim) {
+        uint8_t cip = dmc_op_request(dmc_cmd_op);
+        if (cip != 0) {
+            shell_printferr("\nOperation in progress: %02X  Operation not requested: %02X\n", cip, cmd);
+            return false;
+        }
+    }
+    else {
         // Yes - schedule some messages to allow debugging the UI
         int32_t delay = DMSIM_STAT1DLY;
         cmt_msg_t msg;
         _dm_sim_bval++;
         _dm_sim_wval--;
+        _dm_sim_update_buf();
         cmt_msg_init(&msg, MSG_DM_STATUSRCVD);
-        if (cmd != DCGO && cmd != DCGOWREG && cmd != DCSTEP && cmd != DCSTEPWREG) {
-            msg.data.value8u = DMOKCMDRD;
-            schedule_core1_msg_in_ms(delay, &msg);
-            delay += DMSIM_STATDLYINC;
-            msg.data.value8u = DMOPDONE;
-            schedule_core1_msg_in_ms(delay, &msg);
-            delay += DMSIM_STATDLYINC;
-            msg.data.value8u = cmd;
-            cmt_msg_init(&msg, MSG_DM_CMDDONE);
-            schedule_core1_msg_in_ms(delay, &msg);
-        }
-        else {
-            // It's GO or STEP - those have a different series of messages
-            msg.data.value8u = DMOKCMDRD;
-            schedule_core1_msg_in_ms(delay, &msg);
-            delay += DMSIM_STATDLYINC;
-            msg.data.value8u = DMTGTGO;
-            schedule_core1_msg_in_ms(delay, &msg);
-            if (cmd == DCSTEP || cmd == DCSTEPWREG) {
-                delay += DMSIM_STATDLYINC;
-                msg.data.value8u = DMSSDONE;
-                schedule_core1_msg_in_ms(delay, &msg);
-            }
-        }
+        msg.data.value8u = DMOKCMDRD;
+        schedule_core1_msg_in_ms(delay, &msg);
     }
+    return true;
 }
 
 static void _dm_fatal_error() {
     shell_printferr("\n%s\n", dmm_fatal_error);
+}
+
+static void _dm_sim_update_buf() {
+    // Use the _dm_sim_bv, which increments with each operation, to put
+    // an incrementing pattern in the _dm_mp_opbuf buffer.
+    volatile uint8_t* buf = _dm_mp_opbuf.buf;
+    for(int i = 0; i < 256; i++) {
+        *(buf+i) = (uint8_t)((_dm_sim_bval + i) & 0xff);
+    }
 }
 
 static void _dm_target_running() {
@@ -303,7 +295,7 @@ static void _dm_target_running() {
     char buf[8];
     num_valstr_nb(buf, regpc_gv(), RS_WORD, _uc);
     shell_printf("%s=%s\n", dcm_pc, buf);
-    if (_dm_cmd != DCSTEP && _dm_cmd != DCSTEPWREG) { 
+    if (_dm_op_inproc.cmd != DMSTEP && _dm_op_inproc.cmd != DMSTEPWREG) {
         // re-enable the prompt for GO, not for STEP
         _prompten = true;
         shell_prompt_again();
@@ -342,7 +334,7 @@ static const char* _prompt_prov() {
             base = '?';
             break;
         }
-        char mode = (_mode == DCM_DEBUG ? 'D' : 'T');
+        char mode = (_mode == DMM_DEBUG ? 'D' : 'T');
         sprintf(_promptbuf, "I%c.%c.%c >", ied, base, mode);
     }
     else {
@@ -364,7 +356,7 @@ const char* dc_banner() {
     return _promptbuf;
 }
 
-dc_mp_opbuf_t* dc_mp_opbuf_get() {
+dm_mp_opbuf_t* dc_mp_opbuf_get() {
     return &_dm_mp_opbuf;
 }
 
@@ -380,75 +372,65 @@ void dc_uppercase(bool uc) {
 
 void dm_dbgr_mp(bool use_dbgr_mp) {
     if (use_dbgr_mp) {
-        _dm_cmd_send(DCDBGRMP, NULL, 0, NULL, 0, NULL, 0);
+        _dm_cmd_request(DMDBGRMP, NULL, 0, NULL, 0, NULL, 0, NULL);
     }
     else {
-        _dm_cmd_send(DCTGTMP, NULL, 0, NULL, 0, NULL, 0);
+        _dm_cmd_request(DMTGTMP, NULL, 0, NULL, 0, NULL, 0, NULL);
     }
 }
 
 void dm_getallreg(msg_handler_fn on_cmplt) {
-    _dc_op_complete = on_cmplt;
-    _dm_cmd_send(DCGREGALL, NULL, 0, NULL, 0, z80reg_buf_get(), ZREGALLBYTES);
+    _dm_cmd_request(DMGREGALL, NULL, 0, NULL, 0, z80reg_buf_get(), ZREGALLBYTES, on_cmplt);
 }
 
 void dm_go(msg_handler_fn on_cmplt) {
-    _dc_op_complete = on_cmplt;
     _prompten = false; // temp disable the prompt
-    _dm_cmd_send(DCGO, NULL, 0, NULL, 0, NULL, 0);
+    _dm_cmd_request(DMGO, NULL, 0, NULL, 0, NULL, 0, on_cmplt);
 }
 
 void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt) {
-    _dc_op_complete = on_cmplt;
     _prompten = false; // temp disable the prompt
     regpc_sv(pc);
-    _dm_cmd_send(DCGOWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0);
+    _dm_cmd_request(DMGOWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, on_cmplt);
 }
 
 void dm_mem_get(uint16_t cnt, msg_handler_fn on_cmplt) {
-    _dm_buf_rcv_cmplt = on_cmplt;
-    _dc_op_complete = _handle_dm_mget_done;
-    _dm_cmd_send(DCGM, &(_dm_mp_opbuf.addrL), WORD+BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt);
+    _dm_cmd_request(DMGM, &(_dm_mp_opbuf.addrL), WORD + BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt, on_cmplt);
 }
 
 void dm_mem_set(uint16_t cnt) {
-    _dm_cmd_send(DCPM, &(_dm_mp_opbuf.addrL), WORD+BYTE+cnt, NULL, 0, NULL, 0);
+    _dm_cmd_request(DMPM, &(_dm_mp_opbuf.addrL), WORD+BYTE+cnt, NULL, 0, NULL, 0, NULL);
 }
 
 void dm_port_get(uint16_t cnt, msg_handler_fn on_cmplt) {
-    _dm_buf_rcv_cmplt = on_cmplt;
-    _dc_op_complete = _handle_dm_pget_done;
-    _dm_cmd_send(DCGP, &(_dm_mp_opbuf.addrL), WORD+BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt);
+    _dm_cmd_request(DMGP, &(_dm_mp_opbuf.addrL), WORD+BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt, on_cmplt);
 }
 
 void dm_port_put(uint16_t cnt) {
-    _dm_cmd_send(DCPP, &(_dm_mp_opbuf.addrL), WORD+BYTE+cnt, NULL, 0, NULL, 0);
+    _dm_cmd_request(DMPP, &(_dm_mp_opbuf.addrL), WORD+BYTE+cnt, NULL, 0, NULL, 0, NULL);
 }
 
 void dm_putallreg(msg_handler_fn on_cmplt) {
-    _dc_op_complete = on_cmplt;
-    _dm_cmd_send(DCPREGALL, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0);
+    _dm_cmd_request(DMPREGALL, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, on_cmplt);
 }
 
 void dm_simulate(bool simulate) {
-    _dm_simulate = simulate;
+    _dm_sim = simulate;
 }
 
 bool dm_simulated() {
-    return _dm_simulate;
+    return _dm_sim;
 }
 
 void dm_step(msg_handler_fn on_cmplt) {
-    _dc_op_complete = on_cmplt;
     _prompten = false; // temp disable the prompt
-    _dm_cmd_send(DCSTEP, NULL, 0, NULL, 0, NULL, 0);
+    _dm_cmd_request(DMSTEP, NULL, 0, NULL, 0, NULL, 0, on_cmplt);
 }
 
 void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt) {
-    _dc_op_complete = on_cmplt;
     _prompten = false; // temp disable the prompt
     regpc_sv(pc);
-    _dm_cmd_send(DCSTEPWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0);
+    _dm_cmd_request(DMSTEPWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, on_cmplt);
 }
 
 bool dm_tgt_is_sbc() {
@@ -544,18 +526,14 @@ int dc_modinit() {
 
     memset((void*)_dm_ver, 0, DM_VERSION_LEN);
     cmt_run_after_ms(500, _handle_dm_version, NULL);
-    _mode = DCM_DEBUG;
+    _mode = DMM_DEBUG;
     //
-    cmt_msg_hdlr_add(MSG_DM_CMDDONE, _handle_dm_cmddone);
+    cmt_msg_hdlr_add(MSG_DM_CMD_CMPLT, _handle_dm_cmddone);
     cmt_msg_hdlr_add(MSG_DM_STATUSRCVD, _handle_dm_statusrcvd);
     _prompten = true;
     shell_set_promptprov(_prompt_prov);
     _uc = true;     // Start with Upper Case enabled
     
-    // Now we are ready to work with the Debug Monitor (Z80). Go ahead and start
-    // the DBUS.
-    dbus_enable(true);
-
     return retval;
 
 _fail:

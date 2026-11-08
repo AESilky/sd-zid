@@ -21,12 +21,18 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+#define DBUS_CTRL_RD_EN (0x01)
+#define DBUS_CTRL_WR_EN (0x02)
+#define DBUS_DATA_RD_EN (0x04)
+#define DBUS_DATA_WR_EN (0x08)
+
 typedef enum ctrl_hdlr_action_ {
     CHA_NOT_HANDLED = 0,    // The handler didn't handle this OPERATION
     CHA_VALUE_SET,          // Handler supplied a value for the READ
     CHA_VALUE_TBD,          // Handler will write a value for the READ later
     CHA_WRITE_HANDLED,      // Handler has processed the WRITE value
 } ctrl_hdlr_action_t;
+
 /**
  * @brief Function prototype for a CTRL register READ access IRQ handler.
  * @ingroup databus
@@ -36,7 +42,7 @@ typedef enum ctrl_hdlr_action_ {
  * value is put on the bus for the host. If `CHA_VALUE_SET` is returned the
  * value set in `d` is put on the bus. If `CHA_VALUE_TBD` is returned the
  * operation is left in process (the Host is held by WAIT). In this final
- * case a call must be made to `cbus_value_write` to provide a value and 
+ * case a call must be made to `dbus_ctrl_value_write` to provide a value and 
  * release the Host.
  * 
  * @param d Pointer to data to set for value to put on bus
@@ -53,7 +59,7 @@ typedef ctrl_hdlr_action_t (*ctrlrd_irq_fn)(uint8_t* d);
  * value is put on the bus for the host. If `CHA_VALUE_SET` is returned the
  * value set in `d` is put on the bus. If `CHA_VALUE_TBD` is returned the
  * operation is left in process (the Host is held by WAIT). In this final
- * case a call must be made to `cbus_value_write` to provide a value and
+ * case a call must be made to `dbus_ctrl_value_write` to provide a value and
  * release the Host.
  *
  * @param v The data value written to the CTRL port
@@ -86,7 +92,7 @@ extern void attn_set_on(bool on);
  *
  * @param v
  */
-extern void cbus_value_write(uint8_t v);
+extern void dbus_ctrl_value_write(uint8_t v);
 
 /**
  * @brief Cancel any inprocess/pending data bus operations
@@ -117,6 +123,16 @@ extern void dbus_cancel_ops();
 extern void dbus_clear_wait();
 
 /**
+ * @brief The last value written to the CTRL port
+ * @ingroup databus
+ *
+ * This returns 0 until a value is written.
+ *
+ * @return uint8_t Last value written or 0
+ */
+extern uint8_t dbus_ctrl_last_write();
+
+/**
  * @brief Set the handler for the Control Register READ access interrupt.
  * @ingroup databus
  * 
@@ -143,28 +159,10 @@ extern void dbus_ctrl_rd_hdlr_set(ctrlrd_irq_fn hdlr);
 extern void dbus_ctrl_wr_hdlr_set(ctrlwr_irq_fn hdlr);
 
 /**
- * @brief The last value written to the CTRL port
+ * @brief Drain the RX FIFO/SM of the DATA port
  * @ingroup databus
- * 
- * This returns 0 until a value is written.
- * 
- * @return uint8_t Last value written or 0
  */
-extern uint8_t dbus_ctrl_last_write();
-
-/**
- * @brief Enable/disable the DBUS PIO-SMs that handle receiving and sending
- * CTRL and DATA data.
- * @ingroup databus
- *
- * This is a master enable for the Data Bus processing. If the DBUS processing
- * is disabled, no data can be sent or received through either the CTRL or
- * DATA ports. Calls to methods that enable discrete operation return immediately
- * (the operation is not enabled).
- * 
- * @param enable True to enable
- */
-extern void dbus_enable(bool enable);
+extern void dbus_data_rx_drain();
 
 /**
  * @brief Get the value of the last unexpected WRITE operation by the host.
@@ -245,6 +243,15 @@ extern void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* 
  * @param rcnt Receive byte count
  */
 extern void dbus_prep_sendrecv(volatile uint8_t* sbuf, int scnt, volatile uint8_t* rbuf, int rcnt);
+
+/**
+ * @brief Allow CTRL Port operations
+ * @ingroup databus
+ * 
+ * This allows CTRL Port operations (implicitly not expecting DATA Port operations,
+ * but not cancelling them)
+ */
+extern void dbus_start_ctrl_port();
 
 /**
  * @brief Start a send, send-send, or send-receive data operation

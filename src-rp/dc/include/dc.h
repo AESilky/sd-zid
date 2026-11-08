@@ -22,11 +22,12 @@
 
 #define PAGE_MASK 0x000000FF
 #define ONEK_MASK 0x000003FF
-typedef enum DC_MODE_ {
-    DCM_DEBUG = 0,
-    DCM_TARGET,
-    DCM_ERROR = 0xFF
-} dcm_t;
+typedef enum DM_MODE_ {
+    DMM_UNKNOWN = 0,
+    DMM_DEBUG,
+    DMM_TARGET,
+    DMM_ERROR = 0xFF
+} dmmode_t;
 
 /** Memory/Port Operation Structure */
 typedef struct DM_MP_OPBUF {
@@ -34,7 +35,7 @@ typedef struct DM_MP_OPBUF {
     uint8_t addrH;
     uint8_t cnt;                    // Count of bytes
     volatile uint8_t buf[PAGE + 1]; // Buffer. Only 1 page op is supported, but we add a pad
-} dc_mp_opbuf_t;
+} dm_mp_opbuf_t;
 
 /**
  * @brief Get the Debug Controller Banner.
@@ -59,7 +60,7 @@ extern const char* dc_banner();
  * 
  * @return dc_mb_opbuf_t pointer 
  */
-extern dc_mp_opbuf_t* dc_mp_opbuf_get();
+extern dm_mp_opbuf_t* dc_mp_opbuf_get();
 
 /**
  * @brief Return the MP OpBuf filled with an address and byte count.
@@ -70,8 +71,8 @@ extern dc_mp_opbuf_t* dc_mp_opbuf_get();
  * @param addr uint16_t address
  * @param cnt uint16_t count
  */
-static inline dc_mp_opbuf_t* dc_mp_opbuf_fill(uint16_t addr, uint8_t cnt) {
-    dc_mp_opbuf_t* ob = dc_mp_opbuf_get();
+static inline dm_mp_opbuf_t* dc_mp_opbuf_fill(uint16_t addr, uint8_t cnt) {
+    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     ob->addrL = (uint8_t)(addr & 0x00FF);
     ob->addrH = (uint8_t)(addr >> 8);
     ob->cnt = cnt;

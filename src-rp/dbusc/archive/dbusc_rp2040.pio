@@ -1,0 +1,150 @@
+;
+; Copyright 2025-26 AESilky (SilkyDESIGN)
+; SPDX-License-Identifier: MIT
+;
+
+; Data Bus and Control signal monitor and data transfer.
+;
+; REMEMBER: For a Host Read this writes to the pins.
+;           For a Host Write this reads from the pins.
+;
+.pio_version RP2350
+
+.define MSEL_GPIO   12      ; Module Select Pin
+.define MSEL_OFF    1       ; Active LOW
+.define MSEL_ON     0       ; Active LOW
+
+.define WAIT_OFF    1       ; Active LOW
+.define WAIT_ON     0       ; Active LOW
+
+.define LEAVE_SET   0       ; Used with WAIT-IRQ to leave the flag set
+.define THEN_CLR    1       ; Used with WAIT-IRQ to clear the flag
+
+.define PUBLIC PIO_CTRLDATA_NEEDED  0   ; CTRL data required  (CPU IRQ)
+.define PUBLIC PIO_CTRLDATA_RDY     1   ; CTRL register written (CPU IRQ)
+.define PUBLIC PIO_DATADATA_NEEDED  2   ; DATA register read an no data ready (CPU IRQ)
+.define SM_DATAOP_DONE              4
+.define PUBLIC SM_CTRLDATA          5
+.define PUBLIC SM_CTRLOP            6
+.define PUBLIC SM_DATAOP            7
+
+.program db_modsel
+.side_set   1   opt ; Side-set used to control WAIT
+;
+; Control Bus - Monitor Module Select and Read
+;
+; For setting the Data Pin Directions
+; IX is initialized with 0000 0000 0000 0000 0010 0011 1111 1100 - 0x000023FC
+;       by the CPU (DBUS and WAIT as outputs)
+; IY is initialized with 0x00002000 by the CPU (all inputs except WAIT)
+;
+; 1. Waits for Module Select and Controls the WAIT- signal.
+; 2. Sets the DATA Bus direction and triggers the Ctrl/Data state machine.
+; 3. Leaves the DATA Bus set to INPUT when idle.
+;
+; SHOULD BE STARTED AFTER THE CtrlData SM
+;
+PUBLIC start:
+.wrap_target
+    mov     osr,y                                   [7] 
+    out     pindirs,32                              [7]; Data Bus to input
+    wait    MSEL_ON gpio MSEL_GPIO  side WAIT_ON    [7]; Wait for Module Select, WAIT on
+    // We are selected
+    ; Look for RD/WR
+    jmp     pin,cd_start                ; RD High is Host writing, DBUS IN is correct 
+    ; RD Low, Host is reading, change the DBUS to OUT 
+    mov     osr,x
+    out     pindirs,32
+cd_start:
+    irq     SM_CTRLDATA                 ; Wake up the Ctrl/Data Select SM
+    wait    THEN_CLR irq SM_DATAOP_DONE ; Wait for Data-Op to finish
+    wait    MSEL_OFF gpio MSEL_GPIO  side WAIT_OFF [7]; WAIT off, wait for MSEL to go away
+.wrap
+
+.program db_ctrldata
+;
+; Check if the operation is for the Control Port or the Data Port
+; ADDR=0: Control Port - CPU supplies data via an interrupt signal
+; ADDR=1: Data Port - DMA supplies data
+;
+; SHOULD BE STARTED BEFORE MSEL SM and after CTRL and DATA
+;
+PUBLIC start:
+wrap_target:
+    wait    THEN_CLR irq SM_CTRLDATA
+    ; Check the ADDR pin
+    jmp     pin,data_op     [7] ; HIGH - A1 (DATA)
+    irq     SM_CTRLOP           ; else LOW - A0 (CTRL)
+    jmp     start
+data_op:
+    irq     SM_DATAOP
+.wrap
+
+.program db_ctrl_port
+.fifo putget
+;
+; CTRL Port access - CPU supplies/reads data
+;
+; The MSEL SM has taken care of setting the bus direction.
+;
+; SHOULD BE STARTED BEFORE CtrlData SM
+; Configured for AutoPush:8, JMP-PIN:RD-
+;
+; =============================================================================
+;  
+; NOTE FOR MAINTAINERS, OUTBOUND PATH (CPU -> Z80):
+; In RP2350 PUT/GET mode, the RX FIFO is configured as a 4-entry register.
+; the PIO assembly uses 'rxfifo' to read and write it.
+;
+; THIS IS NOT A MISTAKE.
+; =============================================================================
+;    mov osr, rxfifo[2]     ; Pulls data written by CPU into Slot 2
+;    out pins, 8            ; Drive data byte onto the Z80 bus
+;
+PUBLIC start:
+.wrap_target
+    wait    THEN_CLR irq SM_CTRLOP               ; Wait for the CtrlData SM to wake us
+    ; Look at the READ pin.
+    jmp     pin,data_in                 ; If RD- is 1 the data xfer is in (we get the data)
+data_out:
+    ; Host is reading, the CPU supplies data
+    irq     wait PIO_CTRLDATA_NEEDED    ; tell CPU we need data
+    mov     osr, rxfifo[1]
+    out     pins,8                  [7] ; put it on the bus
+    jmp     done
+data_in:
+    in      pins,8                      ; read data from the bus
+    mov     rxfifo[0], isr          [7] ; manual push to assure data to FIFO
+    irq     wait PIO_CTRLDATA_RDY       ; tell CPU data is available
+done:
+    irq     SM_DATAOP_DONE              ; Releases MOD_SEL SM
+.wrap
+
+.program db_data_port
+;
+; DATA Port access - DMA supplies/reads data
+;
+; The MSEL SM has taken care of setting the bus direction.
+;
+; SHOULD BE STARTED BEFORE CtrlData SM
+; Configured for AutoPush:8, JMP-PIN:RD-
+;
+PUBLIC start:
+.wrap_target
+    wait    THEN_CLR irq SM_DATAOP               ; Wait for the CtrlData SM to wake us
+    ; Look at the READ pin.
+    jmp     pin,data_in                 ; If RD- is 1 the data xfer is in (we get the data)
+data_out:
+    ; Host is reading. 
+    ; If expected DMA supplies data.
+    ;  We set this interrupt, but it isn't enabled to the CPU if the DMA
+    ;  is expected to supply the data.
+    irq     nowait PIO_DATADATA_NEEDED  ; let the CPU know we are pulling data
+    out     pins,8                  [7] ; if the DMA isn't supplying data this blocks
+    irq     clear PIO_DATADATA_NEEDED   ; we got (and sent) the data
+    jmp     done
+data_in:
+    in      pins,8                      ; read data from the bus (auto-push)
+done:
+    irq     SM_DATAOP_DONE              ; Releases MOD_SEL SM
+.wrap

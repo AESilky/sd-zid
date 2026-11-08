@@ -34,25 +34,31 @@
 
 static volatile bool _modinit_called;
 
-
 static volatile bool _dm_alive;             // The Debug Monitor is Alive
 static volatile bool _tgt_is_sbc;           // The Target is the Single-Board-Computer
-static volatile dm_cmd_t _dm_cmdstat;       // The command to send
-static volatile dm_cmd_t _dm_lastcmd;       // The command last sent (for debugging)
-static volatile dm_cmd_t _dm_cmd_ip;        // We are waiting for a command to be completed
-static volatile bool _dm_ctrlrd_expctd;     // We are expecting a DM read
+static volatile dmc_cmd_op_t _cmd_last;     // The last command operation (for debugging)
+static volatile dmc_cmd_op_t _cmd_op;       // The command operation to perform/in-process
 
 
 // ====================================================================
 // Local/Private Method Declarations
 // ====================================================================
 
-static inline void _dm_cmd_prep(dm_cmd_t cmd, bool readexpected) {
-    _dm_cmdstat = cmd;
-    _dm_ctrlrd_expctd = readexpected;
-    _dm_cmd_ip = (cmd != DMNOP);
+/**
+ * @brief Clear the current command
+ */
+static inline void _cmd_op_clr() {
+    _cmd_op.cmd = CMD_NONE;
+    _cmd_op.ctrlrd_expctd = false;
 }
 
+/**
+ * @brief Copy the current command to the last (archive) location
+ */
+static inline void _cmd_archive() {
+    _cmd_last = _cmd_op;
+    _cmd_op_clr();
+}
 
 
 // ====================================================================
@@ -65,6 +71,35 @@ static inline void _dm_cmd_prep(dm_cmd_t cmd, bool readexpected) {
 // Message Handler Methods
 // ====================================================================
 
+static void _handle_attn_off(cmt_msg_t* msg) {
+    // Cancel any scheduled occurrence
+    scheduled_msg_cancel3(MSG_EXEC, _handle_attn_off, 0);
+    // De-assert ATTN
+    attn_set_on(false);
+}
+
+static void _handle_cmd_done(cmt_msg_t* msg) {
+    // Nothing important in the message
+    dmc_cmd_op_state_t state_was = _cmd_op.state;
+    if (state_was == DMC_COS_INPROCESS) {
+        _cmd_op.state = DMC_COS_COMPLETED;
+        cmt_msg_t msg;
+        // Pack the command (HB) and state (LB) into the `value16u`
+        msg.data.value16u = (uint16_t)((uint16_t)_cmd_op.cmd << 8 | (uint16_t)(state_was & 0xff));
+        if (_cmd_op.on_cmplt) {
+            // Exec a specific handler
+            cmt_exec_init(&msg, _cmd_op.on_cmplt);
+        }
+        else {
+            // Post for a general handler
+            cmt_msg_init(&msg, MSG_DM_CMD_CMPLT);
+        }
+        _cmd_archive();
+        postAPPMsg(&msg);
+    }
+    _cmd_op.state = DMC_COS_UNINITIALIZED; // Set it as 'uninitialized' so it doesn't get used
+}
+
 static void _handle_ctrl_read(cmt_msg_t* msg) {
     // The host performed a READ from the CTRL port
     // See if it was handled
@@ -73,69 +108,29 @@ static void _handle_ctrl_read(cmt_msg_t* msg) {
         uint8_t lcv = dbus_ctrl_last_write();
         if (lcv & DM_CMDSTAT_IND) {
             // It was from the DM, but we weren't expecting the read.
-            // Just give it our 'We are ready' status
-            // (something has to be written to release the host)
-            cbus_value_write(DMNOP);
+            dbus_ctrl_value_write(0);
             msg->abort = true; // don't run any additional handlers
         }
     }
 }
 
-static void _handle_ctrlrd_attnoff(cmt_msg_t* msg) {
-    // Executed by _ctrl_rd_hdlr to turn ATTN off.
-    // It can't be turned off from the handler, as the
-    // host might be driving the bus, and we need to control
-    // the bus to write the value.
-    if (attn_is_on()) {
-        attn_set_on(false);
-    }
+static void _handle_dbus_ctrl_wr_unexptd(cmt_msg_t* msg) {
+    // Handled mostly for debugging
+    // The host performed a WRITE to CTRL when we weren't expecting it
+    shell_printferr("Unexpected: %02X Host DATA WR(s)\n", msg->data.value8u);
 }
 
-static void _handle_dmc_cmd_req(cmt_msg_t* msg) {
-    // ZZZ - What should be done if a command is in process???
-    dmc_cmd_req_t crd = msg->data.dmc_cmd_req;
-    //
-    // There are 5 options when it comes to data transfers...
-    //  1) No data
-    //  2) Single send
-    //  3) Double (chained) send
-    //  4) Single receive
-    //  5) Send then Receive
-    //
-    bool data_xfer = false;
-    if (crd.send_cnt1 || crd.recv_cnt) {
-        data_xfer = true;
-        if (crd.send_cnt1 && crd.send_cnt2) {
-            // Chained Sends
-            dbus_prep_send2(crd.send_buf1, crd.send_cnt1, crd.send_buf2, crd.send_cnt2);
-        }
-        else if (crd.send_cnt1 && crd.recv_cnt) {
-            // Send then Receive
-            dbus_prep_sendrecv(crd.send_buf1, crd.send_cnt1, crd.recv_buf, crd.recv_cnt);
-        }
-        else if (crd.send_cnt1) {
-            // Single Send
-            dbus_prep_send1(crd.send_buf1, crd.send_cnt1);
-        }
-        else {
-            // Just Receive
-            dbus_prep_recv(crd.recv_buf, crd.recv_cnt);
-        }
-    }
-    _dm_cmd_prep(crd.cmd, true);
-    if (data_xfer) dbus_start_dataop();
-    attn_set_on(true);  // Poke the DM
-}
-
-static void _handle_dbus_read_unexptd(cmt_msg_t* msg) {
+static void _handle_dbus_data_rd_unexptd(cmt_msg_t* msg) {
     // Handled mostly for debugging
     // The host performed a READ from DATA when we weren't expecting it
+    //  MSG data is the count of occurrences
     shell_printferr("Unexpected: %u Host DATA RD(s)\n", msg->data.value32u);
 }
 
-static void _handle_dbus_write_unexptd(cmt_msg_t* msg) {
+static void _handle_dbus_data_wr_unexptd(cmt_msg_t* msg) {
     // Handled mostly for debugging
     // The host performed a WRITE to DATA when we weren't expecting it
+    //  MSG data is the count of occurrences
     shell_printferr("Unexpected: %u Host DATA WR(s)\n", msg->data.value32u);
 }
 
@@ -166,7 +161,7 @@ static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
  * The function prototype is:
  * bool ctrlrd_irq_fn(uint8_t* d)
  * 
- * When the DM wakes up and finishes its initialization it sends DMINIT (80)
+ * When the DM wakes up and finishes its initialization it sends DMIDLE (80)
  * repetitively until we respond with DOCREADY (FA).
  *
  * This is executed as an IRQ Handler, so make is quick! (no printing)
@@ -175,16 +170,13 @@ static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
  */
 static ctrl_hdlr_action_t _ctrl_rd_hdlr(uint8_t* d) {
     ctrl_hdlr_action_t handled = CHA_NOT_HANDLED;
-    cmt_msg_t attn_off;
-    cmt_exec_init(&attn_off, _handle_ctrlrd_attnoff);
-    postHWRTMsg(&attn_off);
-    if (_dm_ctrlrd_expctd) {
-        // We were expecting a DM read, give it our command/status
-        *d = _dm_cmdstat;
+    if (_cmd_op.ctrlrd_expctd) {
+        // We were expecting a DM read, give it the command
+        *d = _cmd_op.cmd;
+        // We shouldn't get another read for this operation
+        _cmd_op.ctrlrd_expctd = false;
+        _cmd_op.state = DMC_COS_INPROCESS;
         handled = CHA_VALUE_SET;
-        _dm_lastcmd = _dm_cmdstat;
-        _dm_cmdstat = DMNOP;
-        _dm_ctrlrd_expctd = false;
     }
     return handled;
 }
@@ -192,7 +184,7 @@ static ctrl_hdlr_action_t _ctrl_rd_hdlr(uint8_t* d) {
 static ctrl_hdlr_action_t _ctrl_wr_hdlr(uint8_t v) {
     // The host performed a WRITE to the CTRL port
     ctrl_hdlr_action_t handled = CHA_NOT_HANDLED;
-    bool post_cmddone = false;
+    bool cmddone = false;
     if (v & DM_CMDSTAT_IND) {
         // Debug Monitor sent a status
         handled = CHA_WRITE_HANDLED;
@@ -201,24 +193,23 @@ static ctrl_hdlr_action_t _ctrl_wr_hdlr(uint8_t v) {
         dm_stat_val_t dms = (dm_stat_val_t)(v & ~DMSTATSBC_M);
         if (dms == DMOPDONE) {
             // For Operation Done, we post Command Done in addition to status.
-            post_cmddone = true;
+            cmddone = true;
         }
         else if (dms == DMBRKHIT || dms == DMSSDONE) {
-            // For Break Hit or Single-Step Done,
-            // if there isn't a command waiting, temp set NOP as command.
-            if (!_dm_ctrlrd_expctd) {
-                _dm_cmd_prep(DMNOP, true);
-            }
+            // Break Hit or Single-Step Done,
         }
-        // Post the message with the status
+        cmt_msg_t attn_msg;
+        cmt_exec_init(&attn_msg, _handle_attn_off);
+        postHWRTMsg(&attn_msg);
+       // Post the message with the status
         cmt_msg_t postmsg;
         postmsg.data.value8u = v;
         cmt_msg_init(&postmsg, MSG_DM_STATUSRCVD);
         postAPPMsg(&postmsg);
-        if (post_cmddone) {
-            postmsg.data.value8u = _dm_lastcmd;
-            cmt_msg_init(&postmsg, MSG_DM_CMDDONE);
-            postAPPMsg(&postmsg);
+        if (cmddone) {
+            cmt_msg_t cmd_done_msg;
+            cmt_exec_init(&cmd_done_msg, _handle_cmd_done);
+            postHWRTMsg(&cmd_done_msg);
         }
     }
     return handled;
@@ -239,15 +230,96 @@ bool dm_available() {
     return _dm_alive;
 }
 
-uint8_t dmc_last_cmd() {
-    return _dm_lastcmd;
+const dmc_cmd_op_t dmc_op_current() {
+    return _cmd_op;
+}
+
+const dmc_cmd_op_t dmc_op_last() {
+    return _cmd_last;
 }
 
 void dmc_op_cancel() {
-    dbus_cancel_ops();
-    _dm_lastcmd = _dm_cmdstat;
-    _dm_cmd_prep(DMNOP, false);
+    bool cancelled = false;
+    switch (_cmd_op.state) {
+        case DMC_COS_REQUESTING:
+            cancelled = true;
+            break;
+        case DMC_COS_PENDING:
+        case DMC_COS_INPROCESS:
+            // We need to try to cancel the operation
+            dbus_cancel_ops();
+            cancelled = true;
+            break;
+        default:
+            break;
+    }
+    if (cancelled) {
+        _cmd_op.state = DMC_COS_CANCELLED;
+        _cmd_archive();
+        if (_cmd_op.on_cmplt) {
+            cmt_msg_t msg;
+            cmt_exec_init(&msg, _cmd_op.on_cmplt);
+            // Pack the command (HB) and state (LB) into the `value16u`
+            msg.data.value16u = (uint16_t)((uint16_t)_cmd_op.cmd << 8 | (uint16_t)(DMC_COS_CANCELLED & 0xff));
+            postAPPMsg(&msg);
+        }
+    }
+    // Assure that CTRL Port operations are enabled
+    dbus_start_ctrl_port();
 }
+
+bool dmc_op_inprocess() {
+    return (_cmd_op.state == DMC_COS_PENDING || _cmd_op.state == DMC_COS_INPROCESS);
+}
+
+uint8_t dmc_op_request(dmc_cmd_op_t cmdop) {
+    // ZZZ - What should be done if a command is in process???
+    if (dmc_op_inprocess()) {
+        return _cmd_op.cmd;
+    }
+    //
+    // There are 5 options when it comes to data transfers...
+    //  1) No data
+    //  2) Single send
+    //  3) Double (chained) send
+    //  4) Single receive
+    //  5) Send then Receive
+    //
+    cmdop.state = DMC_COS_PENDING;
+    _cmd_op = cmdop;
+    bool data_xfer = false;
+    if (cmdop.send_cnt1 || cmdop.recv_cnt) {
+        data_xfer = true;
+        if (cmdop.send_cnt1 && cmdop.send_cnt2) {
+            // Chained Sends
+            dbus_prep_send2(cmdop.send_buf1, cmdop.send_cnt1, cmdop.send_buf2, cmdop.send_cnt2);
+        }
+        else if (cmdop.send_cnt1 && cmdop.recv_cnt) {
+            // Send then Receive
+            dbus_prep_sendrecv(cmdop.send_buf1, cmdop.send_cnt1, cmdop.recv_buf, cmdop.recv_cnt);
+        }
+        else if (cmdop.send_cnt1) {
+            // Single Send
+            dbus_prep_send1(cmdop.send_buf1, cmdop.send_cnt1);
+        }
+        else {
+            // Just Receive
+            dbus_prep_recv(cmdop.recv_buf, cmdop.recv_cnt);
+        }
+    }
+    _cmd_op.ctrlrd_expctd = true;
+    if (data_xfer) dbus_start_dataop();
+    // If there is a scheduled message to set ATTN off - Cancel it!
+    scheduled_msg_cancel3(MSG_EXEC, _handle_attn_off, 0);
+    attn_set_on(false);
+    attn_set_on(true);  // Poke the DM
+    // Schedule an ATTN OFF as a failsafe
+    cmt_msg_t attn_msg;
+    cmt_exec_init(&attn_msg, _handle_attn_off);
+    schedule_core0_msg_in_ms(800, &attn_msg);   // DM response should occur much sooner than this
+    return (0);
+}
+
 
 bool tgt_is_sbc() {
     return _tgt_is_sbc;
@@ -264,11 +336,11 @@ int dmcomm_modinit() {
     _modinit_called = true;
 
     cmt_msg_hdlr_add(MSG_DBUS_CTRL_READ, _handle_ctrl_read);
-    cmt_msg_hdlr_add(MSG_DBUS_DREAD_UNEXPECTED, _handle_dbus_read_unexptd);
+    cmt_msg_hdlr_add(MSG_DBUS_CTRL_WRITE, _handle_dbus_ctrl_wr_unexptd);
+    cmt_msg_hdlr_add(MSG_DBUS_DREAD_UNEXPECTED, _handle_dbus_data_rd_unexptd);
     cmt_msg_hdlr_add(MSG_DBUS_DREAD_XFER_DONE, _handle_dbus_xfer_done);
-    cmt_msg_hdlr_add(MSG_DBUS_DWRITE_UNEXPECTED, _handle_dbus_write_unexptd);
+    cmt_msg_hdlr_add(MSG_DBUS_DWRITE_UNEXPECTED, _handle_dbus_data_wr_unexptd);
     cmt_msg_hdlr_add(MSG_DBUS_DWRITE_XFER_DONE, _handle_dbus_xfer_done);
-    cmt_msg_hdlr_add(MSG_DMC_CMD_REQ, _handle_dmc_cmd_req);
 
     // Set our CTRL handlers
     dbus_ctrl_rd_hdlr_set(_ctrl_rd_hdlr);
@@ -276,6 +348,8 @@ int dmcomm_modinit() {
 
     // Set a default value for Data Bus READ operations.
     dbus_data_defval_set(0);
+    // Allow CTRL Port operations
+    dbus_start_ctrl_port();
 
     return 0;
 }

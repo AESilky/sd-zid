@@ -13,6 +13,7 @@ extern "C" {
 
 #include "stdint.h"
 #include "hardware/pio.h"
+#include "hardware/structs/pio.h"
 
 // ============================================================================
 // PIO Byte-Swapped TX FIFO Aliases (For 8-bit DMA streaming to Right-Shift SMs)
@@ -37,6 +38,23 @@ extern "C" {
 #define PIO1_TXF2_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO1_BASE + 0x48))
 /** @brief PIO1-SM3 Single Byte DMA TXFIFO address (for PIO shift-right config) */
 #define PIO1_TXF3_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO1_BASE + 0x4c))
+
+/* RP2350 Specific Extensions */
+#if PICO_PIO_VERSION > 0 // RP2350 platform
+#define PIO_FIFO_JOIN_TX_and_GET PIO_FIFO_JOIN_TXGET
+#define PIO_FIFO_JOIN_TX_and_PUT PIO_FIFO_JOIN_TXPUT
+#define PIO_FIFO_JOIN_TX_and_GETPUT PIO_FIFO_JOIN_GETPUT
+/** @brief Read a value from a specific PUTGET FIFO register slot on a state machine */
+static inline uint32_t pio_sm_get_putget(pio_hw_t* pio, uint sm, uint slot) {
+    // Indexes automatically resolve to the correct hardware offsets
+    return pio->rxf_putget[sm & 0x3][slot & 0x3];
+}
+
+/** @brief Write a value to a specific PUTGET FIFO register slot on a state machine */
+static inline void pio_sm_put_putget(pio_hw_t* pio, uint sm, uint slot, uint32_t value) {
+    pio->rxf_putget[sm & 0x3][slot & 0x3] = value;
+}
+#endif // PICO_PIO_VERSION > 0
 
 /**
  * @brief Dynamically calculates the low-byte TX FIFO alias address for DMA configuration.
@@ -144,7 +162,7 @@ extern pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_
  * @param smpocfg
  * @return True if the FIFO status reports no data available
  */
-extern bool piosm_drain_rxfifo(pio_sm_pocfg smpocfg);
+extern bool piosm_drain_rx(pio_sm_pocfg* smpocfg);
 
 /**
  * @brief Get the enabled (running) state of a PIO State Machine.

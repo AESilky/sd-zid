@@ -7,37 +7,32 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialize pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
 #set(PICO_PLATFORM "rp2040-arm-s")
-set(PICO_BOARD pico)  # Regular RP2040 (Pico)
-#set(PICO_BOARD pico2)  # RP2350 (Pico2)
+#set(PICO_BOARD pico)  # Regular RP2040 (Pico)
+set(PICO_BOARD pico2)  # RP2350 (Pico2)
 #set(PICO_BOARD adafruit_kb2040)  # Adafruit RP2040 Kee Boar
 #set(PICO_BOARD waveshare_rp2040_zero)  # Waveshare RP2040 Zero
+#set(PICO_BOARD waveshare_rp2350_zero)  # Waveshare RP2350 Zero
 #
 
 set(PICO_USE_MALLOC_MUTEX 1)
 set(PICO_QUEUE_MAX_LEVEL 1)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  message(STATUS "Building in Debug mode. (EAS-MAC)")
-  # Use fully-deoptimized debug build for true single-step and data viewing.
-  set(PICO_DEOPTIMIZED_DEBUG 1)
-  # Add debug-specific compiler flags and definitions
-  add_compile_options(
-    -O0     # No optimizations
-  )
-  # Use optimized debug build to avoid timing problems.
-  #set(PICO_DEOPTIMIZED_DEBUG 0)
-  # Add debug-specific compiler flags and definitions
-  #add_compile_options(
-  #  -O1     # Some optimizations
-  #)
+  message(STATUS "Building in Debug mode. (EAS)")
+  
+  # Force the SDK into deoptimized mode early
+  set(PICO_DEOPTIMIZED_DEBUG 1 CACHE INTERNAL "" FORCE)
+  
+  # Directly inject the flags into the global compiler strings
+  set(CMAKE_C_FLAGS_DEBUG "-g -O0" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+  set(CMAKE_CXX_FLAGS_DEBUG "-g -O0" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
   message(STATUS "Building in Release mode. (EAS)")
-  set(PICO_DEOPTIMIZED_DEBUG 0)
-  add_compile_options(
-    -O2     # Fully Optimize
-  )
-  add_compile_definitions(NDEBUG)
+  set(PICO_DEOPTIMIZED_DEBUG 0 CACHE INTERNAL "" FORCE)
+  set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG" CACHE STRING "Flags used by the compiler during release builds." FORCE)
+  set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG" CACHE STRING "Flags used by the compiler during release builds." FORCE)
 else()
-    message(STATUS "Building with unknown configuration: ${CMAKE_BUILD_TYPE}")
+  message(STATUS "Building with unknown configuration: ${CMAKE_BUILD_TYPE}")
 endif()
 add_compile_definitions(LIB_PICO_PRINTF_PICO)
 set(LIB_PICO_PRINTF_PICO 1)
@@ -218,7 +213,7 @@ target_link_libraries(docsbc PUBLIC
   ${PICO_LIBS}
   ${EXT_LIBS}
 )
-pico_set_linker_script(docsbc ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
+pico_set_linker_script(docsbc ${CMAKE_SOURCE_DIR}/memmap_2350_cstm.ld)
 pico_add_extra_outputs(docsbc)
 
 
@@ -246,7 +241,20 @@ target_link_libraries(docsbc_db
   ${PICO_LIBS}
   ${EXT_LIBS}
 )
-pico_set_linker_script(docsbc_db ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
+# 1. Gather all C files from your two source directories
+file(GLOB DEOPT_FILES1 "${CMAKE_CURRENT_LIST_DIR}/dc/*.c")
+file(GLOB DEOPT_FILES2 "${CMAKE_CURRENT_LIST_DIR}/dbusc/*.c")
+
+# 2. Combine the file lists
+set(MY_DEOPT_FILES ${DEOPT_FILES1} ${DEOPT_FILES2})
+
+# 3. Force the -O0 flag onto every file in those directories
+if(MY_DEOPT_FILES)
+    set_source_files_properties(${MY_DEOPT_FILES} PROPERTIES COMPILE_FLAGS "-O0")
+    message(STATUS "Forcing fully-deoptimized -O0 for files in dc/ and dbusc/")
+endif()
+
+pico_set_linker_script(docsbc_db ${CMAKE_SOURCE_DIR}/memmap_2350_cstm.ld)
 pico_add_extra_outputs(docsbc_db)
 
 #
@@ -273,7 +281,7 @@ target_link_libraries(docsbc_sat
   ${PICO_LIBS}
   ${EXT_LIBS}
 )
-pico_set_linker_script(docsbc_sat ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
+pico_set_linker_script(docsbc_sat ${CMAKE_SOURCE_DIR}/memmap_2350_cstm.ld)
 pico_add_extra_outputs(docsbc_sat)
 
 

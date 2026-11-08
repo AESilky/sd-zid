@@ -57,7 +57,6 @@ typedef enum MSG_ID_ {
     MSG_ROTARY_CHG,
     MSG_STDIO_CHAR_READY,
     // Debug Monitor Communications Messages
-    MSG_DMC_CMD_REQ,        // Request the DM run a command
     //
     // ==============================================================
     // Application functionality (APP) messages 0xC0 - 0xFF
@@ -70,7 +69,7 @@ typedef enum MSG_ID_ {
     MSG_DLG_TIMEOUT,
     MSG_TERM_CHAR_RCVD,
     //  Debug Controller/Monitor App Messages
-    MSG_DM_CMDDONE,         // DM completed the command. CMD in value8u. Posted after status.
+    MSG_DM_CMD_CMPLT,       // DM completed the command. CMD in HB, STATE in LB of value16u. Posted after status.
     MSG_DM_STATUSRCVD,      // Status was received from the DM. Status in value8u.
 } msg_id_t;
 #define MSG_ID_CNT (0x100)
@@ -111,7 +110,6 @@ union MSG_DATA_VALUE_ {
     bool bv;
     bool debug;
     cmt_sleep_data_t cmt_sleep;
-    dmc_cmd_req_t dmc_cmd_req;      // DM Communications Command Request
     int8_t value8;
     uint8_t value8u;
     int16_t value16;

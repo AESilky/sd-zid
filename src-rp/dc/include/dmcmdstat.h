@@ -9,9 +9,7 @@
  * Also Note: DM status values always have Bit-7 set
  */
 typedef enum DM_STATUS_VAL_ {
-    DMINIT      = 0x80,     // The Debug Monitor has finished initialization
-                            // it will read the CTRL register and resend this
-                            // status repeatedly until we respond with DC_INITRDY 
+    DMIDLE      = 0x80,     // The Debug Monitor is idle
     DMOPDONE    = 0x82,     // DOC requested operation complete
     DMOKCMDRD   = 0x84,     // OK, reading command
     DMCMDUK     = 0x88,     // Requested command unknown
@@ -36,67 +34,69 @@ typedef enum DM_STATUS_VAL_ {
  */
 typedef enum DM_CMDS_ {
     DMNOP           = 0x80,
-    DCVER           = 0x81, //
-    DCTGTMP         = 0x82, // Use the Target's memory/ports for Get/Put operations (default)
-    DCDBGRMP        = 0x83, // Use the Debugger's memory/ports for Get/Put operations
+    DMVER           = 0x81, //
+    DMTGTMP         = 0x82, // Use the Target's memory/ports for Get/Put operations (default)
+    DMDBGRMP        = 0x83, // Use the Debugger's memory/ports for Get/Put operations
     //
-    DCATEST         = 0x84, // Auto Test
+    DMATEST         = 0x84, // Auto Test
     //
-    DCPBRKPNTS      = 0x85, // Breakpoint Configure
-    DCBRKPEN        = 0x86, // Breakpoint Enable/Disable
+    DMPBRKPNTS      = 0x85, // Breakpoint Configure
+    DMBRKPEN        = 0x86, // Breakpoint Enable/Disable
     //
-    DCGREGALL       = 0x88,	// 
-    DCPREGALL       = 0x89,	// 
-    DCGIEDV         = 0x8A,	// 
-    DCPIEDV         = 0x8B,	// 
-    DCGREG          = 0x90,	//  90..9F
-    DCPREG          = 0xA0,	//  A0..AF
-    DCGRP           = 0xB0,	//  B0..B3
-    DCPRP           = 0xB4,	//  B4..B7
-    DCGM            = 0xB8,	// Get mem byte(s)
-    DCPM            = 0xB9,	// Put mem byte(s)
-    DCGP            = 0xBA,	// Get port byte(s)
-    DCPP            = 0xBB,	// Put port byte(s)
+    DMGREGALL       = 0x88,	// 
+    DMPREGALL       = 0x89,	// 
+    DMGIEDV         = 0x8A,	// 
+    DMPIEDV         = 0x8B,	// 
+    DMGREG          = 0x90,	//  90..9F
+    DMPREG          = 0xA0,	//  A0..AF
+    DMGRP           = 0xB0,	//  B0..B3
+    DMPRP           = 0xB4,	//  B4..B7
+    DMGM            = 0xB8,	// Get mem byte(s)
+    DMPM            = 0xB9,	// Put mem byte(s)
+    DMGP            = 0xBA,	// Get port byte(s)
+    DMPP            = 0xBB,	// Put port byte(s)
     //
-    DCGO            = 0xBC, // Target GO
-    DCGOWREG        = 0xBD, // Go w/Registers
-    DCSTEP          = 0xBE, // STEP
-    DCSTEPWREG      = 0xBF, // Step w/Registers
+    DMGO            = 0xBC, // Target GO
+    DMGOWREG        = 0xBD, // Go w/Registers
+    DMSTEP          = 0xBE, // STEP
+    DMSTEPWREG      = 0xBF, // Step w/Registers
+    //
+    CMD_NONE        = 0x00  // NOT A COMMAND!!! - Cannot be sent. Flag for NO OP IN PROGRESS.
 } dm_cmd_t;
 #define NOCMD ((dm_cmd_t)0)
 
-/** Register mask values for the low 4 - bits for DCGREG and DCPREG */
+/** Register mask values for the low 4 - bits for DMGREG and DMPREG */
 typedef enum DM_REG_MASK_ {
-    DCRFP_M     = 0x0,	// 
-    DCRAP_M     = 0x1,	// 
-    DCRCP_M     = 0x2,	// 
-    DCRBP_M     = 0x3,	// 
-    DCREP_M     = 0x4,	// 
-    DCRDP_M     = 0x5,	// 
-    DCRLP_M     = 0x6,	// 
-    DCRHP_M     = 0x7,	// 
-    DCRF_M      = 0x8,	// 
-    DCRA_M      = 0x9,	// 
-    DCRC_M      = 0xA,	// 
-    DCRB_M      = 0xB,	// 
-    DCRE_M      = 0xC,	// 
-    DCRD_M      = 0xD,	// 
-    DCRL_M      = 0xE,	// 
-    DCRH_M      = 0xF,	// 
+    DMRFP_M     = 0x0,	// 
+    DMRAP_M     = 0x1,	// 
+    DMRCP_M     = 0x2,	// 
+    DMRBP_M     = 0x3,	// 
+    DMREP_M     = 0x4,	// 
+    DMRDP_M     = 0x5,	// 
+    DMRLP_M     = 0x6,	// 
+    DMRHP_M     = 0x7,	// 
+    DMRF_M      = 0x8,	// 
+    DMRA_M      = 0x9,	// 
+    DMRC_M      = 0xA,	// 
+    DMRB_M      = 0xB,	// 
+    DMRE_M      = 0xC,	// 
+    DMRD_M      = 0xD,	// 
+    DMRL_M      = 0xE,	// 
+    DMRH_M      = 0xF,	// 
 } dm_reg_mask_t;
 
 typedef enum DM_BRK_OP_ {
-    DCBRKOP_IF  = 0x1,	// Instruction Fetch
-    DCBRKOP_MW  = 0x2,	// Memory Write
-    DCBRKOP_MR  = 0x3,	// Memory Read
-    DCBRKOP_AM  = 0x4,	// Any Memory Operation(except Refresh)
-    DCBRKOP_PW  = 0x5,	// Port(I / O) Write
-    DCBRKOP_PR  = 0x6,	// Port(I / O) Read
-    DCBRKOP_AP  = 0x7	// Any Port(I / O) Operation
+    DMBRKOP_IF  = 0x1,	// Instruction Fetch
+    DMBRKOP_MW  = 0x2,	// Memory Write
+    DMBRKOP_MR  = 0x3,	// Memory Read
+    DMBRKOP_AM  = 0x4,	// Any Memory Operation(except Refresh)
+    DMBRKOP_PW  = 0x5,	// Port(I / O) Write
+    DMBRKOP_PR  = 0x6,	// Port(I / O) Read
+    DMBRKOP_AP  = 0x7	// Any Port(I / O) Operation
 } dm_brk_op_t;
 
-#define DCBRKEN_M   0x08    // Enable / Disable
-#define DCBRKUA_M   0x10    // Use Address(bit mask)
+#define DMBRKEN_M   0x08    // Enable / Disable
+#define DMBRKUA_M   0x10    // Use Address(bit mask)
 
 
 #endif // DMCMDSTAT_H_

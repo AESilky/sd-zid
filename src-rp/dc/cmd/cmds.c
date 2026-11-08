@@ -48,7 +48,7 @@ const cmd_handler_entry_t cmds_dmsim_entry;
 //
 // NORMAL Commands
 //
-const cmd_handler_entry_t cmds_dec_entry;
+const cmd_handler_entry_t cmd_dec_entry;
 const cmd_handler_entry_t cmds_dasm_entry;
 const cmd_handler_entry_t cmds_disasm_entry;
 const cmd_handler_entry_t cmds_dump_entry;
@@ -262,7 +262,8 @@ static void _disasm_cmplt() {
 /** Continue disassembly with data */
 static void _disasm_c_d(cmt_msg_t* msg) {
     // Continue the disassembly, now with data
-    uint8_t* vbuf = msg->data.bptr;
+    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    volatile uint8_t* vbuf = ob->buf;
     uint16_t addr = _da_ctx.caddr;
     uint8_t b = *vbuf;
     int8_t s = _da_ctx.ctx.status;
@@ -660,9 +661,9 @@ static void _handle_dm_putregs(cmt_msg_t* msg) {
 // Command Executors
 // ====================================================================
 
-/* ******************************************** */
-/* DOT Commands (for dev/debug/test)            */
-/* ******************************************** */
+/* **************************************************************** */
+/* DOT Commands (for dev/debug/test)                                */
+/* **************************************************************** */
 
 static int _exec_clrwait(int argc, char** argv, const char* unparsed) {
     int retval = 0;
@@ -753,6 +754,13 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
     const char* sim = (v ? "simulated" : "physical");
     SHPF("DM %s\n", sim);
     dbus_status_print();
+    bool cip = dmc_op_inprocess();
+    dmc_cmd_op_t cop = dmc_op_current();
+    dmc_cmd_op_t col = dmc_op_last();
+    if (cip) {
+        shell_printf(" DM current operation: %02X\n", (uint8_t)cop.cmd);
+    }
+    shell_printf("    DM last operation: %02X\n", (uint8_t)col.cmd);
     return (retval);
 }
 
@@ -773,9 +781,11 @@ static int _exec_s2test(int argc, char** argv, const char* unparsed) {
     return (retval);
 }
 
-/* ******************************************** */
-/* NORMAL Commands (for general operation)      */
-/* ******************************************** */
+
+
+/* **************************************************************** */
+/* NORMAL Commands (DC Specific - general operation)                */
+/* **************************************************************** */
 
 
 static int _exec_cpu(int argc, char** argv, const char* unparsed) {
@@ -794,7 +804,7 @@ static int _exec_dec(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc < 1 || argc > 2) {
         // We require 1 argument and can accept 2.
-        cmd_help_display(&cmds_dec_entry, HELP_INVALID_USAGE);
+        cmd_help_display(&cmd_dec_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     // First argument is the destination
@@ -895,7 +905,8 @@ static void _dump_c(cmt_msg_t* msg) {
     //
     paddr = addr & 0xFFF0; // Start the line at a 0
     int bvpad = nbase_width(RS_BYTE) + 1;
-    uint8_t* vbuf = msg->data.bptr;
+    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    volatile uint8_t* vbuf = ob->buf;
     uint8_t v;
     char abuf[17];
     while (cnt > 0) {
@@ -1013,7 +1024,8 @@ static void _dumpa_c(cmt_msg_t* msg) {
     //
     paddr = addr & 0xFFF0; // Start the line at a 0
     int bvpad = 4;
-    uint8_t* vbuf = msg->data.bptr;
+    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    volatile uint8_t* vbuf = ob->buf;
     uint8_t v;
     while (cnt > 0) {
         if ((paddr & 0x000F) == 0) {
@@ -1345,7 +1357,7 @@ static int _exec_load(int argc, char** argv, const char* unparsed) {
     // We have a memory address. Do they want to load bytes or words?
     sz = (addr_ind == ADDR_IND_WORD ? RS_WORD : RS_BYTE);
     argc--; argv++; // Next arg starts the values
-    dc_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     uint16_t cnt = 0;
     while (argc && cnt < 256) {
         srcval = _val_provider(*argv, sz, &status);
@@ -1398,7 +1410,7 @@ static int _exec_out(int argc, char** argv, const char* unparsed) {
     uint32_t pval;
     valstatus_t status;
     uint16_t cnt = 0;
-    dc_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     while (argc && cnt < 256) {
         pval = _val_provider(*argv, RS_BYTE, &status);
         if (status != VP_OK) {
@@ -1503,6 +1515,9 @@ void dcc_set_valprov(val_prvdr_fn fn) {
 // Command Entries
 // ====================================================================
 
+// -------------------------
+// == DOT '.' Commands
+// -------------------------
 
 const cmd_handler_entry_t cmds_altscr_entry = {
     _exec_s2test,
@@ -1511,7 +1526,6 @@ const cmd_handler_entry_t cmds_altscr_entry = {
     "[0|1]",
     "TEST VT/XTERM Alt-Screen: 1 switch to #2, 0 switch to #1"
 };
-
 const cmd_handler_entry_t cmds_clrwait_entry = {
     _exec_clrwait,
     5,
@@ -1519,7 +1533,6 @@ const cmd_handler_entry_t cmds_clrwait_entry = {
     0,
     "Clear the WAIT signal and re-initialize MSEL and AUTO-RDWR PIO SMs (for dev/test)"
 };
-
 const cmd_handler_entry_t cmds_dmcancel_entry = {
     _exec_dm_cancel,
     6,
@@ -1527,7 +1540,6 @@ const cmd_handler_entry_t cmds_dmcancel_entry = {
     0,
     "Cancel waiting state on an outstanding DM operation (for dev)"
 };
-
 const cmd_handler_entry_t cmds_dmdbgrmp_entry = {
     _exec_dm_dbgrmp,
     5,
@@ -1535,7 +1547,6 @@ const cmd_handler_entry_t cmds_dmdbgrmp_entry = {
     "0|1",
     "Use the DM's memory and ports for debug operations"
 };
-
 const cmd_handler_entry_t cmds_dmgetregs_entry = {
     _exec_dm_getregs,
     5,
@@ -1543,7 +1554,6 @@ const cmd_handler_entry_t cmds_dmgetregs_entry = {
     0,
     "Request the DM send all registers (for test)"
 };
-
 const cmd_handler_entry_t cmds_dmputregs_entry = {
     _exec_dm_putregs,
     5,
@@ -1551,7 +1561,6 @@ const cmd_handler_entry_t cmds_dmputregs_entry = {
     0,
     "Send all registers to the DM (for test)"
 };
-
 const cmd_handler_entry_t cmds_dmsim_entry = {
     _exec_dm_simulate,
     6,
@@ -1560,6 +1569,10 @@ const cmd_handler_entry_t cmds_dmsim_entry = {
     "Simulate interactions with DM (for dev)"
 };
 
+// -------------------------
+// Normal Commands
+// -------------------------
+
 const cmd_handler_entry_t cmds_cpu_entry = {
     _exec_cpu,
     2,
@@ -1567,15 +1580,13 @@ const cmd_handler_entry_t cmds_cpu_entry = {
     0,
     "CPU register display"
 };
-
-const cmd_handler_entry_t cmds_dec_entry = {
+const cmd_handler_entry_t cmd_dec_entry = {
     _exec_dec,
     3,
     "dec",
     "dest [val]",
     "Decrement a destination. Optionally by a value."
 };
-
 const cmd_handler_entry_t cmds_dasm_entry = {
     _exec_dasm,
     3,
@@ -1583,7 +1594,6 @@ const cmd_handler_entry_t cmds_dasm_entry = {
     "\001disasm",
     0
 };
-
 const cmd_handler_entry_t cmds_disasm_entry = {
     _exec_dasm,
     3,
@@ -1593,7 +1603,6 @@ const cmd_handler_entry_t cmds_disasm_entry = {
   for the location to allow specifying count while continuing a disassembly.\n\
   The default count is 16 statements."
 };
-
 const cmd_handler_entry_t cmds_dump_entry = {
     _exec_dump,
     1,
@@ -1606,7 +1615,6 @@ const cmd_handler_entry_t cmds_dump_entry = {
   also includes ASCII characters.\n\
    SEE: DASCII to dump characters and control codes in extended format"
 };
-
 const cmd_handler_entry_t cmds_dumpa_entry = {
     _exec_dumpa,
     2,
@@ -1617,7 +1625,6 @@ const cmd_handler_entry_t cmds_dumpa_entry = {
   The argument usage is the same as the DUMP command.\n\
    SEE: DUMP to dump byte values"
 };
-
 const cmd_handler_entry_t cmds_examine_entry = {
     _exec_examine,
     1,
@@ -1625,7 +1632,6 @@ const cmd_handler_entry_t cmds_examine_entry = {
     "reg/loc",
     "Examine the value of a register or location."
 };
-
 const cmd_handler_entry_t cmds_go_entry = {
     _exec_go,
     1,
@@ -1633,7 +1639,6 @@ const cmd_handler_entry_t cmds_go_entry = {
     "[pc]",
     "Run the target, optionally specifying a starting PC."
 };
-
 const cmd_handler_entry_t cmds_ld_entry = {
     _exec_load,
     2,
@@ -1641,7 +1646,6 @@ const cmd_handler_entry_t cmds_ld_entry = {
     "\001load",
     0
 };
-
 const cmd_handler_entry_t cmds_in_entry = {
     _exec_in,
     1,
@@ -1653,7 +1657,6 @@ const cmd_handler_entry_t cmds_in_entry = {
   value of the B register will be used for the upper 8 bits of the address.\n\
   If multiple values are provided, they are output to the same port in order."
 };
-
 const cmd_handler_entry_t cmds_inc_entry = {
     _exec_inc,
     3,
@@ -1661,7 +1664,6 @@ const cmd_handler_entry_t cmds_inc_entry = {
     "dest [val]",
     "Increment a destination. Optionally by a value."
 };
-
 const cmd_handler_entry_t cmds_load_entry = {
     _exec_load,
     1,
@@ -1671,7 +1673,6 @@ const cmd_handler_entry_t cmds_load_entry = {
   If 'dest' is a memory location multiple values can be provided.\n\
   Multiple values are stored in consecutive locations."
 };
-
 const cmd_handler_entry_t cmds_out_entry = {
     _exec_out,
     1,
@@ -1683,7 +1684,6 @@ const cmd_handler_entry_t cmds_out_entry = {
   B register will be used for the upper byte. If multiple values\n\
   are provided, they are output to the same port in order."
 };
-
 const cmd_handler_entry_t cmds_step_entry = {
     _exec_step,
     1,
@@ -1691,6 +1691,7 @@ const cmd_handler_entry_t cmds_step_entry = {
     "[pc]",
     "Single-Step the target, optionally specifying a starting PC."
 };
+
 
 
 // ====================================================================
@@ -1715,7 +1716,7 @@ void dccmds_modinit() {
     cmd_register(&cmds_dmsim_entry);
     //  Regular Commands
     cmd_register(&cmds_cpu_entry);
-    cmd_register(&cmds_dec_entry);
+    cmd_register(&cmd_dec_entry);
     cmd_register(&cmds_dasm_entry);
     cmd_register(&cmds_disasm_entry);
     cmd_register(&cmds_dump_entry);
