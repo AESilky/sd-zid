@@ -172,6 +172,7 @@
             "INTACK",
             "Ints",
             "ioaddr",
+            "ioeclk",
             "iorq",
             "irst",
             "ISBRK",

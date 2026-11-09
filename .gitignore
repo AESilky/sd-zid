@@ -102,6 +102,11 @@ CB*
 **/pld/_*
 **/pld/*.pdf
 
+# TEMP Files of various types
+_tmp*
+_temp*
+*.tmp
+
 # Specific 'Adds' to override ignored files
 #
 ## CPLD
