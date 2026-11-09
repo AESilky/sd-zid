@@ -101,7 +101,7 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  * 7. Break Data register
  * 8. Break Data 'Don't-Care' register
  * 7. SBC GPIO
- * 8. RP2040-Module (2). The Module is used for all communication, access to a
+ * 8. RP2350-Module (2). The Module is used for all communication, access to a
  *      EEPROM for saving configuration, and possibly other functions.
  *
  * There are 224 port addresses for use by external devices for the SBC...
@@ -127,7 +127,7 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  *      12..13: SR Reason, ZID init'ed, SBC-Mode ind - RO (b0 DC)
  *      14..15: Board Control - R/W (b0 DC)
  *      18..19: Break 1&2n Control - WO (b0 DC)
- *      1E..1F: RP2040-Module - External (b0 CTRL/DATA)
+ *      1E..1F: RP2350-Module - External (b0 CTRL/DATA)
  * - - - - - - -
  *      20..FF: Reserved for External Devices (224 ports)
  *
@@ -160,7 +160,7 @@ $DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
  * the debugger. The target NMI is also blocked when doing a single bus operation
  * on the target (memory or port read/write).
  *
- * Additionally, NMI is used for the ATTN request from the RP2040 Module
+ * Additionally, NMI is used for the ATTN request from the RP2350 Module
  * when already in debug mode (not target mode) rather than generating a
  * special reset.
  *
@@ -243,7 +243,7 @@ PIN 87 = cpu_clk;       /* CPU CLK (on GCLK1) */
 /* Inputs                                                               */
 /************************************************************************/
 
-PIN [94,98] = [addr15..14]; /* Address inputs                            */
+PIN [94,98] = [addr15..14]; /* Address inputs                           */
 PIN [75,65,64,99,100,1,2] = [addr7..1];     /* addr0 is not used        */
 PIN 90 = !zm1;
 PIN  6 = !zrd;
@@ -262,8 +262,11 @@ PIN 37 = !twait;        /* Target System WAIT request                   */
 PIN 22 = !sbcmode;      /* We are running as an SBC   (Board-Jumpers)   */
 PIN 31 = !tgt_only;     /* Target System should run immediately (no Debug init) (Board-SW)  */
 PIN 10 = tgt_now;       /* Target-Go counter has reached terminal count */
-PIN 85 = attn;          /* Request from RP2040 Module for attention     */
-PIN 24 = !mwtrq;        /* Wait Request from RP2040 Module              */
+PIN 85 = attn;          /* Request from RP2350 Module for attention     */
+    /* ECO 0002 - IOECLK to keep MOD_SEL from occurring during RP2350 EXP-Port update   */
+    /*  PIN 29 was TP8                                                                     */
+PIN 29 = !ioeclk;       /* RP2350 Module Expansion CLK (HIGH when IDLE) */
+PIN 24 = !mwtrq;        /* Wait Request from RP2350 Module              */
 /* */
 PIN 13 = b1_aeq;        /* Address match for breakpoint 1               */
 PIN 14 = brk_deq;       /*  Data equal (input from 1504)                */
@@ -308,7 +311,7 @@ PIN 49  = rom_sel;  /* Defined as HIGH-TRUE and an inverter used externally */
                     /* to avoid the Microchip CUPL/Fitter issue.            */
 PIN 72  = !zwait;
 PIN 69  = !zbreq;     /* To the Z80 */
-PIN 19  = !mod_sel;     /* RP2040 Module Select                             */
+PIN 19  = !mod_sel;     /* RP2350 Module Select                             */
 /* */
 PIN 45  = sbc_io;       /* Local I/O Addr Range and Op (SBC and ZID)        */
 PIN 27  = zid_io;       /* Local I/O Addr Range and Op (ZID only)           */
@@ -500,7 +503,8 @@ FIELD maprdBdata  = ['b'0, 'b'0, 'b'0, 'b'0, mapB3..0];     /* MMap B Data */
 FIELD maprdCdata  = ['b'0, 'b'0, 'b'0, 'b'0, mapC3..0];     /* MMap C Data */
 FIELD maprdDdata  = ['b'0, 'b'0, 'b'0, 'b'0, mapD3..0];     /* MMap D Data */
 
-
+/** Module I/O Access */
+$DEFINE MOD_IO      (sbc_io & ioaddr:'b'xxx1111x & (zwr # zrd))
 
 /************************************************************************/
 /* Logic                                                                */
@@ -633,7 +637,8 @@ ram_sel     = (zmreq & !zrfsh & !zop_force)
 /** MMU Wait-State Generation - 1 WS for ROM Access */
 zwait       = (twait & tgtmode_R)
              # ((!tgtmode_R # sbcmode) & wait_req_R)
-             # (mod_sel & mwtrq);
+             # (mod_sel & mwtrq)
+             # (MOD_IO & ioeclk);
 wait_req_R.ck = cpu_clk;
 wait_req_R.d  = rom_sel & !wait_ho_R;
 wait_ho_R.ck  = cpu_clk;
@@ -674,8 +679,8 @@ tcbus_fen   = !zback            /* Not during Z80 BusAck                        
 
 
 /** RP Module Decode */
-mod_sel     = sbc_io & ioaddr:'b'xxx1111x & (zwr # zrd);     /* 1E/1F: RP Mod CTRL/DATA */
-
+mod_sel.d   = MOD_IO & !ioeclk; /* 1E/1F: RP Mod CTRL/DATA, but not when it is clocking its latch   */
+mod_sel.ck  = cpu_clk;
 
 /** Breakpoint Registers and Control */
 [b1op2..0].d    = B1_OP_DATA;   /* Breakpoint1 Operation                    */
