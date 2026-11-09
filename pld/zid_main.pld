@@ -379,6 +379,8 @@ PINNODE = so_done_R;        /* Single-Op done, used to clear target mode at end 
 PINNODE = sngl_step_R;      /* Do a single IF and bus ops on Target-Go-Now (d6 CTRL)            */
 PINNODE = zid_init_R;       /* Bit indicating the ZID functionality is initialized (d7 CTRL)    */
 
+/** Module Busy             */
+PINNODE = mod_busy_R;       /* When true the RP2350 is busy (internally) and can't be bothered  */
 
 /** Target Mode Control */
 PINNODE = to_target;
@@ -560,7 +562,7 @@ zop_force.ar    = zrfsh;
 /** Local Z80 NMI and INT request generation */
 znmi            = (tgtmode_R & tnmi    /* Target running and it has an NMI (no target NMI in Debug Mode) */
                 & !(sngl_op_R # sngl_step_R)) /* but not during Single-OP/STEP */
-                 # (attn & !tgtmode_R & !attn_tms_R & zid_init_R);  /* RP Module wants attention, in Debug Mode, ZID Init'ed */
+                 # (attn & !tgtmode_R & !attn_tms_R & zid_init_R & !mod_busy_R);  /* RPModule attention, in Debug Mode, ZID Init'ed */
 
 zint            = (tgtmode_R & tint   /* Target INT gated to Z80 only when in Target Mode */
                 & !(sngl_op_R # sngl_step_R)); /* but not during Single-OP/STEP */
@@ -638,7 +640,7 @@ ram_sel     = (zmreq & !zrfsh & !zop_force)
 zwait       = (twait & tgtmode_R)
              # ((!tgtmode_R # sbcmode) & wait_req_R)
              # (mod_sel & mwtrq)
-             # (MOD_IO & ioeclk);
+             # (MOD_IO & mod_busy_R);
 wait_req_R.ck = cpu_clk;
 wait_req_R.d  = rom_sel & !wait_ho_R;
 wait_ho_R.ck  = cpu_clk;
@@ -670,17 +672,20 @@ tdbus_en    = tgtmode_R & !zop_force;   /* Enable the Target Data Bus unless for
 tdbus_in    = (!zback & (zm1 # zrd))    /* Data Bus direction is IN for M1 (IF or INTACK) or RD.    */
              # (zback & zwr);           /* or WR from Bus Master to on-board devices                */
 /* */
-tcbus_en    = !zback            /* Not during Z80 BusAck                                    */
-             & (tgtmode_R       /* Enable Control signals during Target Mode when not       */
-              & !zop_force);    /* forcing an operation.                                    */
-tcbus_fen   = !zback            /* Not during Z80 BusAck                                    */
-             & (!tgtmode_R      /* Fixed Control signals during Debug Mode                  */
-              # zop_force);     /* or when forcing an operation.                            */
+tcbus_en    = !zback            /* Not during Z80 BusAck                                            */
+             & (tgtmode_R       /* Enable Control signals during Target Mode when not               */
+              & !zop_force);    /* forcing an operation.                                            */
+tcbus_fen   = !zback            /* Not during Z80 BusAck                                            */
+             & (!tgtmode_R      /* Fixed Control signals during Debug Mode                          */
+              # zop_force);     /* or when forcing an operation.                                    */
 
 
-/** RP Module Decode */
-mod_sel.d   = MOD_IO & !ioeclk; /* 1E/1F: RP Mod CTRL/DATA, but not when it is clocking its latch   */
-mod_sel.ck  = cpu_clk;
+/** RP Module Busy and I/O Decode */
+mod_busy_R.as   = ioeclk;       /* As soon as IOECLK goes true the Module can't be disturbed        */
+mod_busy_R.d    = !ioeclk;
+mod_busy_R.ck   = zm1;          /* Give the Module some time to recover                             */
+
+mod_sel         = MOD_IO & !mod_busy_R; /* 1E/1F: RP Mod CTRL/DATA, but not when it's busy          */
 
 /** Breakpoint Registers and Control */
 [b1op2..0].d    = B1_OP_DATA;   /* Breakpoint1 Operation                    */
