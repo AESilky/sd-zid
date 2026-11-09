@@ -84,6 +84,7 @@ extern "C" {
 //
 #ifndef PIO_DEFS            // Defaults for PIO use
 #define PIO_DEFS
+#define PIOBLK_ROUTER           pio1            // PIO Block 1 is used for the ROUTER
 #define PIOBLK_CTRL_PORT        pio1            // PIO Block 1 is used for the CTRL Port
 #define PIOBLK_DATA_PORT        pio2            // PIO Block 2 is used for the DATA Port
 #endif

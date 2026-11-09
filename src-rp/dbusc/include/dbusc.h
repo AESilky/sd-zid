@@ -68,6 +68,22 @@ typedef ctrl_hdlr_action_t (*ctrlrd_irq_fn)(uint8_t* d);
 typedef ctrl_hdlr_action_t(*ctrlwr_irq_fn)(uint8_t v);
 
 /**
+ * @brief Absolutely force ATTN OFF (`attn_set_on(false)` should be used except for failure recovery)
+ * @ingroup 
+ * 
+ * This absolutely forces ATTN OFF be doing a EIO operation.
+ * Using `attn_set_on(false)` should be used for all normal processing. This method
+ * is provided for debugging to allow writing to the expansion latch regardless of
+ * what state the system things ATTN is in.
+ * 
+ * The normal `attn_set_on(bool)` method will skip writing to the expansion latch
+ * if the internal state tracking indicates that the ATTN bit is already in the
+ * desired state. This avoid excessive operations on the DATA bus and is also 
+ * faster.
+ */
+extern void attn_force_off();
+
+/**
  * @brief Get the state of the ATTN bit
  * @ingroup databus
  * 
@@ -165,15 +181,6 @@ extern void dbus_ctrl_wr_hdlr_set(ctrlwr_irq_fn hdlr);
 extern void dbus_data_rx_drain();
 
 /**
- * @brief Get the value of the last unexpected WRITE operation by the host.
- * @ingroup databus
- *
- *
- * @return uint8_t The value written
- */
-extern uint8_t dbus_last_wr_val();
-
-/**
  * @brief Prepare to receive data from the bus into a buffer.
  * @ingroup databus
  * 
@@ -263,15 +270,6 @@ extern void dbus_start_ctrl_port();
  * @see dbus_prep_sendrecv
  */
 extern void dbus_start_dataop();
-
-/**
- * @brief Set the value returned for an unexpected READ operation by the host.
- * @ingroup databus
- * 
- * 
- * @param v Value to return
- */
-extern void dbus_data_defval_set(uint8_t v);
 
 /**
  * @brief Print the status of the four PIO State Machines that control the Data Bus.

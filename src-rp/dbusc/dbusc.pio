@@ -8,7 +8,6 @@
 ; REMEMBER: For a Host Read the data is output to the pins (CPU -> Z80).
 ;           For a Host Write the data is input from the pins (Z80 -> CPU).
 ;
-.pio_version RP2350
 
 .define MSEL_GPIO   12      ; Module Select Pin
 .define MSEL_OFF    1       ; Active LOW
@@ -24,15 +23,12 @@
 ; IRQ (FLAG) ASSIGNMENTS
 ;
 ; NOTE: These definitions appear to conflict, but remember that
-;       CTRL operations are on PIO1 : MSEL is SM0, IN is SM1, OUT is SM2
-;       DATA operations are on PIO2 : MSEL is SM0, IN is SM1, OUT is SM2
+;       MSEL, Bus-Dir, and Routing is on PIO1
+;       CTRL operations are on PIO1 : IN is SM1, OUT is SM2
+;       DATA operations are on PIO2 : IN is SM1, OUT is SM2
 ;
 .define PUBLIC HOST_DATA_NEEDED 0   ; [01] Data for the host is required (IRQ to CPU)
 .define PUBLIC HOST_DATA_READY  1   ; [02] Data from the host is ready (IRQ to CPU)
-.define PUBLIC OP_REQUESTED     2   ; [04] An operation is occurring (IRQ to CPU - might be ignored)
-.define PUBLIC OP_COMPLETE      3   ; [08] The operation is complete (IRQ to CPU - might be ignored)
-;
-.define PUBLIC OP_APPROVED      4   ; [10] This operation is approved - proceed (set by CPU)
 ;
 ; Intra-SM signals
 ;
@@ -44,32 +40,18 @@
 .define PUBLIC DATA_SLOT        0
 
 
-; Assigned to PIO1 SM0
-.program ctrl_op_msel
-.clock_div 1.0          ; Run at full speed
-.mov_status irq set OP_DONE ; Allow checking whether the CPU set OP_DONE to abort 
-.side_set   1   opt     ; Side-set used to control WAIT
-.out 8                  ; 8-bits out - for Pin Direction Control (pindirs)
 ;
-; CTRL Port - Monitor Module Select, Address, and Read. Trigger RD or WR.
+; Routing - Monitor Module Select, Address, and Read. Trigger CTRL/DATA RD or WR.
 ;
 ; 1. Set PINS to INPUT (always IN when idle)
 ; 1. Sets WAIT- on (0) and Waits for MSEL- to go true (0)
-; 2. Checks Address for 0 (CTRL Port)
+; 2. Checks Address for 0 (CTRL Port) or 1 (DATA Port)
 ; 3. Checks Read for 1 (Host WR, data IN) or 0 (Host RD, data OUT)
-; 4. Sets the DATA Bus direction and triggers the CTRL OUT or IN state machine.
+; 4. Sets the DATA Bus direction and triggers the CTRL or DATA state machine for OUT or IN.
 ; 5. Waits to be signalled that the transfer is done (pins read or pins set)
 ; 6. Releases WAIT-
 ; 7. Waits for MSEL- to go false (1)
 ; 8. WRAP
-;
-; The OP_REQUESTED and OP_APPROVED IRQ/FLAGS are used as follows:
-;  OP_REQUESTED: We have been selected and the operation CTRL/DATA is for this PIO
-;                Raise this IRQ. The CPU will be ignoring it if this operation is expected.
-;  OP_APPROVED:  If the CPU was expecting this operation this flag will already be set.
-;                If it wasn't expected, the OP_REQUESTED interrupt will alert the CPU
-;                and the CPU will do what's needed to prepare for this operation. Once
-;                it is prepared it will set this flag to the operation can continue.
 ;
 ; START LAST
 ;
@@ -77,37 +59,47 @@
 ; EXECCTRL_JMP_PIN = GP11 (MRD-)
 ; IN_PIN_BASE      = GP10 (MA)  --> Bit 0 of 'in pins' will be MA (GP10)
 ; OUT_PIN_BASE     = GP2  (Z80 Data Bus Base)
-; PINCTRL_OUT_COUNT = 8
+; PINCTRL_OUT_COUNT = 8   (8-bit Data Bus)
 ;
+; Assigned to PIO1 SM0
+.pio_version RP2350
+.program op_router
+.clock_div 1.0          ; Run at full speed
+.side_set   1   opt     ; Side-set used to control WAIT
+.out 8                  ; 8-bits out - for Pin Direction Control (pindirs)
 PUBLIC start:
 .wrap_target
     mov     pindirs,null                             [7]; Data Bus to Input
-    wait    MSEL_ON gpio MSEL_GPIO        side WAIT_ON  ; Wait for Module Select, WAIT on
+    wait    MSEL_ON gpio MSEL_GPIO      side WAIT_ON [7]; Wait ON. Wait for Module Select
     ; We are selected
-    ; check Address
-    mov     isr,pins                                    ; Check control block (Bit 0 = MA/GP10)
-    out     x,1                                         ; MA into X scratchpad
-    jmp     x-- stall_host_done                         ; If X is 1 it is DATA Port not us
-    ; The operation is for us. Let the CPU know then wait for approval (might already be approved)
-    irq     OP_REQUESTED
-    wait    LEAVE_SET irq OP_APPROVED
-    ; Check OP_DONE - If set it means the CPU wants us to abort the OP
-    mov     x,status
-    jmp     x-- stall_op_done                           ; CPU wants us to abort
+    ; Get Address
+    in      pins, 1                                     ; Get MA (address) bit into ISR
+    mov     x, isr                                      ; Move that single bit into X (used later)
     ;
     ; Look for RD/WR
     jmp     pin in_op                                   ; RD High is Host writing, DBUS IN is correct 
     ; RD Low, Host is reading, change the DBUS to OUT 
+out_op:
     mov     pindirs,~null                            [7]; Data Bus to Output
-    irq     OP_OUT                                      ; Wake up 'OUT' SM
-    jmp     stall_op_done
 in_op:
+    ; Check whether CTRL or DATA
+    jmp     x-- data_op                                 ; If X is 1 it is DATA Port
+    jmp     pin ctrl_in
+    irq     OP_OUT                                      ; Wake up 'OUT' SM in this PIO (CTRL)
+    jmp     stall_on_done
+ctrl_in:
     irq     OP_IN                                       ; Wake up 'IN' SM
-stall_op_done:
+    jmp     stall_on_done
+data_op:
+    ; The operation is on the DATA Port. Check RD/WR
+    jmp     pin data_in
+    irq     next OP_OUT                                 ; Wake 'OUT' SM in the DATA PIO
+    jmp     stall_on_done
+data_in:
+    irq     next OP_IN                                  ; Wake 'IN' SM in the DATA PIO
+stall_on_done:
     wait    THEN_CLR irq OP_DONE                        ; Wait for pins to be sampled/set
-    irq     OP_COMPLETE                side WAIT_OFF [7]
-stall_host_done:
-    wait    MSEL_OFF gpio MSEL_GPIO                     ; Stall until MSEL goes false (provide hold time)
+    wait    MSEL_OFF gpio MSEL_GPIO    side WAIT_OFF [7]; Stall until MSEL goes false (provide hold time)
 .wrap
 
 ; Assigned to PIO1 SM1
@@ -127,7 +119,7 @@ PUBLIC start:
     wait    THEN_CLR irq OP_IN          ; Wait for the ModSel SM to wake us
 data_in:
     in      pins,8                      ; read data from the bus
-    mov     rxfifo[DATA_SLOT],isr   [7] ; put data in register slot
+    mov     rxfifo[DATA_SLOT],isr       ; put data in register slot
     irq     wait HOST_DATA_READY        ; tell CPU data is available
 done:
     irq     OP_DONE                     ; Releases ModSel SM
@@ -152,107 +144,56 @@ PUBLIC start:
 data_out:
     irq     wait HOST_DATA_NEEDED       ; tell CPU that we need data
     mov     osr,rxfifo[DATA_SLOT]       ; get data from register slot
-    out     pins,8                  [7] ; read data from the bus (provide hold time)
+    out     pins,8                      ; read data from the bus (provide hold time)
 done:
     irq     OP_DONE                     ; Releases ModSel SM
 .wrap
 
 
 
-; Assigned to PIO2 SM0
-.program data_op_msel
-.clock_div 1.0          ; Run at full speed
-.side_set   1   opt     ; Side-set used to control WAIT
-.out 8                  ; 8-bits out - for Pin Direction Control (pindirs)
-;
-; DATA Port - Monitor Module Select, Address, and Read. Trigger RD or WR.
-;
-; This is the same as `ctrl_op_msel` except that it is looking for the
-; address to be 1 (DATA) rather than 0 (CTRL).
-;
-; @SEE ctrl_op_msel for description
-;
-; This runs in PIO-2 while CTRL runs in PIO-1
-;
-; START LAST
-;
-; --- PIO CONFIGURATION ---
-; EXECCTRL_JMP_PIN = GP11 (MRD-)
-; IN_PIN_BASE      = GP10 (MA)  --> Bit 0 of 'in pins' will be MA (GP10)
-; OUT_PIN_BASE     = GP2  (Z80 Data Bus Base)
-; PINCTRL_OUT_COUNT = 8
-;
-PUBLIC start:
-.wrap_target
-    mov     pindirs,null                             [7]; Data Bus to Input
-    wait    MSEL_ON gpio MSEL_GPIO        side WAIT_ON  ; Wait for Module Select, WAIT on
-    ; We are selected
-    ; check Address
-    mov     isr,pins                                    ; Check control block (Bit 0 = MA/GP10)
-    out     x,1                                         ; MA into X scratchpad
-    jmp     !x stall_host_done                          ; If X is 0 it is CTRL Port not us
-    ; The operation is for us. Let the CPU know then wait for approval (might already be approved)
-    irq     OP_REQUESTED
-    wait    LEAVE_SET irq OP_APPROVED
-    ;
-    ; Look for RD/WR
-    jmp     pin in_op                                   ; RD High is Host writing, DBUS IN is correct 
-    ; RD Low, Host is reading, change the DBUS to OUT 
-    mov     pindirs,~null                            [7]; Data Bus to Output
-    irq     OP_OUT                                      ; Wake up 'OUT' SM
-    jmp     stall_op_done
-in_op:
-    irq     OP_IN                                       ; Wake up 'IN' SM
-stall_op_done:
-    wait    THEN_CLR irq OP_DONE                        ; Wait for pins to be sampled/set
-    irq     OP_COMPLETE                   side WAIT_OFF ; WAIT off
-stall_host_done:
-    wait    MSEL_OFF gpio MSEL_GPIO                  [7]; Stall until MSEL goes false (provide hold time)
-.wrap
-
-
 ; Assigned to PIO2 SM1
 .program data_op_in
 .clock_div 1.0
-.fifo txrx
+.fifo rx
 .in 8 left
 ;
 ; DATA Port IN - DMA reads data from PIO-SM
 ;
-; The ModSel SM has taken care of setting the bus direction.
+; The Routing SM has taken care of setting the bus direction.
 ;
-; SHOULD BE STARTED BEFORE ModSel SM
+; SHOULD BE STARTED BEFORE Routing SM
 ;
 PUBLIC start:
 .wrap_target
     wait    THEN_CLR irq OP_IN          ; Wait for the ModSel SM to wake us
 data_in:
     in      pins,8                      ; read data from the bus
-    push
-    irq     nowait HOST_DATA_READY      ; tell CPU data is available
+    push    noblock                     ; assume the DMA is much faster than the Z80 ops
+    irq     nowait HOST_DATA_READY      ; tell CPU host is writing (this will typically be ignored)
 done:
-    irq     OP_DONE                     ; Releases MOD_SEL SM
+    irq     prev OP_DONE                ; Releases Router SM (on PIO1)
 .wrap
 
 
 ; Assigned to PIO2 SM2
 .program data_op_out
 .clock_div 1.0
-.fifo txrx
+.fifo tx
 .out 8 right
 ;
 ; DATA Port OUT - DMA writes data to PIO-SM
 ;
-; The ModSel SM has taken care of setting the bus direction.
+; The Router SM has taken care of setting the bus direction.
 ;
-; SHOULD BE STARTED BEFORE ModSel SM
+; SHOULD BE STARTED BEFORE Router SM
 ;
 PUBLIC start:
 .wrap_target
     wait    THEN_CLR irq OP_OUT         ; Wait for the ModSel SM to wake us
 data_out:
-    pull    block
+    irq     nowait HOST_DATA_NEEDED     ; tell CPU host is reading (this will typically be ignored)
+    pull    noblock                     ; assume the DMA is much faster than the Z80 ops
     out     pins,8                      ; write data to the bus
 done:
-    irq     OP_DONE                     ; Releases MOD_SEL SM
+    irq     prev OP_DONE                ; Releases Router SM (on PIO1)
 .wrap

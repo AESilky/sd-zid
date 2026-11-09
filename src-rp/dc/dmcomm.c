@@ -100,50 +100,12 @@ static void _handle_cmd_done(cmt_msg_t* msg) {
     _cmd_op.state = DMC_COS_UNINITIALIZED; // Set it as 'uninitialized' so it doesn't get used
 }
 
-static void _handle_ctrl_read(cmt_msg_t* msg) {
-    // The host performed a READ from the CTRL port
-    // See if it was handled
-    ctrl_hdlr_action_t handled = highByte(msg->data.value16u);
-    if (CHA_VALUE_TBD == handled) {
-        uint8_t lcv = dbus_ctrl_last_write();
-        if (lcv & DM_CMDSTAT_IND) {
-            // It was from the DM, but we weren't expecting the read.
-            dbus_ctrl_value_write(0);
-            msg->abort = true; // don't run any additional handlers
-        }
-    }
-}
-
-static void _handle_dbus_ctrl_wr_unexptd(cmt_msg_t* msg) {
-    // Handled mostly for debugging
-    // The host performed a WRITE to CTRL when we weren't expecting it
-    shell_printferr("Unexpected: %02X Host DATA WR(s)\n", msg->data.value8u);
-}
-
-static void _handle_dbus_data_rd_unexptd(cmt_msg_t* msg) {
-    // Handled mostly for debugging
-    // The host performed a READ from DATA when we weren't expecting it
-    //  MSG data is the count of occurrences
-    shell_printferr("Unexpected: %u Host DATA RD(s)\n", msg->data.value32u);
-}
-
-static void _handle_dbus_data_wr_unexptd(cmt_msg_t* msg) {
-    // Handled mostly for debugging
-    // The host performed a WRITE to DATA when we weren't expecting it
-    //  MSG data is the count of occurrences
-    shell_printferr("Unexpected: %u Host DATA WR(s)\n", msg->data.value32u);
-}
-
 static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
     // Handled mostly for debugging
     if (debug_mode_enabled()) {
         bool wr = (msg->id == MSG_DBUS_DWRITE_XFER_DONE);
         char* op = (wr ? "WR:" : "RD\n");
         shell_printf("Data %s", op);
-        if (wr) {
-            uint8_t v = dbus_last_wr_val();
-            shell_printf("%02X\n", v);
-        }
     }
 }
 
@@ -335,19 +297,13 @@ int dmcomm_modinit() {
     }
     _modinit_called = true;
 
-    cmt_msg_hdlr_add(MSG_DBUS_CTRL_READ, _handle_ctrl_read);
-    cmt_msg_hdlr_add(MSG_DBUS_CTRL_WRITE, _handle_dbus_ctrl_wr_unexptd);
-    cmt_msg_hdlr_add(MSG_DBUS_DREAD_UNEXPECTED, _handle_dbus_data_rd_unexptd);
     cmt_msg_hdlr_add(MSG_DBUS_DREAD_XFER_DONE, _handle_dbus_xfer_done);
-    cmt_msg_hdlr_add(MSG_DBUS_DWRITE_UNEXPECTED, _handle_dbus_data_wr_unexptd);
     cmt_msg_hdlr_add(MSG_DBUS_DWRITE_XFER_DONE, _handle_dbus_xfer_done);
 
     // Set our CTRL handlers
     dbus_ctrl_rd_hdlr_set(_ctrl_rd_hdlr);
     dbus_ctrl_wr_hdlr_set(_ctrl_wr_hdlr);
 
-    // Set a default value for Data Bus READ operations.
-    dbus_data_defval_set(0);
     // Allow CTRL Port operations
     dbus_start_ctrl_port();
 

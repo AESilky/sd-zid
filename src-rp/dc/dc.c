@@ -105,6 +105,34 @@ static void _handle_dm_version(void* d) {
 // Message Handler Methods
 // ====================================================================
 
+static void _handle_ctrl_rd_unexptd(cmt_msg_t* msg) {
+    // Handled mostly for debugging
+    // The host performed a READ from the CTRL port when we weren't expecting it
+    //  MSG data is the count of occurrences
+    shell_printferr("Unexpected: %u Host CTRL RD(s)\n", msg->data.value32u);
+}
+
+static void _handle_ctrl_wr_unexptd(cmt_msg_t* msg) {
+    // Handled mostly for debugging
+    // The host performed a WRITE to CTRL when we weren't expecting it
+    //  MSG data is the count of occurrences
+    shell_printferr("Unexpected: %u Host CTRL WR(s)\n", msg->data.value32u);
+}
+
+static void _handle_data_rd_unexptd(cmt_msg_t* msg) {
+    // Handled mostly for debugging
+    // The host performed a READ from DATA when we weren't expecting it
+    //  MSG data is the count of occurrences
+    shell_printferr("Unexpected: %u Host DATA RD(s)\n", msg->data.value32u);
+}
+
+static void _handle_data_wr_unexptd(cmt_msg_t* msg) {
+    // Handled mostly for debugging
+    // The host performed a WRITE to DATA when we weren't expecting it
+    //  MSG data is the count of occurrences
+    shell_printferr("Unexpected: %u Host DATA WR(s)\n", msg->data.value32u);
+}
+
 static void _handle_dm_brkhit(cmt_msg_t* msg) {
     // Breakpoint hit
     shell_printf("\n%s", dmm_break_hit);
@@ -528,6 +556,10 @@ int dc_modinit() {
     cmt_run_after_ms(500, _handle_dm_version, NULL);
     _mode = DMM_DEBUG;
     //
+    cmt_msg_hdlr_add(MSG_DBUS_CREAD_UNEXPECTED, _handle_ctrl_rd_unexptd);
+    cmt_msg_hdlr_add(MSG_DBUS_CWRITE_UNEXPECTED, _handle_ctrl_wr_unexptd);
+    cmt_msg_hdlr_add(MSG_DBUS_DREAD_UNEXPECTED, _handle_data_rd_unexptd);
+    cmt_msg_hdlr_add(MSG_DBUS_DWRITE_UNEXPECTED, _handle_data_wr_unexptd);
     cmt_msg_hdlr_add(MSG_DM_CMD_CMPLT, _handle_dm_cmddone);
     cmt_msg_hdlr_add(MSG_DM_STATUSRCVD, _handle_dm_statusrcvd);
     _prompten = true;

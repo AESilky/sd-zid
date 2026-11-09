@@ -751,7 +751,7 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
         dm_simulate(v);
     }
     v = dm_simulated();
-    const char* sim = (v ? "simulated" : "physical");
+    const char* sim = (v ? "SIMULATED" : "PHYSICAL");
     SHPF("DM %s\n", sim);
     dbus_status_print();
     bool cip = dmc_op_inprocess();
@@ -760,7 +760,8 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
     if (cip) {
         shell_printf(" DM current operation: %02X\n", (uint8_t)cop.cmd);
     }
-    shell_printf("    DM last operation: %02X\n", (uint8_t)col.cmd);
+    shell_printf(" DM last operation   : %02X\n", (uint8_t)col.cmd);
+    shell_putc('\n');
     return (retval);
 }
 
