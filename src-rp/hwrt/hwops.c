@@ -89,7 +89,6 @@ int hwops_modinit() {
     // Initialize the Bus Controller
     retval = dbusc_modinit();
     if (retval != 0) goto _fail;
-    // Initialize the Debug Monitor Communications
     retval = dmcomm_modinit();
     if (retval != 0) goto _fail;
 

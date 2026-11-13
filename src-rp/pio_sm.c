@@ -8,7 +8,7 @@
 #include "pio_sm.h"
 
 uint32_t pio_debug_get(PIO pio) {
-    uint32_t debug = pio->fdebug & 0xffffff;
+    uint32_t debug = pio->fdebug & 0x0fffffff;
     if (debug) {
         pio->fdebug = debug;
     }
@@ -95,4 +95,44 @@ pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, p
     pio_sm_init(pio, sm, smpocfg.offset, &smpocfg.sm_cfg);
 
     return (smpocfg);
+}
+
+bool piosm_drain_rx(pio_sm_pocfg* smpocfg) {
+    volatile uint32_t rx;   // Assure value gets assigned
+    int maxr_ds = 9;
+    while (maxr_ds && !pio_sm_is_rx_fifo_empty(smpocfg->pio, smpocfg->sm)) {
+        rx = pio_sm_get(smpocfg->pio, smpocfg->sm); // Read and discard value
+        maxr_ds--;
+    }
+    (void)rx;   // Keep GCC from saying it is unused.
+    return (pio_sm_is_rx_fifo_empty(smpocfg->pio, smpocfg->sm));
+}
+
+void pio_sm_preload_xy(PIO pio, uint sm, uint32_t x_val, uint32_t y_val) {
+    pio_sm_set_enabled(pio, sm, false);
+
+    pio_sm_clear_fifos(pio, sm);
+
+    // Prime the TX FIFO with both values back-to-back
+    pio_sm_put_blocking(pio, sm, x_val);
+    pio_sm_put_blocking(pio, sm, y_val);
+
+    // Ensure execution is at start and clock is running
+    pio_sm_restart(pio, sm);
+    pio_sm_set_enabled(pio, sm, true);
+
+    // Pull first value (x_val) from FIFO into OSR, then move to X
+    pio_sm_exec(pio, sm, pio_encode_pull(true, true)); // Blocking pull
+    pio_sm_exec(pio, sm, pio_encode_mov(pio_x, pio_osr));
+
+    // Pull second value (y_val) from FIFO into OSR, then move to Y
+    pio_sm_exec(pio, sm, pio_encode_pull(true, true)); // Blocking pull
+    pio_sm_exec(pio, sm, pio_encode_mov(pio_y, pio_osr));
+
+    // FREEZE THE STATE MACHINE
+    pio_sm_set_enabled(pio, sm, false);
+
+    // HARD RESET TO ZERO: Force the PC back to 0 and clear any partial execution states.
+    pio_sm_restart(pio, sm);
+    pio_sm_clkdiv_restart(pio, sm);
 }

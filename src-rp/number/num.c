@@ -274,6 +274,25 @@ bool num_valstr_nb(char* buf, uint v, repsize_t rs, bool uc) {
     return ovf;
 }
 
+bool num_valstr_nb_eb(char* buf, uint v, repsize_t rs, bool uc) {
+    bool ovf = false; // No overflow
+    nbase_t nb = nbase_get();
+
+    switch (nb) {
+    case NB_DECIMAL:
+        ovf = num_decstr(buf, v, rs);
+        break;
+    case NB_HEX:
+    case NB_BINARY:
+        ovf = num_hexstr(buf, v, rs, uc);
+        break;
+    case NB_OCTAL:
+        ovf = num_octstr(buf, v, rs);
+        break;
+    }
+    return ovf;
+}
+
 
 // ====================================================================
 // Initialization/Start-Up Methods

@@ -36,36 +36,37 @@ extern "C" {
 
 // SPI for the SD Card.
 //
+#ifdef _BOARDS_WAVESHARE_RP2040_ZERO_H  // The module is the Waveshare RP2040 Zero
+#define SPI_SD_CS               GP29
+#else
+#define SPI_SD_CS               GP17
+#endif
 #define SPI_SD_DEVICE           spi1            // Hardware SPI to use
 #define SPI_SD_MISO             GP28
 #define SPI_SD_MOSI             GP27
 #define SPI_SD_SCK              GP26
-#define SPI_SD_CS               GP17
 #define SPI_SLOW_SPEED          (50 * 1000)     // Very slow speed for init ops
 #define SPI_SD_SPEED            (800 * 1000)    // SPI at 800KHz
-#define SPI_CS_ENABLE           0               // Chip Select is active LOW
-#define SPI_CS_DISABLE          1               // Chip Select is active LOW
+#define SPI_CS_ENABLE           false           // Chip Select is active LOW
+#define SPI_CS_DISABLE          true            // Chip Select is active LOW
 
 // Operations controlled directly by a GPIO
 //
-#ifndef CTRL_GPIOS          // Defaults for Control Pins
+#ifndef CTRL_GPIOS              // Definitions for Control/Bus Pins
 #define CRTL_GPIOS
-#define CTRL_INTRQ              GP15            // Interrupt Request (ATTN) to main CPU
-#define CTRL_INTRQ_OFF          0               //  Interrupt Request (ATTN) is Active-HIGH
-#define CTRL_INTRQ_ON           1               //
-#define CTRL_MODSEL             GP13            // ModuleSelect- from main CPU
-#define CTRL_MOD_SELECTED       0               //  ModuleSelect is Active-LOW
-#define CTRL_MOD_NOTSEL         1               //  ModuleSelect is Active-LOW
-#define CTRL_ADDR               GP10            // C-/D from main CPU
-#define CTRL_RD                 GP11            // RD- from main CPU
-#define CTRL_WR                 GP12            // WR- from main CPU
-#define CTRL_RD_ON              0               //  RD is Active-LOW
-#define CTRL_RD_OFF             1               //  RD is Active-LOW
-#define CTRL_WR_ON              0               //  WR is Active-LOW
-#define CTRL_WR_OFF             1               //  WR is Active-LOW
-#define CTRL_WAITRQ             GP14            // Wait Request to main CPU
-#define CTRL_WAITRQ_OFF         1               //  Wait Request is Active-LOW
-#define CTRL_WAITRQ_ON          0               //
+#define PIN_IOECLK              GP15            // I/O Latch Clock (L=>H clocks data) Also MBUSY-
+#define PIN_MBUSY               PIN_IOECLK      //  Alias for the IOECLK pin, as it also indicates BUSY
+#define MBUSY_ON                false           //  MBUSY- 0 == Module Busy
+#define MBUSY_OFF               true            //  MBUSY- 1 == Module Not Busy
+#define PIN_MSEL                GP12            // MSEL- from main CPU
+#define MSEL_OFF                true            //  Module Select is Active-LOW
+#define MSEL_ON                 false           //
+#define PIN_ADDR                GP10            // C-/D from main CPU
+#define PIN_RD                  GP11            // RD- from main CPU
+#define PIN_WAITRQ              GP13            // Wait Request to main CPU
+#define WAITRQ_OFF              true            //  Wait Request is Active-LOW
+#define WAITRQ_ON               false           //
+#define PIN_RST                 GP14            // Reset (request) from board
 #endif
 // Data Bus
 //
@@ -80,30 +81,19 @@ extern "C" {
 #define DATA6                   GP8
 #define DATA7                   GP9
 #define DATA_BUS_WIDTH          8
-#define DATA_BUS_MASK           0x000003FC      // Mask to set all 8 bits at once: 0000 0000 0000 0000 0000 0011 1111 1100
-#define DATA_BUS_SHIFT          2               // Shift to move an 8-bit value up/down to/from the DATA Bus
+#define DATA_BUS_MASK           ((uint32_t)((uint32_t)0xFF << DATA0)) // Mask to set all 8 bits at once: 0000 0000 0000 0000 0000 0011 1111 1100
 #endif
 
 // PIO Blocks
 //
 #ifndef PIO_DEFS            // Defaults for PIO use
 #define PIO_DEFS
-#define PIOBLK_DBUS_AUTO        pio1            // PIO Block 1 is used for automatic databus control
-#define PIO_BCA_MSEL_SM         0               // State Machine 0 is used to watch MOD_SEL-
-#define PIO_BCA_DATA_SM         1               // State Machine 1 is used for DATA operations
-#define PIOBLK_DBUS_MAN         pio0            // PIO Block 0 is used for manual databus reads/writes
-#define PIO_BCM_OUT_SM          2               // State Machine 2 is used to manually transfer data out
-#define PIO_BCM_IN_SM           3               // State Machine 3 is used to manually transfer data in
-#define SYSIRQ_PIO_ACTRL        PIO1_IRQ_0      // PIO IRQ 0 used to signal Control Operation Request
-#define SYSIRQ_PIO_ADATA_DR     PIO1_IRQ_1      // PIO IRQ 1 used to signal DATA-RD Data Needed
-#define PIO_BCA_TOHOST_DREQ     DREQ_PIO1_TX1   // TXFIFO for reads from host
-#define PIO_BCA_FROMHOST_DREQ   DREQ_PIO1_RX1   // RXFIFO for writes from host
+#define PIOBLK_MSELOPMGR        pio1            // PIO Block 1 is used for the MSEL monitor Operation Manager
+#define PIOBLK_DBUS             pio2            // PIO Block 2 is used for the DATA Bus
 #endif
 
 // IRQ Inputs
 //
-// The data bus RD/WR uses PIO2 and DMA interrupts to process transfers
-#define SYSIRQ_DMA_TF_PIO       DMA_IRQ_0       // System DMA IRQ-0 raised when DMA finishes PIO data transfer
 
 
 // PWM - Used for a recurring interrupt for scheduled messages, sleep, housekeeping

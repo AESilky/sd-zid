@@ -83,6 +83,7 @@ extern "C" {
 #define GP26    26      // Pin 31
 #define GP27    27      // Pin 32
 #define GP28    28      // Pin 34
+#define GP29    29      // Waveshare RP2040 Zero
 #define RPADC0  GP26
 #define RPADC1  GP27
 #define RPADC2  GP28

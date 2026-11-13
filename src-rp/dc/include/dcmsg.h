@@ -27,7 +27,7 @@ extern "C" {
 #define CMSG const char* const
 
 GLOBL CMSG dcm_title MSGV("ZID - Z80 In-circuit Debugger");
-GLOBL CMSG dcm_banner MSGV(">>>             ZID - Z80 In-circuit Debugger            <<<\n>>> Hardware: Copyright 2025-26 SilkyDESIGN and CMOS1    <<<\n>>> Software: Copyright 2023-26 AESilky                  <<<\n\n");
+GLOBL CMSG dcm_banner MSGV(">>>             ZID - Z80 In-circuit Debugger            <<<\n>>> Hardware: Copyright 2025-26 SilkyDESIGN and CMOS1    <<<\n>>> Software: Copyright 2023-26 AESilky                  <<<\n DM Version: ");
 GLOBL CMSG dcm_blank    MSGV("");
 
 GLOBL CMSG dcm_regfb    MSGV("SZxHxPNC");
@@ -48,6 +48,9 @@ GLOBL CMSG dcm_tgtsbc   MSGV("SBC");
 
 GLOBL CMSG dcm_done MSGV("DONE");
 GLOBL CMSG dcm_invalid_arg MSGV("Invalid argument");
+GLOBL CMSG dcm_addr MSGV("address");
+GLOBL CMSG dcm_count MSGV("count");
+GLOBL CMSG dcm_loc MSGV("location");
 GLOBL CMSG dcm_invalid_argtm MSGV("Too many arguments");
 GLOBL CMSG dcm_invalid_dest MSGV("Invalid destination");
 GLOBL CMSG dcm_mem_get_err MSGV("Error getting target memory");

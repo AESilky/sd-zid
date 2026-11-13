@@ -48,7 +48,7 @@ tempaf:		.block	WORD
 tempsp:		.block	WORD
 asave:		.block	BYTE
 z80im:		.block	BYTE
-sflag:		.block	BYTE		; Flag indicating that the target is the SBC (same board)
+is_sbc:		.block	BYTE		; Flag indicating that the target is the SBC (same board)
 sspflag:		.block	BYTE	; Flag indicating a Single-Step was performed (non-zero)
 tflag:		.block	BYTE		; Target state/status bits (see .inc for bits)
 zflag:		.block	BYTE		; ZID state/status bits (see .inc for bits)
@@ -59,9 +59,8 @@ brk_pc_inf:	.block	BYTE		; Used to save the initial read from this port
 ;
 ; Breakpoint Information
 ;
-baucnt:		.block	BYTE		; Breakpoint Address Unit Count
-brk1data:	.block	BYTE		; Break-1 Data Value
-brk1dreq:	.block	BYTE		; Break-1 Data Mask
+brkdata:	.block	BYTE		; Break-1 Data Value
+brkdatax:	.block	BYTE		; Break-1 Data Mask
 brk1cond:	.block	BYTE		; Break-1 Condition
 brk1en:		.block	BYTE		; Break-1 enabled flag (separate from the condition)
 brkNcond:	.block	BYTE		; Break-2N Condition
@@ -72,14 +71,6 @@ brk3addr:	.block	WORD		; Break-3 Address
 brk3aen:	.block	BYTE		; Break-3 Address Enabled
 brk4addr:	.block	WORD		; Break-4 Address
 brk4aen:	.block	BYTE		; Break-4 Address Enabled
-brk5addr:	.block	WORD		; Break-5 Address
-brk5aen:	.block	BYTE		; Break-5 Address Enabled
-brk6addr:	.block	WORD		; Break-6 Address
-brk6aen:	.block	BYTE		; Break-6 Address Enabled
-brk7addr:	.block	WORD		; Break-7 Address
-brk7aen:	.block	BYTE		; Break-7 Address Enabled
-brk8addr:	.block	WORD		; Break-8 Address
-brk8aen:	.block	BYTE		; Break-8 Address Enabled
 brksum:		.block	BYTE		; checksum of the break configuration
 ;
 ;

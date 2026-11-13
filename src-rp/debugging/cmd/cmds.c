@@ -30,7 +30,7 @@ static const cmd_handler_entry_t cmd_debug_entry = {
 static int _dbcmd(int argc, char** argv, const char* unparsed) {
     if (argc > 2) {
         // We only take a single argument.
-        cmd_help_display(&cmd_debug_entry, HELP_DISP_USAGE);
+        cmd_help_display(&cmd_debug_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     else if (argc > 1) {

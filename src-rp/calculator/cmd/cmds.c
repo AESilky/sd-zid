@@ -46,6 +46,7 @@ static void _lift(uint32_t v);
 static op_fn _getopfn(const char* s);
 static const char* _getovf(bool ovf);
 static uint32_t _getval(const char* s, bool* valid);
+static int _invalid_entry();
 static void _saveX();
 static void _setX(uint32_t x);
 static val_prvdr_fn _val_provider;
@@ -161,6 +162,11 @@ static opent_t* ops[] = {
     (opent_t*)0,
 };
 
+static int _invalid_entry() {
+    shell_printferr("invalid entry\n");
+    return -1;
+}
+
 static int _exec_add(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     uint32_t tmp = 0;
@@ -185,8 +191,7 @@ static int _exec_add(int argc, char** argv, const char* unparsed) {
 _finally:
     return (retval);
 _err:
-    shell_printferr("invalid entry\n");
-    retval = -1;
+    retval = _invalid_entry();
     goto _finally;
 }
 
@@ -225,8 +230,7 @@ static int _exec_calc(int argc, char** argv, const char* unparsed) {
 _finally:
     return (retval);
 _err:
-    shell_printferr("invalid entry\n");
-    retval = -1;
+    retval = _invalid_entry();
     goto _finally;
 }
 
@@ -259,8 +263,7 @@ static int _exec_sub(int argc, char** argv, const char* unparsed) {
 _finally:
     return (retval);
 _err:
-    shell_printferr("invalid entry\n");
-    retval = -1;
+    retval = _invalid_entry();
     goto _finally;
 }
 

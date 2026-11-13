@@ -2,7 +2,7 @@
 # Copyright 2025-26 AESilky
 # SPDX-License-Identifier: MIT License
 #
-.PHONY:	ROM compbins libs clean
+.PHONY:	ROM compbins libs clean list-
 
 IMGR	:= imager
 
@@ -25,6 +25,9 @@ sbc.bin:
 libs:
 	cd diag;make
 	cd util;make
+
+list-%:
+	enscript $(PRNOPTS) $*
 
 clean:
 	rm -f *.lst *.map *.obj

@@ -22,7 +22,7 @@ DOCREADY	.equ	0FAh		; DOC is ready
 ; hit, and in response to commands sent from the DOC.
 ;
 DM_IS_SBC_M	.equ	00000001b	; added to status if running as SBC
-DMINIT		.equ	080h		; DM has finished initialization
+DMINITOK		.equ	080h		; DM has finished initialization
 DMOPDONE	.equ	082h		; DOC requested operation complete
 DMOKCMDRD	.equ	084h		; OK, reading command
 DMCMDUK		.equ	088h		; Requested Command Unknown
@@ -372,3 +372,15 @@ DCSTEP		.equ	0D2h
 ;
 DCSTEPWREG	.equ	0D3h
 
+; --------------
+; USE TARGET Mem/Port - Use the Target memory/ports for GET and PUT operations.
+; (the default)
+;
+DCTGTMP		.equ	0E0h
+
+; --------------
+; USE ZID Mem/Port - Use the ZID's memory/ports for GET and PUT operations.
+; 
+; This allows some diagnosing of the ZID's condition.
+;
+DCDBGRMP		.equ	0E1h

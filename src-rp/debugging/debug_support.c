@@ -25,7 +25,7 @@
 #endif
 
 volatile uint16_t debugging_flags = 0;
-static bool _debug_mode_enabled = false;
+static bool _debug_mode_enabled;
 
 // DEBUG UART (debug_trace if enabled)
 #define DEBUG_UART_INST         uart0
@@ -68,14 +68,14 @@ void debug_init(debug_init_mode_t mode) {
         debug_trace_init();
         SLEEP_MS(80); // Ok to sleep
         // Check the switch
-        bool pressed = debug_sw_pressed();
-#if (DEBUG_MODE != 0)
-// In debug build, set debug flag unless switch pressed
-        debug_mode_enable(!pressed);
-#else
-// In release build, set debug flag if switch pressed
-        debug_mode_enable(pressed);
-#endif
+//         bool pressed = debug_sw_pressed();
+// #if (DEBUG_MODE != 0)
+// // In debug build, set debug flag unless switch pressed
+//         debug_mode_enable(!pressed);
+// #else
+// // In release build, set debug flag if switch pressed
+//         debug_mode_enable(pressed);
+// #endif
         break;
     case DIM_STDIO_TO_USB:
         stdio_flush();

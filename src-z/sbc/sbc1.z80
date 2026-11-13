@@ -153,8 +153,6 @@ onrst:		; Halt (will cause the HALT LED to come on if debugging)
 		.align	8	; Page boundary
 main:		; Do something interesting...
 		in	a,(BRDCTRL)
-		or	SBC_USE_M
-		out	(BRDCTRL),a
 		xor	a
 		ld	(gpio_val),a	; clear our GPIO backing
 		ld	l,a
@@ -192,21 +190,6 @@ do_rst:		.equ	$
 		ld	b,a
 		ld	c,a
 		halt
-
-		.align	4
-do_brk:		.equ	$
-	; Request a BREAK using the CTRL Bit. Put a couple ops on either side
-	;  for debugging
-	;
-		xor	a
-		ld	b,a
-		in	a,(BRDCTRL)
-		set	BRKREQ_B,a
-		out	(BRDCTRL),a
-		; We may get here. Debugging will tell
-		ld	b,a
-		halt
-
 
 		.align	4
 do_sbrk:	.equ	$
