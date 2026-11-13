@@ -12,12 +12,13 @@ typedef enum DM_STATUS_VAL_ {
     DMIDLE      = 0x80,     // The Debug Monitor is idle
     DMOPDONE    = 0x82,     // DOC requested operation complete
     DMOKCMDRD   = 0x84,     // OK, reading command
+    DMTESTRUN   = 0x86,     // The Auto-Test has started
     DMCMDUK     = 0x88,     // Requested command unknown
     DMSSDONE    = 0x8A,     // Single-Step done
     DMBRKHIT    = 0x8C,     // Breakpoint hit
-    DMTGTGO     = 0x8E,     // DM transitioning to Target Mode
+    DMTGTGO     = 0x8E,     // DM transitioning to Target Mode (GO or SS)
                             //  (don't interrupt for a bit)
-    DMTESTDONE  = 0xB0,     // DM Auto-Test complete
+    DMTESTDONE  = 0xB6,     // DM Auto-Test complete (RUN is 86)
     DMRSTEXEC   = 0xBE,     // DM executed a RST instruction (ERROR)
 } dm_stat_val_t;
 #define DMSTATSBC_M 0x01    //  Bit added to status if target is SBC

@@ -147,6 +147,14 @@ typedef pio_sm_config(*piosmcfg_fn)(uint offset);
 extern pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, bool cfgpins, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp, int mov_status);
 
 /**
+ * @brief Stop all PIO State Machines at once
+ * @ingroup pio_sm
+ */
+static inline void pio_stop_all_sm(PIO pio) {
+    pio->ctrl &= ~0xF;
+}
+
+/**
  * @brief Drain the RX Fifo of a PIO State Machine.
  * @ingroup pio_sm
  * 

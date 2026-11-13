@@ -98,7 +98,20 @@ typedef void (*msg_handler_fn)(struct CMT_MSG_* msg);
 
 #define NULL_MSG_HDLR ((msg_handler_fn)0)
 
-#include "dc/include/dmcomm_t.h"    // Debug Monitor Communications data structures
+/**
+ * @brief Structure containing a Value (int32 or uint32) and a void pointer.
+ * 
+ * This allows a value, like a status, and a pointer to be used as a
+ * message data value.
+ * 
+ */
+typedef struct valptr_ {
+    union {
+        int32_t v32;
+        uint32_t v32u;
+    } val;
+    void* vptr;
+} valptr_t;
 
 /**
  * @brief Message data.
@@ -116,9 +129,11 @@ union MSG_DATA_VALUE_ {
     uint16_t value16u;
     int32_t status;
     uint32_t value32u;
+    valptr_t v32_vp;
     switch_action_data_t sw_action;
     FRESULT fr;
     char* str;
+    const char* strconst;
     uint8_t* bptr;
     void* vptr;
     uint32_t ts_ms;

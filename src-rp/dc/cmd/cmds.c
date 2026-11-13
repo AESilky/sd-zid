@@ -45,6 +45,7 @@ const cmd_handler_entry_t cmds_dmdbgrmp_entry;
 const cmd_handler_entry_t cmds_dmgetregs_entry;
 const cmd_handler_entry_t cmds_dmputregs_entry;
 const cmd_handler_entry_t cmds_dmsim_entry;
+const cmd_handler_entry_t cmds_dmver_entry;
 //
 // NORMAL Commands
 //
@@ -673,7 +674,7 @@ static int _exec_clrwait(int argc, char** argv, const char* unparsed) {
         cmd_help_display(&cmds_clrwait_entry, HELP_INVALID_USAGE);
         return (-1);
     }
-    dbus_clear_wait();
+    bc_clear_wait();
     return (retval);
 }
 
@@ -753,7 +754,7 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
     v = dm_simulated();
     const char* sim = (v ? "SIMULATED" : "PHYSICAL");
     SHPF("DM %s\n", sim);
-    dbus_status_print();
+    b_status_print();
     bool cip = dmc_op_inprocess();
     dmc_cmd_op_t cop = dmc_op_current();
     dmc_cmd_op_t col = dmc_op_last();
@@ -762,6 +763,44 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
     }
     shell_printf(" DM last operation   : %02X\n", (uint8_t)col.cmd);
     shell_putc('\n');
+    return (retval);
+}
+
+static void _dmver_c(cmt_msg_t* msg) {
+    // msg data v32_vp.val  is DMC_COS_COMPLETED|DMC_COS_CANCELLED
+    //                .vptr is string value
+    shell_puts("DM Ver");
+    if (msg->data.v32_vp.val.v32 == DMC_COS_COMPLETED) {
+        shell_printf(": %s\n", (const char*)msg->data.v32_vp.vptr);
+    }
+    else {
+        shell_printf("DM Ver Get - Operation Cancelled");
+    }
+    dc_prompt_en(true);
+    shell_prompt_again();
+}
+static int _exec_dm_version(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    if (argc > 2) {
+        // We only take 0 or 1 arguments.
+        cmd_help_display(&cmds_dmver_entry, HELP_INVALID_USAGE);
+        return (-1);
+    }
+    dc_prompt_en(false);
+    argv++,argc++;  // Skip the command name
+    if (argc > 0) {
+        if (stricmp("-f", *argv) == 0) {
+            dm_ver_get(_dmver_c);
+        }
+    }
+    else {
+        const char* ver_str = dm_ver();
+        // Set up a msg the same way the dm_ver_get does for a callback
+        cmt_msg_t msg;
+        msg.data.v32_vp.val.v32 = DMC_COS_COMPLETED;
+        msg.data.v32_vp.vptr = (void*)ver_str;
+        _dmver_c(&msg);
+    }
     return (retval);
 }
 
@@ -1569,6 +1608,13 @@ const cmd_handler_entry_t cmds_dmsim_entry = {
     "[0|1]",
     "Simulate interactions with DM (for dev)"
 };
+const cmd_handler_entry_t cmds_dmver_entry = {
+    _exec_dm_version,
+    6,
+    ".dmver",
+    "[-r]",
+    "Display the DM Version.\n  -r Read from DM (don't just use stored value)"
+};
 
 // -------------------------
 // Normal Commands
@@ -1715,6 +1761,7 @@ void dccmds_modinit() {
     cmd_register(&cmds_dmgetregs_entry);
     cmd_register(&cmds_dmputregs_entry);
     cmd_register(&cmds_dmsim_entry);
+    cmd_register(&cmds_dmver_entry);
     //  Regular Commands
     cmd_register(&cmds_cpu_entry);
     cmd_register(&cmd_dec_entry);

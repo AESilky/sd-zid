@@ -47,20 +47,25 @@ extern "C" {
 #define SPI_SD_SCK              GP26
 #define SPI_SLOW_SPEED          (50 * 1000)     // Very slow speed for init ops
 #define SPI_SD_SPEED            (800 * 1000)    // SPI at 800KHz
-#define SPI_CS_ENABLE           0               // Chip Select is active LOW
-#define SPI_CS_DISABLE          1               // Chip Select is active LOW
+#define SPI_CS_ENABLE           false           // Chip Select is active LOW
+#define SPI_CS_DISABLE          true            // Chip Select is active LOW
 
 // Operations controlled directly by a GPIO
 //
 #ifndef CTRL_GPIOS              // Definitions for Control/Bus Pins
 #define CRTL_GPIOS
-#define PIN_IOECLK              GP15            // I/O Enable/Clock (low to high clocks data)
+#define PIN_IOECLK              GP15            // I/O Latch Clock (L=>H clocks data) Also MBUSY-
+#define PIN_MBUSY               PIN_IOECLK      //  Alias for the IOECLK pin, as it also indicates BUSY
+#define MBUSY_ON                false           //  MBUSY- 0 == Module Busy
+#define MBUSY_OFF               true            //  MBUSY- 1 == Module Not Busy
 #define PIN_MSEL                GP12            // MSEL- from main CPU
+#define MSEL_OFF                true            //  Module Select is Active-LOW
+#define MSEL_ON                 false           //
 #define PIN_ADDR                GP10            // C-/D from main CPU
 #define PIN_RD                  GP11            // RD- from main CPU
 #define PIN_WAITRQ              GP13            // Wait Request to main CPU
-#define WAITRQ_OFF              1               //  Wait Request is Active-LOW
-#define WAITRQ_ON               0               //
+#define WAITRQ_OFF              true            //  Wait Request is Active-LOW
+#define WAITRQ_ON               false           //
 #define PIN_RST                 GP14            // Reset (request) from board
 #endif
 // Data Bus
@@ -76,17 +81,15 @@ extern "C" {
 #define DATA6                   GP8
 #define DATA7                   GP9
 #define DATA_BUS_WIDTH          8
-#define DATA_BUS_MASK           0x000003FC      // Mask to set all 8 bits at once: 0000 0000 0000 0000 0000 0011 1111 1100
-#define DATA_BUS_SHIFT          2               // Shift to move an 8-bit value up/down to/from the DATA Bus
+#define DATA_BUS_MASK           ((uint32_t)((uint32_t)0xFF << DATA0)) // Mask to set all 8 bits at once: 0000 0000 0000 0000 0000 0011 1111 1100
 #endif
 
 // PIO Blocks
 //
 #ifndef PIO_DEFS            // Defaults for PIO use
 #define PIO_DEFS
-#define PIOBLK_ROUTER           pio1            // PIO Block 1 is used for the ROUTER
-#define PIOBLK_CTRL_PORT        pio1            // PIO Block 1 is used for the CTRL Port
-#define PIOBLK_DATA_PORT        pio2            // PIO Block 2 is used for the DATA Port
+#define PIOBLK_MSELOPMGR        pio1            // PIO Block 1 is used for the MSEL monitor Operation Manager
+#define PIOBLK_DBUS             pio2            // PIO Block 2 is used for the DATA Bus
 #endif
 
 // IRQ Inputs

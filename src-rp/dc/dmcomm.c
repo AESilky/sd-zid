@@ -71,11 +71,9 @@ static inline void _cmd_archive() {
 // Message Handler Methods
 // ====================================================================
 
-static void _handle_attn_off(cmt_msg_t* msg) {
-    // Cancel any scheduled occurrence
-    scheduled_msg_cancel3(MSG_EXEC, _handle_attn_off, 0);
+static void _handle_attn_off_fs(cmt_msg_t* msg) {
     // De-assert ATTN
-    attn_set_on(false);
+    bc_attn_set_on(false);
 }
 
 static void _handle_cmd_done(cmt_msg_t* msg) {
@@ -127,17 +125,23 @@ static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
  * repetitively until we respond with DOCREADY (FA).
  *
  * This is executed as an IRQ Handler, so make is quick! (no printing)
+ * 
+ * There is SPECIAL CASE HANDLING for a cancelled operation. If the 
+ * current operation is cancelled and it is a NOP we handle the read and
+ * return the NOP instruction.
  *
  * @return True if we supplied a value (no more processing required)
  */
 static ctrl_hdlr_action_t _ctrl_rd_hdlr(uint8_t* d) {
     ctrl_hdlr_action_t handled = CHA_NOT_HANDLED;
-    if (_cmd_op.ctrlrd_expctd) {
+    if (_cmd_op.ctrlrd_expctd || (_cmd_op.cmd == DMNOP && _cmd_op.state == DMC_COS_CANCELLED)) {
         // We were expecting a DM read, give it the command
         *d = _cmd_op.cmd;
         // We shouldn't get another read for this operation
         _cmd_op.ctrlrd_expctd = false;
-        _cmd_op.state = DMC_COS_INPROCESS;
+        if (_cmd_op.state != DMC_COS_CANCELLED) {
+            _cmd_op.state = DMC_COS_INPROCESS;
+        }
         handled = CHA_VALUE_SET;
     }
     return handled;
@@ -151,19 +155,30 @@ static ctrl_hdlr_action_t _ctrl_wr_hdlr(uint8_t v) {
         // Debug Monitor sent a status
         handled = CHA_WRITE_HANDLED;
         _dm_alive = true;
-        _tgt_is_sbc = (v & DMSTATSBC_M);
+        // IDLE, READING COMMAND, and COMMAND DONE include the SBC status bit
+        if (v == DMIDLE || v == DMOKCMDRD || v == DMOPDONE) {
+            _tgt_is_sbc = ((v & DMSTATSBC_M) != 0); // Assure that it's a BOOL
+        }
+        // Mask the SBC bit out (other status values might include it - those three are guaranteed to)
         dm_stat_val_t dms = (dm_stat_val_t)(v & ~DMSTATSBC_M);
         if (dms == DMOPDONE) {
+            // Indicate that ATTN needs to be cleared at the end of this OP
+            handled = CHA_WRITE_HANDLED_CLR_ATTN;
             // For Operation Done, we post Command Done in addition to status.
             cmddone = true;
+        }
+        else if (dms == DMTESTRUN) { // Auto-Test has started (they can take a while)
+            // Indicate that ATTN needs to be cleared at the end of this OP
+            handled = CHA_WRITE_HANDLED_CLR_ATTN;
+        }
+        else if (dms == DMTGTGO) { // DM it going into Target Mode (GO or Single-Step)
+            // Indicate that ATTN needs to be cleared at the end of this OP
+            handled = CHA_WRITE_HANDLED_CLR_ATTN;
         }
         else if (dms == DMBRKHIT || dms == DMSSDONE) {
             // Break Hit or Single-Step Done,
         }
-        cmt_msg_t attn_msg;
-        cmt_exec_init(&attn_msg, _handle_attn_off);
-        postHWRTMsg(&attn_msg);
-       // Post the message with the status
+        // Post the message with the status
         cmt_msg_t postmsg;
         postmsg.data.value8u = v;
         cmt_msg_init(&postmsg, MSG_DM_STATUSRCVD);
@@ -172,6 +187,10 @@ static ctrl_hdlr_action_t _ctrl_wr_hdlr(uint8_t v) {
             cmt_msg_t cmd_done_msg;
             cmt_exec_init(&cmd_done_msg, _handle_cmd_done);
             postHWRTMsg(&cmd_done_msg);
+        }
+        if (handled == CHA_WRITE_HANDLED_CLR_ATTN) {
+            // ATTN will be cleared, cancel the Fail-Safe operation
+            scheduled_msg_cancel3(MSG_EXEC, _handle_attn_off_fs, 0);
         }
     }
     return handled;
@@ -200,20 +219,27 @@ const dmc_cmd_op_t dmc_op_last() {
     return _cmd_last;
 }
 
-void dmc_op_cancel() {
+static void _dmc_op_cancel(cmt_msg_t* msg) {
     bool cancelled = false;
+    bool stage_nop = false;
     switch (_cmd_op.state) {
-        case DMC_COS_REQUESTING:
-            cancelled = true;
-            break;
-        case DMC_COS_PENDING:
-        case DMC_COS_INPROCESS:
-            // We need to try to cancel the operation
-            dbus_cancel_ops();
-            cancelled = true;
-            break;
-        default:
-            break;
+    case DMC_COS_REQUESTING:
+        cancelled = true;
+        break;
+    case DMC_COS_PENDING:
+        // cancel any staged operation in the DBUS
+        dbus_cancel_ops();
+        cancelled = true;
+        break;
+    case DMC_COS_INPROCESS:
+        // An operation has already been sent to DM
+        // Cancel the DBUS operation and send a NOP to DM
+        dbus_cancel_ops();
+        cancelled = true;
+        stage_nop = true;
+        break;
+    default:
+        break;
     }
     if (cancelled) {
         _cmd_op.state = DMC_COS_CANCELLED;
@@ -221,13 +247,44 @@ void dmc_op_cancel() {
         if (_cmd_op.on_cmplt) {
             cmt_msg_t msg;
             cmt_exec_init(&msg, _cmd_op.on_cmplt);
-            // Pack the command (HB) and state (LB) into the `value16u`
-            msg.data.value16u = (uint16_t)((uint16_t)_cmd_op.cmd << 8 | (uint16_t)(DMC_COS_CANCELLED & 0xff));
+            msg.data.v32_vp.val.v32 = (int32_t)DMC_COS_CANCELLED;
+            msg.data.v32_vp.vptr = (void*)_cmd_op.cmd;
             postAPPMsg(&msg);
+        }
+        if (stage_nop) {
+            // Send a NOP to DM but don't mark it as IN_PROCESS here
+            // (this is a special case operation)
+            dmc_cmd_op_t special_nop;
+            special_nop.cmd = DMNOP;
+            special_nop.state = DMC_COS_CANCELLED; // We set it as cancelled
+            _cmd_op = special_nop;
+            _cmd_op.ctrlrd_expctd = true;
+            // If there is a scheduled message to set ATTN off - Cancel it!
+            scheduled_msg_cancel3(MSG_EXEC, _handle_attn_off_fs, 0);
+            // Poke the DM to have it contact us to get a command
+            bc_set_wait();
+            bc_attn_force_off(); // When cancelling, FORCE ATTN OFF
+            bc_attn_set_on(true);  // Raises ATTN
+            bc_clear_wait();  // Release the Z80
+            // Schedule ATTN OFF as a failsafe
+            cmt_msg_t attn_msg;
+            cmt_exec_init(&attn_msg, _handle_attn_off_fs);
+            schedule_core0_msg_in_ms(1800, &attn_msg);   // DM command complete should occur much sooner than this
         }
     }
     // Assure that CTRL Port operations are enabled
     dbus_start_ctrl_port();
+}
+
+void dmc_op_cancel() {
+    if (get_core_num() == 0) {
+        _dmc_op_cancel(NULL);
+    }
+    else {
+        cmt_msg_t exec;
+        cmt_exec_init(&exec, _dmc_op_cancel);
+        postHWRTMsg(&exec);
+    }
 }
 
 bool dmc_op_inprocess() {
@@ -235,8 +292,9 @@ bool dmc_op_inprocess() {
 }
 
 uint8_t dmc_op_request(dmc_cmd_op_t cmdop) {
-    // ZZZ - What should be done if a command is in process???
+    // Check if a command is in process
     if (dmc_op_inprocess()) {
+        cmdop.state = DMC_COS_OTHER_IP;
         return _cmd_op.cmd;
     }
     //
@@ -272,18 +330,20 @@ uint8_t dmc_op_request(dmc_cmd_op_t cmdop) {
     _cmd_op.ctrlrd_expctd = true;
     if (data_xfer) dbus_start_dataop();
     // If there is a scheduled message to set ATTN off - Cancel it!
-    scheduled_msg_cancel3(MSG_EXEC, _handle_attn_off, 0);
-    attn_set_on(false);
-    attn_set_on(true);  // Poke the DM
-    // Schedule an ATTN OFF as a failsafe
+    scheduled_msg_cancel3(MSG_EXEC, _handle_attn_off_fs, 0);
+    // Poke the DM to have it contact us to get a command
+    bc_attn_set_on(false);
+    bc_attn_set_on(true);  // Raises ATTN
+    //
+    // Schedule ATTN OFF as a failsafe
     cmt_msg_t attn_msg;
-    cmt_exec_init(&attn_msg, _handle_attn_off);
-    schedule_core0_msg_in_ms(800, &attn_msg);   // DM response should occur much sooner than this
+    cmt_exec_init(&attn_msg, _handle_attn_off_fs);
+    schedule_core0_msg_in_ms(1800, &attn_msg);   // DM command complete should occur much sooner than this
     return (0);
 }
 
 
-bool tgt_is_sbc() {
+bool dmc_tgt_is_sbc() {
     return _tgt_is_sbc;
 }
 

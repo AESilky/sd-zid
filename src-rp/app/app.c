@@ -115,7 +115,7 @@ static void _enable_ui(void* data) {
     shell_start();
 #endif
     // Clear out the RED LED and turn on a GREEN one
-    led_control(LED_GREEN2);
+    b_led_control(LED_GREEN2);
 }
 
 static void _display_proc_status(void* data) {

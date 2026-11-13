@@ -73,37 +73,19 @@ extern bool dmc_op_inprocess();
  * Sets up an operation and set ATTN to awake the DM.
  * 
  * @param cmdop The command and buffer information
- * @return 0 if operation requested. CMD that is currently in process.
+ * @return 0 if operation requested or the CMD that is currently in process.
  */
 extern uint8_t dmc_op_request(dmc_cmd_op_t cmdop);
-
-/**
- * @brief Set the status value to be returned when/if the DM indicates it has
- * initialized.
- * @ingroup debugcontrol
- * 
- * Normally the DM module just posts a DM_STATUS_RCVD message when a DM status
- * is received, but for Debug Monitor Initialized (DMIDLE), where it is known
- * that the DM is going to read the DC status immediately (repeatedly) following
- * the write, the DM Module can provide the status. It will do so, if the status
- * value provided to this method is non-zero.
- * 
- * To return a ZERO status when DMIDLE is received, the DC Module must respond
- * handle and respond to the DM_STATUS_RCVD message.
- * 
- * @param v The status to be returned when DMIDLE is received. 0 to not auto-return.
- */
-extern void dminit_status_set(uint8_t v);
 
 /**
  * @brief Status of whether the target is the SBC (same board as debug monitor)
  * @ingroup debugcontrol
  * 
- * This is updated with every status received from the Debug Monitor.
+ * This is updated with Ready and Done status values received from the Debug Monitor.
  * 
  * @return bool True if the target is the Single Board Computer (same board) 
  */
-extern bool tgt_is_sbc();
+extern bool dmc_tgt_is_sbc();
 
 /**
  * @brief Initialize the module. Must be called once/only-once before module use.

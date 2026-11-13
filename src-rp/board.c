@@ -105,14 +105,19 @@ int board_init() {
     gpio_set_pulls(PIN_WAITRQ, false, false);  // No Pulls
     gpio_set_drive_strength(PIN_WAITRQ, GPIO_DRIVE_STRENGTH_2MA);
     gpio_set_dir(PIN_WAITRQ, GPIO_OUT);
+    gpio_put(PIN_WAITRQ, WAITRQ_OFF);
 
     // CPU/BUS Control
     gpio_init(PIN_ADDR);
     gpio_set_dir(PIN_ADDR, GPIO_IN);
+    gpio_set_pulls(PIN_ADDR, true, false);    // pull up
     gpio_init(PIN_MSEL);
     gpio_set_dir(PIN_MSEL, GPIO_IN);
+    gpio_set_pulls(PIN_MSEL, true, false);    // pull up
+    gpio_set_input_hysteresis_enabled(PIN_MSEL, true);
     gpio_init(PIN_RD);
     gpio_set_dir(PIN_RD, GPIO_IN);
+    gpio_set_pulls(PIN_RD, true, false);    // pull up
     // Set up the Data Bus
     for (uint i = 0; i < DATA_BUS_WIDTH; i++) {
         gpio_init(DATA0 + i);
@@ -123,10 +128,11 @@ int board_init() {
 
     // I/O Port Control
     gpio_init(PIN_IOECLK);
-    gpio_put(PIN_IOECLK, 0);
-    gpio_set_pulls(PIN_IOECLK, false, false);  // No Pulls
+    gpio_put(PIN_IOECLK, 1);                    // Keep the IOECLK- High
+    gpio_set_pulls(PIN_IOECLK, false, false);   // No Pulls
     gpio_set_drive_strength(PIN_IOECLK, GPIO_DRIVE_STRENGTH_2MA);
     gpio_set_dir(PIN_IOECLK, GPIO_OUT);
+    gpio_put(PIN_IOECLK, 1);                    // Keep the IOECLK- High (MBUSY- OFF)
 
 
     // SPI Pins for MicroSD Card

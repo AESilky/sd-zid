@@ -252,6 +252,39 @@ extern void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt);
 extern bool dm_tgt_is_sbc();
 
 /**
+ * @brief DM Version string.
+ * @ingroup debugcontrol
+ * 
+ * Returns a constant, null terminated string, with the DM Version.
+ * This returns the version last received from the DM. The DC retrieves the
+ * version from the DM when it initializes.
+ * 
+ * To force retrieving an updated version from the DM use `dm_ver_get`.
+ * 
+ * @see `dm_ver_get(msg_handler_fn on_cmplt)`
+ * 
+ * @return const char* 
+ */
+extern const char* dm_ver();
+
+/**
+ * @brief Get the DM Version string by making a call to the DM
+ * @ingroup debugcontrol
+ * 
+ * This get the DM Version by making a call to the DM. When the call to
+ * the DM is complete the `on_cmplt` function will be called and the message
+ * data `strconst` is the version retrieved.
+ * 
+ * To get the last version retrieved (cached - not forcing a call to the DM)
+ * use `dm_ver`.
+ * 
+ * @see `dm_ver()`
+ * 
+ * @param on_cmplt Message handler to be called on complete 
+ */
+extern void dm_ver_get(msg_handler_fn on_cmplt);
+
+/**
  * Value provider that processes Z80 register names and falls back to the
  * numeric value provider.
  *

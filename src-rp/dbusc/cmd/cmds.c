@@ -36,18 +36,18 @@ static int _exec_dbc_attn(int argc, char** argv, const char* unparsed) {
         const char* vstr;
         if (strcmp("!0", argv[1]) == 0) {
             // Force OFF
-            attn_force_off();
+            bc_attn_force_off();
             vstr = "FORCED OFF";
         }
         else {
             v = bool_from_str(argv[1]);
-            attn_set_on(v);
+            bc_attn_set_on(v);
             vstr = (v ? "ON" : "OFF");
         }
         shell_printf("Set ATTN: %s\n", vstr);
     }
     // Display the level
-    v = attn_is_on();
+    v = bc_attn_is_on();
     const char* drstr = (v ? "ON" : "OFF");
     shell_printf("ATTN is: %s\n", drstr);
 
