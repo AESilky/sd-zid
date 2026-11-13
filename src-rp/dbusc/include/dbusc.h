@@ -21,13 +21,21 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+#define DBUS_CTRL_RD_EN (0x01)
+#define DBUS_CTRL_WR_EN (0x02)
+#define DBUS_DATA_RD_EN (0x04)
+#define DBUS_DATA_WR_EN (0x08)
+
 typedef enum ctrl_hdlr_action_ {
-    CHA_NOT_HANDLED = 0,    // The handler didn't handle this READ
-    CHA_VALUE_SET,          // Handler supplied a value
-    CHA_VALUE_TBD,          // Handler will write a value later
+    CHA_NOT_HANDLED = 0,    // The handler didn't handle this OPERATION
+    CHA_VALUE_SET,          // Handler supplied a value for the READ
+    CHA_VALUE_TBD,          // Handler will write a value for the READ later
+    CHA_WRITE_HANDLED,      // Handler has processed the WRITE value
+    CHA_WRITE_HANDLED_CLR_ATTN, // Handler processed the WRITE and wants ATTN cleared
 } ctrl_hdlr_action_t;
+
 /**
- * @brief Function prototype for a CTRL register read access IRQ handler.
+ * @brief Function prototype for a CTRL register READ access IRQ handler.
  * @ingroup databus
  * 
  * The handler is called during a CTRL READ operation (the Host is reading
@@ -35,7 +43,7 @@ typedef enum ctrl_hdlr_action_ {
  * value is put on the bus for the host. If `CHA_VALUE_SET` is returned the
  * value set in `d` is put on the bus. If `CHA_VALUE_TBD` is returned the
  * operation is left in process (the Host is held by WAIT). In this final
- * case a call must be made to `cbus_value_write` to provide a value and 
+ * case a call must be made to `dbus_ctrl_value_write` to provide a value and 
  * release the Host.
  * 
  * @param d Pointer to data to set for value to put on bus
@@ -44,115 +52,71 @@ typedef enum ctrl_hdlr_action_ {
 typedef ctrl_hdlr_action_t (*ctrlrd_irq_fn)(uint8_t* d);
 
 /**
- * @brief Get the state of the ATTN bit
- * @ingroup databus
- * 
- * @return bool true if the ATTN bit is ON 
- */
-extern bool attn_is_on();
-
-/**
- * @brief Set the ATTN (INTRQ) pin ON|OFF
- * @ingroup databus
- * 
- * @param on true=on false=off 
- */
-extern void attn_set_on(bool on);
-
-/**
- * @brief Provide a CTRL value for the bus. Only used if a Host Read is pending.
+ * @brief Function prototype for a CTRL register WRITE access IRQ handler.
  * @ingroup databus
  *
- * This method is used to provide a value when a CTRL READ handler indicated that
- * the value was TDB when it was called during a CTRL READ operation.
+ * The handler is called during a CTRL READ operation (the Host is reading
+ * the CTRL Port). If `CHA_NOT_HANDLED` is returned the default CTRL STATUS
+ * value is put on the bus for the host. If `CHA_VALUE_SET` is returned the
+ * value set in `d` is put on the bus. If `CHA_VALUE_TBD` is returned the
+ * operation is left in process (the Host is held by WAIT). In this final
+ * case a call must be made to `dbus_ctrl_value_write` to provide a value and
+ * release the Host.
  *
- * @param v
+ * @param v The data value written to the CTRL port
+ * @return Handler Action
  */
-extern void cbus_value_write(uint8_t v);
+typedef ctrl_hdlr_action_t(*ctrlwr_irq_fn)(uint8_t v);
+
+// ====================================================================
+// DBUS Control Methods (Core-1 only)
+// ====================================================================
+
 
 /**
- * @brief Cancel any inprocess/pending data bus operations
- * @ingroup databus
- * 
- * This cancels any DMA and data transfer options, putting the data bus processing
- * back into an idle state.
- */
-extern void dbus_cancel_ops();
-
-/**
- * @brief Clear the WAIT signal and go back to waiting for MODSEL.
- * @ingroup databus
- * 
- * If the WAIT signal is on when MODSEL is on, WAIT is passed to the Host (Z80) and can
- * keep it from finishing the operation. That is actually a condition that shouldn't
- * occur if things are working correctly. However, during development and testing it
- * can occur, and if it does there needs to be some way to break the deadlock.
- * This method provides the break. It deactivates the WAIT signal, delays a bit to
- * allow MODSEL to go back false, then restarts the MSEL PIO to once again assert WAIT
- * and check for MODSEL.
- * 
- * This also cancels the DMA channels that use the 'auto' data PIO, and then reconfigures
- * the receive PIO to a single byte into the trash buffer.
- * 
- * THIS METHOD IS INTENDED FOR DEV/TEST
- */
-extern void dbus_clear_wait();
-
-/**
- * @brief Set the handler for the Control Register access interrupt.
- * @ingroup databus
- * 
- * This method will be called when the host accesses the Control Register
- * (either RD or WR). It is the responsibility of this method to cause the
- * Control Register access mechanism to be reset. Until it is reset, no other
- * host initiated operations are possible.
- * 
- * @param hdlr 
- */
-extern void dbus_ctrl_hdlr_set(ctrlrd_irq_fn hdlr);
-
-/**
- * @brief The last value written to the CTRL port
- * @ingroup databus
- * 
- * This returns 0 until a value is written.
- * 
- * @return uint8_t Last value written or 0
- */
-extern uint8_t dbus_ctrl_last_write();
-
-/**
- * @brief Set the value returned from a CTRL port read.
- * @ingroup databus
- * 
- * This value is returned when the host reads from the control port
- * and a 'control read' handler isn't set or the operation isn't handled.
- * 
- * @param v Value
- */
-extern void dbus_ctrl_status_set(uint8_t v);
-
-/**
- * @brief Get the value of the last unexpected WRITE operation by the host.
+ * @brief Set the handler for the Control Register READ access interrupt.
  * @ingroup databus
  *
+ * This method will be called when the host READs from the CTRL Register.
+ * It is the responsibility of this method to provide a value for the read.
  *
- * @return uint8_t The value written
+ * This is called from within an IRQ Handler, so it should be QUICK!
+ *
+ * @param hdlr
  */
-extern uint8_t dbus_last_wr_val();
+extern void dbus_ctrl_rd_hdlr_set(ctrlrd_irq_fn hdlr);
+
+/**
+ * @brief Set the handler for the Control Register WRITE access interrupt.
+ * @ingroup databus
+ *
+ * This method will be called when the host WRITEs to the CTRL Register.
+ * The value written is provided as the parameter.
+ *
+ * This is called from within an IRQ Handler, so it should be QUICK!
+ *
+ * @param hdlr The handler
+ */
+extern void dbus_ctrl_wr_hdlr_set(ctrlwr_irq_fn hdlr);
+
+/**
+ * @brief Drain the RX FIFO/SM of the DATA port
+ * @ingroup databus
+ */
+extern void dbus_data_rx_drain();
 
 /**
  * @brief Prepare to receive data from the bus into a buffer.
  * @ingroup databus
- * 
+ *
  * Sets up the incoming DMA to receive data and store it into the buffer
  * for a specified number of bytes.
  * An EXEC message will be posted with the given handler when the transfer
  * is complete.
  * The DMA operation is not started by this call.
- * 
+ *
  * @see dbus_start_dataop
- * 
+ *
  * @param buf Pointer to buffer
  * @param count Number of bytes
  * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
@@ -179,13 +143,13 @@ extern void dbus_prep_send1(volatile uint8_t* buf, int count);
 /**
  * @brief Prepare to send data from two buffers, one following the other.
  * @ingroup databus
- * 
+ *
  * This sends data from buffer1 for count1 bytes, and then sends data from buffer2 for
  * count2 bytes. It runs the completion handler when the second buffer has been transferred.
  * The DMA operation is not started by this call.
  *
  * @see dbus_start_dataop
- *  
+ *
  * @param buf1 First buffer
  * @param cnt1 First byte count
  * @param buf2 Second buffer
@@ -196,7 +160,7 @@ extern void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* 
 /**
  * @brief Prepare to send data from a buffer and then receive data into a buffer.
  * @ingroup databus
- * 
+ *
  * This first sends data from the send buffer for send count bytes. When the send
  * operation completes it triggers the receive operation into the receive buffer
  * for receive count bytes. It runs the completion handler when the receive
@@ -204,13 +168,22 @@ extern void dbus_prep_send2(volatile uint8_t* buf1, int cnt1, volatile uint8_t* 
  * The DMA operation is not started by this call.
  *
  * @see dbus_start_dataop
- * 
+ *
  * @param sbuf Send buffer
  * @param scnt Send byte count
  * @param rbuf Receive buffer
  * @param rcnt Receive byte count
  */
 extern void dbus_prep_sendrecv(volatile uint8_t* sbuf, int scnt, volatile uint8_t* rbuf, int rcnt);
+
+/**
+ * @brief Allow CTRL Port operations
+ * @ingroup databus
+ *
+ * This allows CTRL Port operations (implicitly not expecting DATA Port operations,
+ * but not cancelling them)
+ */
+extern void dbus_start_ctrl_port();
 
 /**
  * @brief Start a send, send-send, or send-receive data operation
@@ -224,31 +197,109 @@ extern void dbus_prep_sendrecv(volatile uint8_t* sbuf, int scnt, volatile uint8_
 extern void dbus_start_dataop();
 
 /**
- * @brief Set the value returned for an unexpected READ operation by the host.
+ * @brief Provide a CTRL value for the bus. Only used if a Host Read is pending.
  * @ingroup databus
- * 
- * 
- * @param v Value to return
+ *
+ * This method is used to provide a value when a CTRL READ handler indicated that
+ * the value was TDB when it was called during a CTRL READ operation.
+ *
+ * @param v
  */
-extern void dbus_data_defval_set(uint8_t v);
+extern void dbus_ctrl_value_write(uint8_t v);
 
 /**
- * @brief Release the MSEL detection PIO-SM from its held state.
+ * @brief Cancel any inprocess/pending data bus operations
  * @ingroup databus
  * 
- * This must be called to allow additional access to the data bus by the host
- * after a MSG_DBUS_CTRL_ACCESS has been posted. This will typically be done
- * after data has been read from the bus or put on the bus (to respond to the
- * CTRL port access) and data has been set up for a read from or write to the
- * data port (in the case of commands issued to CTRL).
+ * This cancels any DMA and data transfer options, putting the data bus processing
+ * back into an idle state.
  */
-extern void dbus_release_msel();
+extern void dbus_cancel_ops();
+
+
+// ====================================================================
+// Board Control Methods (Core-2 safe)
+// ====================================================================
+
 
 /**
- * @brief Print the status of the four PIO State Machines that control the Data Bus.
+ * @brief Clear the WAIT signal and go back to waiting for MODSEL.
  * @ingroup databus
+ * 
+ * If the WAIT signal is on when MODSEL is on, WAIT is passed to the Host (Z80) and can
+ * keep it from finishing the operation. That is actually a condition that shouldn't
+ * occur if things are working correctly. However, during development and testing it
+ * can occur, and if it does there needs to be some way to break the deadlock.
+ * This method provides the break. It deactivates the WAIT signal, delays a bit to
+ * allow MODSEL to go back false, then restarts the MSEL PIO to once again assert WAIT
+ * and check for MODSEL.
+ * 
+ * This also cancels the DMA channels that use the 'auto' data PIO.
+ * 
+ * THIS METHOD IS INTENDED FOR DEV/TEST (for cancelling operations)
  */
-extern void dbus_status_print();
+extern void bc_clear_wait();
+
+/**
+ * @brief Absolutely force ATTN OFF (`bc_attn_set_on(false)` should be used except for failure recovery)
+ * @ingroup
+ *
+ * This absolutely forces ATTN OFF be doing a EIO operation.
+ * Using `bc_attn_set_on(false)` should be used for all normal processing. This method
+ * is provided for debugging to allow writing to the expansion latch regardless of
+ * what state the system things ATTN is in.
+ *
+ * The normal `bc_attn_set_on(bool)` method will skip writing to the expansion latch
+ * if the internal state tracking indicates that the ATTN bit is already in the
+ * desired state. This avoid excessive operations on the DATA bus and is also
+ * faster.
+ */
+extern void bc_attn_force_off();
+
+/**
+ * @brief Get the state of the ATTN bit
+ * @ingroup databus
+ *
+ * @return bool true if the ATTN bit is ON
+ */
+extern bool bc_attn_is_on();
+
+/**
+ * @brief Set the ATTN (INTRQ) pin ON|OFF
+ * @ingroup databus
+ *
+ * @param on true=on false=off
+ */
+extern void bc_attn_set_on(bool on);
+
+/**
+ * @brief Set the WAIT signal
+ * @ingroup databus
+ * 
+ * This sets the WAIT signal. The WAIT signal is gated by MODSEL on the board, so this
+ * will not cause the Z80 to wait unless/until it selects the module.
+ * 
+ * THIS METHOD IS INTENDED FOR DEV/TEST (for cancelling operations)
+ */
+extern void bc_set_wait();
+
+/**
+ * @brief The last value written to the CTRL port
+ * @ingroup databus
+ *
+ * This returns 0 until a value is written.
+ *
+ * @return uint8_t Last value written or 0
+ */
+extern uint8_t bc_ctrl_last_write();
+
+
+
+
+// ====================================================================
+// Public Board Methods
+// ====================================================================
+
 
 #define LED_RED 0x08
 #define LED_YELLOW1 0x10
@@ -264,7 +315,15 @@ extern void dbus_status_print();
  * 
  * @param leds OR'ed values for the LEDs 
  */
-extern void led_control(uint8_t leds);
+extern void b_led_control(uint8_t leds);
+
+/**
+ * @brief Print the status of the four PIO State Machines that control the Data Bus.
+ * @ingroup databus
+ */
+extern void b_status_print();
+
+
 
 /**
  * @brief Initialize the module. Must be called once/only-once before module use.

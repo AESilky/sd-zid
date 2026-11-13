@@ -41,16 +41,16 @@ int main() {
     // Initialize that (single) GPIO pin as an input and hang on it if it is LOW
     //
     // Once the pin is high set it as an interrupt source that will cause a board reset.
-    gpio_init(CTRL_RST);
-    gpio_set_function(CTRL_RST, GPIO_FUNC_SIO);
-    gpio_set_dir(CTRL_RST, GPIO_IN);
-    gpio_pull_up(CTRL_RST);     // Needed when the module isn't in the ZID board
-    while (gpio_get(CTRL_RST) == 0) {
+    gpio_init(PIN_RST);
+    gpio_set_function(PIN_RST, GPIO_FUNC_SIO);
+    gpio_set_dir(PIN_RST, GPIO_IN);
+    gpio_pull_up(PIN_RST);     // Needed when the module isn't in the ZID board
+    while (gpio_get(PIN_RST) == 0) {
         sleep_us(300);
     }
     // Reset input is now HIGH, we can continue
     //  Enable the interrupt and register the callback
-    gpio_set_irq_enabled_with_callback(CTRL_RST, GPIO_IRQ_EDGE_FALL, true, &gpio_reset_irq);
+    gpio_set_irq_enabled_with_callback(PIN_RST, GPIO_IRQ_EDGE_FALL, true, &gpio_reset_irq);
 
     // Now do the Board level initialization
     if (board_init() != 0) {

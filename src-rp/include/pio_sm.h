@@ -13,6 +13,7 @@ extern "C" {
 
 #include "stdint.h"
 #include "hardware/pio.h"
+#include "hardware/structs/pio.h"
 
 // ============================================================================
 // PIO Byte-Swapped TX FIFO Aliases (For 8-bit DMA streaming to Right-Shift SMs)
@@ -37,6 +38,23 @@ extern "C" {
 #define PIO1_TXF2_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO1_BASE + 0x48))
 /** @brief PIO1-SM3 Single Byte DMA TXFIFO address (for PIO shift-right config) */
 #define PIO1_TXF3_BYTE_WRITE_ALIAS    ((volatile uint8_t*)(PIO1_BASE + 0x4c))
+
+/* RP2350 Specific Extensions */
+#if PICO_PIO_VERSION > 0 // RP2350 platform
+#define PIO_FIFO_JOIN_TX_and_GET PIO_FIFO_JOIN_TXGET
+#define PIO_FIFO_JOIN_TX_and_PUT PIO_FIFO_JOIN_TXPUT
+#define PIO_FIFO_JOIN_TX_and_GETPUT PIO_FIFO_JOIN_GETPUT
+/** @brief Read a value from a specific PUTGET FIFO register slot on a state machine */
+static inline uint32_t pio_sm_get_putget(pio_hw_t* pio, uint sm, uint slot) {
+    // Indexes automatically resolve to the correct hardware offsets
+    return pio->rxf_putget[sm & 0x3][slot & 0x3];
+}
+
+/** @brief Write a value to a specific PUTGET FIFO register slot on a state machine */
+static inline void pio_sm_put_putget(pio_hw_t* pio, uint sm, uint slot, uint32_t value) {
+    pio->rxf_putget[sm & 0x3][slot & 0x3] = value;
+}
+#endif // PICO_PIO_VERSION > 0
 
 /**
  * @brief Dynamically calculates the low-byte TX FIFO alias address for DMA configuration.
@@ -129,6 +147,57 @@ typedef pio_sm_config(*piosmcfg_fn)(uint offset);
 extern pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, piosmcfg_fn smdefcfgfn, float clkdiv, bool cfgpins, enum pio_fifo_join join_type, uint in_bits, bool in_right, bool in_auto, uint out_bits, bool out_right, bool out_auto, uint pin_i, int pin_i_cnt, uint pin_o, int pin_o_cnt, uint pin_s, int pin_s_cnt, uint pin_ss, int pin_ss_cnt, int pin_jmp, int mov_status);
 
 /**
+ * @brief Stop all PIO State Machines at once
+ * @ingroup pio_sm
+ */
+static inline void pio_stop_all_sm(PIO pio) {
+    pio->ctrl &= ~0xF;
+}
+
+/**
+ * @brief Drain the RX Fifo of a PIO State Machine.
+ * @ingroup pio_sm
+ * 
+ * Attempt to clear the receive FIFO of the specified state machine. This
+ * reads from the FIFO up to 9 times until the FIFO status indicates that
+ * no data is available. Reading up to 9 times is enough to clear a FIFO
+ * that has been joined (8 entries) plus a value that was waiting to be pushed
+ * but was blocked due to the FIFO being full. The draining process is
+ * stopped after 9 reads to guard against looping indefinitely in the case
+ * that data is actively being received. True is returned if the FIFO reports
+ * that no data is available, false otherwise. 
+ * 
+ * @param smpocfg
+ * @return True if the FIFO status reports no data available
+ */
+extern bool piosm_drain_rx(pio_sm_pocfg* smpocfg);
+
+/**
+ * @brief Get the enabled (running) state of a PIO State Machine.
+ * @ingroup pio_sm
+ *
+ * @param smpocfg The pio_sm_pocfg containing the PIO, SM, and offset
+ * @return true The SM is enabled
+ * @return false The SM is disabled
+ */
+static inline bool piosm_enabled(pio_sm_pocfg smpocfg) {
+    return ((smpocfg.pio->ctrl & (1u << smpocfg.sm)) != 0);
+}
+
+/**
+ * @brief Get the enabled (running) state of a PIO State Machine.
+ * @ingroup pio_sm
+ *
+ * @param pio The PIO block
+ * @param sm The State Machine in the block
+ * @return true The SM is enabled
+ * @return false The SM is disabled
+ */
+static inline bool piosm_enabled2(PIO pio, uint sm) {
+    return ((pio->ctrl & (1u << sm)) != 0);
+}
+
+/**
  * @brief Preload the X and Y registers of a PIO State Machine.
  * @ingroup pio_sm
  * 
@@ -154,29 +223,6 @@ static inline uint8_t piosm_pc(pio_sm_pocfg smpocfg) {
     return (pio_sm_get_pc(smpocfg.pio, smpocfg.sm) - smpocfg.offset);
 }
 
-
-/**
- * @brief Get the enabled (running) state of a PIO State Machine.
- *
- * @param pio The PIO block
- * @param sm The State Machine in the block
- * @return true The SM is enabled
- * @return false The SM is disabled
- */
-static inline bool piosm_enabled(PIO pio, uint sm) {
-    return ((pio->ctrl & (1u << sm)) != 0);
-}
-
-/**
- * @brief Get the enabled (running) state of a PIO State Machine.
- *
- * @param smpocfg The PIO-SM Pgm-offset and Config
- * @return true The SM is enabled
- * @return false The SM is disabled
- */
-static inline bool piosm_enabled2(pio_sm_pocfg smpocfg) {
-    return (piosm_enabled(smpocfg.pio, smpocfg.sm));
-}
 
 /**
  * @brief Reset a PIO State Machine, including putting the PC at the start.

@@ -22,11 +22,12 @@
 
 #define PAGE_MASK 0x000000FF
 #define ONEK_MASK 0x000003FF
-typedef enum DC_MODE_ {
-    DCM_DEBUG = 0,
-    DCM_TARGET,
-    DCM_ERROR = 0xFF
-} dcm_t;
+typedef enum DM_MODE_ {
+    DMM_UNKNOWN = 0,
+    DMM_DEBUG,
+    DMM_TARGET,
+    DMM_ERROR = 0xFF
+} dmmode_t;
 
 /** Memory/Port Operation Structure */
 typedef struct DM_MP_OPBUF {
@@ -34,7 +35,16 @@ typedef struct DM_MP_OPBUF {
     uint8_t addrH;
     uint8_t cnt;                    // Count of bytes
     volatile uint8_t buf[PAGE + 1]; // Buffer. Only 1 page op is supported, but we add a pad
-} dc_mp_opbuf_t;
+} dm_mp_opbuf_t;
+
+/**
+ * @brief Get the Debug Controller Banner.
+ * @ingroup debugcontrol
+ * 
+ * 
+ * @return const char* The banner
+ */
+extern const char* dc_banner();
 
 /**
  * @brief Get the Memory/Port Operation Buffer.
@@ -50,7 +60,7 @@ typedef struct DM_MP_OPBUF {
  * 
  * @return dc_mb_opbuf_t pointer 
  */
-extern dc_mp_opbuf_t* dc_mp_opbuf_get();
+extern dm_mp_opbuf_t* dc_mp_opbuf_get();
 
 /**
  * @brief Return the MP OpBuf filled with an address and byte count.
@@ -61,8 +71,8 @@ extern dc_mp_opbuf_t* dc_mp_opbuf_get();
  * @param addr uint16_t address
  * @param cnt uint16_t count
  */
-static inline dc_mp_opbuf_t* dc_mp_opbuf_fill(uint16_t addr, uint8_t cnt) {
-    dc_mp_opbuf_t* ob = dc_mp_opbuf_get();
+static inline dm_mp_opbuf_t* dc_mp_opbuf_fill(uint16_t addr, uint8_t cnt) {
+    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     ob->addrL = (uint8_t)(addr & 0x00FF);
     ob->addrH = (uint8_t)(addr >> 8);
     ob->cnt = cnt;
@@ -240,6 +250,39 @@ extern void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt);
  * @return bool True=SBC False=Not SBC
  */
 extern bool dm_tgt_is_sbc();
+
+/**
+ * @brief DM Version string.
+ * @ingroup debugcontrol
+ * 
+ * Returns a constant, null terminated string, with the DM Version.
+ * This returns the version last received from the DM. The DC retrieves the
+ * version from the DM when it initializes.
+ * 
+ * To force retrieving an updated version from the DM use `dm_ver_get`.
+ * 
+ * @see `dm_ver_get(msg_handler_fn on_cmplt)`
+ * 
+ * @return const char* 
+ */
+extern const char* dm_ver();
+
+/**
+ * @brief Get the DM Version string by making a call to the DM
+ * @ingroup debugcontrol
+ * 
+ * This get the DM Version by making a call to the DM. When the call to
+ * the DM is complete the `on_cmplt` function will be called and the message
+ * data `strconst` is the version retrieved.
+ * 
+ * To get the last version retrieved (cached - not forcing a call to the DM)
+ * use `dm_ver`.
+ * 
+ * @see `dm_ver()`
+ * 
+ * @param on_cmplt Message handler to be called on complete 
+ */
+extern void dm_ver_get(msg_handler_fn on_cmplt);
 
 /**
  * Value provider that processes Z80 register names and falls back to the

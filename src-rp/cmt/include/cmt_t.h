@@ -42,8 +42,8 @@ typedef enum MSG_ID_ {
     MSG_SW_ACTION,
     MSG_SW_DEBOUNCE,
     MSG_SW_LONGPRESS_DELAY,
-    MSG_DBUS_CTRL_READ,
-    MSG_DBUS_CTRL_WRITE,
+    MSG_DBUS_CREAD_UNEXPECTED,
+    MSG_DBUS_CWRITE_UNEXPECTED,
     MSG_DBUS_DREAD_UNEXPECTED,
     MSG_DBUS_DREAD_XFER_DONE,
     MSG_DBUS_DWRITE_UNEXPECTED,
@@ -57,7 +57,6 @@ typedef enum MSG_ID_ {
     MSG_ROTARY_CHG,
     MSG_STDIO_CHAR_READY,
     // Debug Monitor Communications Messages
-    MSG_DMC_CMD_REQ,        // Request the DM run a command
     //
     // ==============================================================
     // Application functionality (APP) messages 0xC0 - 0xFF
@@ -70,7 +69,7 @@ typedef enum MSG_ID_ {
     MSG_DLG_TIMEOUT,
     MSG_TERM_CHAR_RCVD,
     //  Debug Controller/Monitor App Messages
-    MSG_DM_CMDDONE,         // DM completed the command. CMD in value8u. Posted after status.
+    MSG_DM_CMD_CMPLT,       // DM completed the command. CMD in HB, STATE in LB of value16u. Posted after status.
     MSG_DM_STATUSRCVD,      // Status was received from the DM. Status in value8u.
 } msg_id_t;
 #define MSG_ID_CNT (0x100)
@@ -99,7 +98,20 @@ typedef void (*msg_handler_fn)(struct CMT_MSG_* msg);
 
 #define NULL_MSG_HDLR ((msg_handler_fn)0)
 
-#include "dc/include/dmcomm_t.h"    // Debug Monitor Communications data structures
+/**
+ * @brief Structure containing a Value (int32 or uint32) and a void pointer.
+ * 
+ * This allows a value, like a status, and a pointer to be used as a
+ * message data value.
+ * 
+ */
+typedef struct valptr_ {
+    union {
+        int32_t v32;
+        uint32_t v32u;
+    } val;
+    void* vptr;
+} valptr_t;
 
 /**
  * @brief Message data.
@@ -111,16 +123,17 @@ union MSG_DATA_VALUE_ {
     bool bv;
     bool debug;
     cmt_sleep_data_t cmt_sleep;
-    dmc_cmd_req_t dmc_cmd_req;      // DM Communications Command Request
     int8_t value8;
     uint8_t value8u;
     int16_t value16;
     uint16_t value16u;
     int32_t status;
     uint32_t value32u;
+    valptr_t v32_vp;
     switch_action_data_t sw_action;
     FRESULT fr;
     char* str;
+    const char* strconst;
     uint8_t* bptr;
     void* vptr;
     uint32_t ts_ms;

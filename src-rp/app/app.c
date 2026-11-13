@@ -12,6 +12,7 @@
 #include "app.h"
 #include "appops.h"
 #include "dbusc/include/dbusc.h"
+#include "dc.h"
 #include "dskops.h"
 
 #include "board.h"
@@ -105,7 +106,7 @@ static void _do_on_char_rdy_irq() {
 static void _enable_ui(void* data) {
 #ifdef SHELL_ENABLE
     // Initialize the shell
-    shell_modinit(dcm_title, dcm_banner, _do_on_char_rdy_irq);
+    shell_modinit(dcm_title, _do_on_char_rdy_irq);
     // Initialize modules that provide shell commands
     dccmds_modinit(); // Primary Application Commands
     debugcmds_modinit();
@@ -114,7 +115,7 @@ static void _enable_ui(void* data) {
     shell_start();
 #endif
     // Clear out the RED LED and turn on a GREEN one
-    led_control(LED_GREEN2);
+    b_led_control(LED_GREEN2);
 }
 
 static void _display_proc_status(void* data) {

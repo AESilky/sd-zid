@@ -8,7 +8,7 @@
 #include "pio_sm.h"
 
 uint32_t pio_debug_get(PIO pio) {
-    uint32_t debug = pio->fdebug & 0xffffff;
+    uint32_t debug = pio->fdebug & 0x0fffffff;
     if (debug) {
         pio->fdebug = debug;
     }
@@ -95,6 +95,17 @@ pio_sm_pocfg pio_sm_configure(PIO pio, uint sm, const pio_program_t* pio_prgm, p
     pio_sm_init(pio, sm, smpocfg.offset, &smpocfg.sm_cfg);
 
     return (smpocfg);
+}
+
+bool piosm_drain_rx(pio_sm_pocfg* smpocfg) {
+    volatile uint32_t rx;   // Assure value gets assigned
+    int maxr_ds = 9;
+    while (maxr_ds && !pio_sm_is_rx_fifo_empty(smpocfg->pio, smpocfg->sm)) {
+        rx = pio_sm_get(smpocfg->pio, smpocfg->sm); // Read and discard value
+        maxr_ds--;
+    }
+    (void)rx;   // Keep GCC from saying it is unused.
+    return (pio_sm_is_rx_fifo_empty(smpocfg->pio, smpocfg->sm));
 }
 
 void pio_sm_preload_xy(PIO pio, uint sm, uint32_t x_val, uint32_t y_val) {
