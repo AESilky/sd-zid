@@ -126,8 +126,8 @@ bool debug_mode_enable(bool on) {
         cmt_msg_t msg;
         cmt_msg_init(&msg, MSG_DEBUG_CHANGED);
         msg.data.debug = _debug_mode_enabled;
-        postHWRTMsgDiscardable(&msg);
-        postAPPMsgDiscardable(&msg);
+        post_core0_nowait(&msg);
+        post_core1_nowait(&msg);
     }
     return (temp != on);
 }

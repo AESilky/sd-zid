@@ -756,12 +756,12 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
     SHPF("DM %s\n", sim);
     b_status_print();
     bool cip = dmc_op_inprocess();
-    dmc_cmd_op_t cop = dmc_op_current();
-    dmc_cmd_op_t col = dmc_op_last();
+    volatile const dmc_cmd_op_t* cop = dmc_op_current();
+    volatile const dmc_cmd_op_t* col = dmc_op_last();
     if (cip) {
-        shell_printf(" DM current operation: %02X\n", (uint8_t)cop.cmd);
+        shell_printf(" DM current operation: %02X\n", (uint8_t)cop->cmd);
     }
-    shell_printf(" DM last operation   : %02X\n", (uint8_t)col.cmd);
+    shell_printf(" DM last operation   : %02X\n", (uint8_t)col->cmd);
     shell_putc('\n');
     return (retval);
 }

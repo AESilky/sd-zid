@@ -37,7 +37,7 @@ extern bool dm_available();
  * 
  * @return dmc_cmd_op_t Current command
  */
-extern const dmc_cmd_op_t dmc_op_current();
+extern volatile const dmc_cmd_op_t* dmc_op_current();
 
 /**
  * @brief Get the last command op sent to the DM
@@ -45,7 +45,7 @@ extern const dmc_cmd_op_t dmc_op_current();
  * 
  * @return dmc_cmd_op_t Last command
  */
-extern const dmc_cmd_op_t dmc_op_last();
+extern volatile const dmc_cmd_op_t* dmc_op_last();
 
 /**
  * @brief Cancel any inprocess/pending DM operation
@@ -75,7 +75,7 @@ extern bool dmc_op_inprocess();
  * @param cmdop The command and buffer information
  * @return 0 if operation requested or the CMD that is currently in process.
  */
-extern uint8_t dmc_op_request(dmc_cmd_op_t cmdop);
+extern uint8_t dmc_op_request(dmc_cmd_op_t* cmdop);
 
 /**
  * @brief Status of whether the target is the SBC (same board as debug monitor)

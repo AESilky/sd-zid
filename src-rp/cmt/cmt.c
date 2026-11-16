@@ -83,10 +83,10 @@ static void _on_recurring_interrupt(void) {
         // Plus, the head entry needs to be updated.
         while (cmt_smd_ll != (cmt_schmsgdata_ll_ent_t*)NULL && 0 >= cmt_smd_ll->schmsg_data.remaining) {
             if (0 == cmt_smd_ll->schmsg_data.corenum) {
-                post_to_core0(&cmt_smd_ll->schmsg_data.msg);
+                post_core0(&cmt_smd_ll->schmsg_data.msg);
             }
             else {
-                post_to_core1(&cmt_smd_ll->schmsg_data.msg);
+                post_core1(&cmt_smd_ll->schmsg_data.msg);
             }
             // Get the next entry and free this one.
             cmt_schmsgdata_ll_ent_t* next = cmt_smd_ll->next;
@@ -102,12 +102,12 @@ static void _on_recurring_interrupt(void) {
         if (!_housekeep0_msg_pending) {
             _housekeep0_msg_pending = true;
             cmt_msg_init2(&msg, MSG_PERIODIC_RT, _housekeep0_msg_hdlr);
-            post_to_core0(&msg);
+            post_core0(&msg);
         }
         if (!_housekeep1_msg_pending) {
             _housekeep1_msg_pending = true;
             cmt_msg_init2(&msg, MSG_PERIODIC_RT, _housekeep1_msg_hdlr);
-            post_to_core1(&msg);
+            post_core1(&msg);
         }
     }
     // Clear the interrupt flag that brought us here so it can occur again.
@@ -404,10 +404,10 @@ void message_loop(msg_handler_fn fstart) {
         cmt_msg_t msg;
         cmt_msg_init2(&msg, MSG_LOOP_STARTED, fstart);
         if (corenum == 0) {
-            post_to_core0(&msg);
+            post_core0(&msg);
         }
         else if (corenum == 1) {
-            post_to_core1(&msg);
+            post_core1(&msg);
         }
         else {
             board_panic("!!! `corenum` was other than 0 or 1. corenum:%hhu !!!", corenum);
@@ -441,13 +441,13 @@ void message_loop(msg_handler_fn fstart) {
         if (corenum == 0) {
             if (multicore_fifo_rvalid()) {
                 // Yes...
-                debug_trace("runon_core0 executing\n");
+                debug_trace("run_on_core0 executing\n");
                 const cmt_msg_t* c1msg = (const cmt_msg_t*)multicore_fifo_pop_blocking_inline();
                 // There should be a handler, as it shouldn't have been sent here otherwise.
                 if (c1msg->hdlr != NULL_MSG_HDLR) {
                     c1msg->hdlr(&msg);
                 }
-                debug_trace("runon_core0 returning\n");
+                debug_trace("run_on_core0 returning\n");
                 multicore_fifo_push_blocking_inline((uint32_t)c1msg);
             }
         }

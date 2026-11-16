@@ -119,7 +119,7 @@ extern void dbus_data_rx_drain();
  *
  * @param buf Pointer to buffer
  * @param count Number of bytes
- * @param on_cmplt Completion handler (Message Handler method EXEC'ed)
+ * @param on_cmplt0 Completion handler (Message Handler method EXEC'ed)
  */
 extern void dbus_prep_recv(volatile uint8_t* buf, int count);
 

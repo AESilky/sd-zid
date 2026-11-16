@@ -14,9 +14,11 @@ target_include_directories(app INTERFACE
 )
 
 target_link_libraries(app INTERFACE
+  dc
   dskops
   shell
   #shell_stub
   pico_stdlib
+  rpm
   z80dasm
 )

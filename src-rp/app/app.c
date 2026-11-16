@@ -84,10 +84,10 @@ int ERRORNO;    // Primarily used by the Shell and Shell Commands. Globally avai
  *
  */
 static void _do_on_char_rdy_irq() {
-    // Post MSG_TERM_CHAR_RCVD to have our app thread handle.
+    // Post MSG1_TERM_CHAR_RCVD to have our app thread handle.
     cmt_msg_t msg;
-    cmt_msg_init(&msg, MSG_TERM_CHAR_RCVD);
-    postAPPMsg(&msg);
+    cmt_msg_init(&msg, MSG1_TERM_CHAR_RCVD);
+    post_core1(&msg);
 }
 
 
@@ -144,7 +144,7 @@ static void _handle_housekeeping(__unused cmt_msg_t* msg) {
 }
 
 #ifdef SHELL_ENABLE
-// Handle `MSG_TERM_CHAR_RCVD` Let the Shell know that there are characters ready.
+// Handle `MSG1_TERM_CHAR_RCVD` Let the Shell know that there are characters ready.
 static void _handle_term_char_rdy(__unused cmt_msg_t* msg) {
     shell_do_input_char_ready();
 }
@@ -195,7 +195,7 @@ static void _modinit(void) {
     // Add our message handlers
     cmt_msg_hdlr_add(MSG_PERIODIC_RT, _handle_housekeeping);
 #ifdef SHELL_ENABLE
-    cmt_msg_hdlr_add(MSG_TERM_CHAR_RCVD, _handle_term_char_rdy);
+    cmt_msg_hdlr_add(MSG1_TERM_CHAR_RCVD, _handle_term_char_rdy);
 #endif
     // Initialize the App Modules
     appops_modinit();
@@ -217,6 +217,6 @@ void start_app(void) {
     // Done with Apps Startup - Let the Runtime know.
     cmt_msg_t msg;
     cmt_msg_init(&msg, MSG_APPS_STARTED);
-    postHWRTMsg(&msg);
+    post_core0(&msg);
 
 }

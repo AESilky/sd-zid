@@ -3,6 +3,13 @@
  * 
  * This is the Main Application for this device.
  * It should initialize any other application (Core-1) modules used.
+ * 
+ * It bridges the gap between applications (core-1) and hardware (Core-0)
+ * Care should be taken in this module to understand what is being run
+ * in Core-1 (Apps) and what is being run in Core-0 (HWRT).
+ * 
+ * Operations in cmd should be strictly Core-1, while interactions with 
+ * dmcomm and dbusc should be strictly Core-0.
  *
  * Copyright 2023-26 AESilky
  * SPDX-License-Identifier: MIT License
@@ -66,13 +73,13 @@ static bool _uc;                        // Upper case
 // Local/Private Method Declarations
 // ====================================================================
 
-static bool _dm_cmd_request(
+static void _dm_cmd_request(
     dm_cmd_t cmd,
     volatile uint8_t* send_buf1, int send_cnt1,
     volatile uint8_t* send_buf2, int send_cnt2,
     volatile uint8_t* recv_buf, int recv_cnt,
-    msg_handler_fn on_cmplt,
-    msg_handler_fn on_cmplt2,
+    msg_handler_fn on_cmplt0,
+    msg_handler_fn on_cmplt1,
     void* vpdata);
 static void _dm_fatal_error();
 static void _dm_sim_update_buf();
@@ -149,9 +156,9 @@ static void _handle_dm_cmddone(cmt_msg_t* msg) {
     //  Otherwise, the on_complete is executed directly
     dmc_cmd_op_state_t state_was = _dm_op_inproc.state;
     _dm_op_inproc.state = DMC_COS_COMPLETED;
-    if (state_was == DMC_COS_INPROCESS && _dm_op_inproc.on_cmplt) {
-        cmt_exec_init(msg, _dm_op_inproc.on_cmplt);
-        postAPPMsg(msg);
+    if (state_was == DMC_COS_INPROCESS && _dm_op_inproc.on_cmplt0) {
+        cmt_exec0_init(msg, _dm_op_inproc.on_cmplt0);
+        post_core0(msg);
     }
 }
 
@@ -180,8 +187,8 @@ static void _handle_dm_statusrcvd(cmt_msg_t* msg) {
                     msg->data.value8u = DMOPDONE;
                 }
                 int32_t delay = DMSIM_STATnDLY;
-                cmt_msg_init(msg, MSG_DM_STATUSRCVD);
-                schedule_core1_msg_in_ms(delay, msg);
+                cmt_msg_init(msg, MSG0_DM_STATUSRCVD);
+                schedule_core0_msg_in_ms(delay, msg);
             }
             break;
         case DMOPDONE:
@@ -189,10 +196,10 @@ static void _handle_dm_statusrcvd(cmt_msg_t* msg) {
             // We also get a Command Done message.
             if (_dm_sim) {
                 int32_t delay = DMSIM_STATnDLY;
-                // Pack the command (HB) and state (LB) into the `value16u`
-                msg->data.value16u = (uint16_t)((uint16_t)_dm_op_inproc.cmd << 8 | (uint16_t)(DMC_COS_COMPLETED & 0xff));
-                cmt_exec_init(msg, _dm_op_inproc.on_cmplt);
-                schedule_core1_msg_in_ms(delay, msg);
+                msg->data.v32_vp.val.v32u = DMC_COS_COMPLETED;
+                msg->data.v32_vp.vptr = (void*)_dm_op_inproc.cmd;
+                cmt_exec0_init(msg, _dm_op_inproc.on_cmplt0);
+                schedule_core0_msg_in_ms(delay, msg);
             }
             break;
         case DMSSDONE:
@@ -221,15 +228,16 @@ static void _handle_dm_statusrcvd(cmt_msg_t* msg) {
             break;
         case DMCMDUK:
             // DM indicated that it doesn't know the command we sent
-            dmc_cmd_op_t oip = dmc_op_current();
-            uint8_t cmd_ip = oip.cmd;
+            volatile const dmc_cmd_op_t* oip = dmc_op_current();
+            uint32_t cmd_ip = (uint32_t)oip->cmd;
             shell_printferr("%s [%02X]\n", dmm_cmd_unknown, cmd_ip);
-            if (oip.on_cmplt) {
+            if (oip->on_cmplt0) {
                 cmt_msg_t msgoc;
-                // Pack the command (HB) and state (LB) into the `value16u`
-                msgoc.data.value16u = (uint16_t)((uint16_t)cmd_ip << 8 | (uint16_t)(DMC_COS_UNKNOWN & 0xff));
-                cmt_exec_init(&msgoc, oip.on_cmplt);
-                postAPPMsg(&msgoc);
+                // State and Command into v32_vp
+                msgoc.data.v32_vp.val.v32u = (uint32_t)(DMC_COS_UNKNOWN);
+                msgoc.data.v32_vp.vptr = (void*)cmd_ip;
+                cmt_exec0_init(&msgoc, oip->on_cmplt0);
+                post_core0(&msgoc);
             }
             break;
         case DMRSTEXEC:
@@ -260,24 +268,33 @@ static void _handle_dm_status_unknown(cmt_msg_t* msg) {
 // Local/Private Methods
 // ====================================================================
 
+/* Request a DM Operation from Core-0 */
+static void _dm_cmd_req_hm0(cmt_msg_t* msg) {
+    dmc_cmd_op_t* dmc_cmd_op = (dmc_cmd_op_t*)msg->data.vptr;
+    uint8_t cip = dmc_op_request(dmc_cmd_op);
+    if (cip != 0) {
+        shell_printferr("\nOperation in progress: %02X  Operation not requested: %02X\n", cip, dmc_cmd_op->cmd);
+    }
+}
+
 /*
  * Request a command be sent to the Debug Monitor.
  * Calls the Debug Monitor Communications module, which prepares any data
  * transfers to/from the DM and pokes the DM to have it perform the operation.
  */
-static bool _dm_cmd_request(
+static void _dm_cmd_request(
     dm_cmd_t cmd,
     volatile uint8_t* send_buf1, int send_cnt1,
     volatile uint8_t* send_buf2, int send_cnt2,
     volatile uint8_t* recv_buf, int recv_cnt,
-    msg_handler_fn on_cmplt,
-    msg_handler_fn on_cmplt2,
+    msg_handler_fn on_cmplt0,
+    msg_handler_fn on_cmplt1,
     void* vpdata)
 {
     dmc_cmd_op_t dmc_cmd_op;
     dmc_cmd_op.cmd = cmd;
-    dmc_cmd_op.on_cmplt = on_cmplt;
-    dmc_cmd_op.on_cmplt2 = on_cmplt2;
+    dmc_cmd_op.on_cmplt0 = on_cmplt0;
+    dmc_cmd_op.on_cmplt1 = on_cmplt1;
     dmc_cmd_op.vpdata = vpdata;
     dmc_cmd_op.ctrlrd_expctd = true;
     dmc_cmd_op.send_buf1 = send_buf1;
@@ -292,11 +309,10 @@ static bool _dm_cmd_request(
     //
     // Are we simulating the DM?
     if (!_dm_sim) {
-        uint8_t cip = dmc_op_request(dmc_cmd_op);
-        if (cip != 0) {
-            shell_printferr("\nOperation in progress: %02X  Operation not requested: %02X\n", cip, cmd);
-            return false;
-        }
+        cmt_msg_t msg;
+        msg.data.vptr = (void*)&_dm_op_inproc;
+        cmt_exec0_init(&msg, _dm_cmd_req_hm0);
+        post_core0(&msg);
     }
     else {
         // Yes - schedule some messages to allow debugging the UI
@@ -305,11 +321,10 @@ static bool _dm_cmd_request(
         _dm_sim_bval++;
         _dm_sim_wval--;
         _dm_sim_update_buf();
-        cmt_msg_init(&msg, MSG_DM_STATUSRCVD);
+        cmt_msg_init(&msg, MSG0_DM_STATUSRCVD);
         msg.data.value8u = DMOKCMDRD;
-        schedule_core1_msg_in_ms(delay, &msg);
+        schedule_core0_msg_in_ms(delay, &msg);
     }
-    return true;
 }
 
 static void _dm_fatal_error() {
@@ -414,39 +429,39 @@ void dm_dbgr_mp(bool use_dbgr_mp) {
     }
 }
 
-void dm_getallreg(msg_handler_fn on_cmplt) {
-    _dm_cmd_request(DMGREGALL, NULL, 0, NULL, 0, z80reg_buf_get(), ZREGALLBYTES, on_cmplt, NULL, NULL);
+void dm_getallreg(msg_handler_fn on_cmplt0) {
+    _dm_cmd_request(DMGREGALL, NULL, 0, NULL, 0, z80reg_buf_get(), ZREGALLBYTES, on_cmplt0, NULL, NULL);
 }
 
-void dm_go(msg_handler_fn on_cmplt) {
+void dm_go(msg_handler_fn on_cmplt0) {
     _prompten = false; // temp disable the prompt
-    _dm_cmd_request(DMGO, NULL, 0, NULL, 0, NULL, 0, on_cmplt, NULL, NULL);
+    _dm_cmd_request(DMGO, NULL, 0, NULL, 0, NULL, 0, on_cmplt0, NULL, NULL);
 }
 
-void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt) {
+void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt0) {
     _prompten = false; // temp disable the prompt
     regpc_sv(pc);
-    _dm_cmd_request(DMGOWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, on_cmplt, NULL, NULL);
+    _dm_cmd_request(DMGOWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, on_cmplt0, NULL, NULL);
 }
 
-void dm_mem_get(uint16_t cnt, msg_handler_fn on_cmplt) {
-    _dm_cmd_request(DMGM, &(_dm_mp_opbuf.addrL), WORD + BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt, on_cmplt, NULL, NULL);
+void dm_mem_get(uint16_t cnt, msg_handler_fn on_cmplt0) {
+    _dm_cmd_request(DMGM, &(_dm_mp_opbuf.addrL), WORD + BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt, on_cmplt0, NULL, NULL);
 }
 
 void dm_mem_set(uint16_t cnt) {
     _dm_cmd_request(DMPM, &(_dm_mp_opbuf.addrL), WORD + BYTE + cnt, NULL, 0, NULL, 0, NULL, NULL, NULL);
 }
 
-void dm_port_get(uint16_t cnt, msg_handler_fn on_cmplt) {
-    _dm_cmd_request(DMGP, &(_dm_mp_opbuf.addrL), WORD + BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt, on_cmplt, NULL, NULL);
+void dm_port_get(uint16_t cnt, msg_handler_fn on_cmplt0) {
+    _dm_cmd_request(DMGP, &(_dm_mp_opbuf.addrL), WORD + BYTE, NULL, 0, (volatile uint8_t*)&_dm_mp_opbuf.buf, cnt, on_cmplt0, NULL, NULL);
 }
 
 void dm_port_put(uint16_t cnt) {
     _dm_cmd_request(DMPP, &(_dm_mp_opbuf.addrL), WORD + BYTE + cnt, NULL, 0, NULL, 0, NULL, NULL, NULL);
 }
 
-void dm_putallreg(msg_handler_fn on_cmplt) {
-    _dm_cmd_request(DMPREGALL, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, on_cmplt, NULL, NULL);
+void dm_putallreg(msg_handler_fn on_cmplt0) {
+    _dm_cmd_request(DMPREGALL, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, on_cmplt0, NULL, NULL);
 }
 
 void dm_simulate(bool simulate) {
@@ -457,15 +472,15 @@ bool dm_simulated() {
     return _dm_sim;
 }
 
-void dm_step(msg_handler_fn on_cmplt) {
+void dm_step(msg_handler_fn on_cmplt0) {
     _prompten = false; // temp disable the prompt
-    _dm_cmd_request(DMSTEP, NULL, 0, NULL, 0, NULL, 0, on_cmplt, NULL, NULL);
+    _dm_cmd_request(DMSTEP, NULL, 0, NULL, 0, NULL, 0, on_cmplt0, NULL, NULL);
 }
 
-void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt) {
+void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt0) {
     _prompten = false; // temp disable the prompt
     regpc_sv(pc);
-    _dm_cmd_request(DMSTEPWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, on_cmplt, NULL, NULL);
+    _dm_cmd_request(DMSTEPWREG, z80reg_buf_get(), ZREGALLBYTES, NULL, 0, NULL, 0, on_cmplt0, NULL, NULL);
 }
 
 bool dm_tgt_is_sbc() {
@@ -476,7 +491,7 @@ const char* dm_ver() {
     return (const char*)_dm_ver;
 }
 
-void dm_ver_get(msg_handler_fn on_cmplt) {
+void dm_ver_get(msg_handler_fn on_cmplt0) {
 
 }
 
@@ -571,12 +586,12 @@ int dc_modinit() {
     cmt_run_after_ms(500, _handle_dm_version, NULL);
     _mode = DMM_DEBUG;
     //
-    cmt_msg_hdlr_add(MSG_DBUS_CREAD_UNEXPECTED, _handle_ctrl_rd_unexptd);
-    cmt_msg_hdlr_add(MSG_DBUS_CWRITE_UNEXPECTED, _handle_ctrl_wr_unexptd);
-    cmt_msg_hdlr_add(MSG_DBUS_DREAD_UNEXPECTED, _handle_data_rd_unexptd);
-    cmt_msg_hdlr_add(MSG_DBUS_DWRITE_UNEXPECTED, _handle_data_wr_unexptd);
-    cmt_msg_hdlr_add(MSG_DM_CMD_CMPLT, _handle_dm_cmddone);
-    cmt_msg_hdlr_add(MSG_DM_STATUSRCVD, _handle_dm_statusrcvd);
+    cmt_msg_hdlr_add(MSG0_DBUS_CREAD_UNEXPECTED, _handle_ctrl_rd_unexptd);
+    cmt_msg_hdlr_add(MSG0_DBUS_CWRITE_UNEXPECTED, _handle_ctrl_wr_unexptd);
+    cmt_msg_hdlr_add(MSG0_DBUS_DREAD_UNEXPECTED, _handle_data_rd_unexptd);
+    cmt_msg_hdlr_add(MSG0_DBUS_DWRITE_UNEXPECTED, _handle_data_wr_unexptd);
+    cmt_msg_hdlr_add(MSG0_DM_CMD_CMPLT, _handle_dm_cmddone);
+    cmt_msg_hdlr_add(MSG0_DM_STATUSRCVD, _handle_dm_statusrcvd);
     _prompten = true;
     shell_set_promptprov(_prompt_prov);
     _uc = true;     // Start with Upper Case enabled
