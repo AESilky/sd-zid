@@ -120,9 +120,9 @@ extern void dm_dbgr_mp(bool use_dbgr_mp);
  * The passed in message handler (can be NULL) is executed when the
  * operation completes.
  *
- * @param on_cmplt Message Handler function called on completion (can be NULL)
+ * @param on_cmplt0 Message Handler function called on completion (can be NULL)
  */
-extern void dm_getallreg(msg_handler_fn on_cmplt);
+extern void dm_getallreg(msg_handler_fn on_cmplt0);
 
 /**
  * @brief Run the Target from the current PC.
@@ -130,9 +130,9 @@ extern void dm_getallreg(msg_handler_fn on_cmplt);
  *
  * This starts the target running.
  *
- * @param on_cmplt Message Handler function called on completion (can be NULL)
+ * @param on_cmplt0 Message Handler function called on completion (can be NULL)
  */
-extern void dm_go(msg_handler_fn on_cmplt);
+extern void dm_go(msg_handler_fn on_cmplt0);
 
 /**
  * @brief Run the Target from the specified location.
@@ -141,9 +141,9 @@ extern void dm_go(msg_handler_fn on_cmplt);
  * This starts the target running after loading the PC with the specified value.
  *
  * @param pc Word value to load the PC with before running
- * @param on_cmplt Message Handler function called on completion (can be NULL)
+ * @param on_cmplt0 Message Handler function called on completion (can be NULL)
  */
-extern void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt);
+extern void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt0);
 
 /**
  * @brief Get a region of target memory.
@@ -152,9 +152,9 @@ extern void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt);
  * The dc_mp_opbuf must contain the address and byte count (0=256).
  * 
  * @param cnt The number of bytes to get (1 to 256)
- * @param on_cmplt Message Handler function called on completion. Pointer to buffer in msg.data.bptr
+ * @param on_cmplt0 Message Handler function called on completion. Pointer to buffer in msg.data.bptr
  */
-extern void dm_mem_get(uint16_t cnt, msg_handler_fn on_cmplt);
+extern void dm_mem_get(uint16_t cnt, msg_handler_fn on_cmplt0);
 
 /**
  * @brief Set a region of target memory.
@@ -173,10 +173,10 @@ extern void dm_mem_set(uint16_t cnt);
  * The dc_mp_opbuf must contain the address and byte count (0=256).
  * 
  * @param cnt The number of bytes to get (1 to 256)
- * @param on_cmplt Message Handler function called on completion. Value in msg.data.value8u
+ * @param on_cmplt0 Message Handler function called on completion. Value in msg.data.value8u
  * @return True=read request was accepted False=read not accepted
  */
-extern void dm_port_get(uint16_t cnt, msg_handler_fn on_cmplt);
+extern void dm_port_get(uint16_t cnt, msg_handler_fn on_cmplt0);
 
 /**
  * @brief Put byte values out to a target port (I/O).
@@ -198,9 +198,9 @@ extern void dm_port_put(uint16_t cnt);
  * The passed in message handler (can be NULL) is executed when the
  * operation completes.
  *
- * @param on_cmplt Message Handler function called on completion (can be NULL)
+ * @param on_cmplt0 Message Handler function called on completion (can be NULL)
  */
-extern void dm_putallreg(msg_handler_fn on_cmplt);
+extern void dm_putallreg(msg_handler_fn on_cmplt0);
 
 /**
  * @brief Set the communications with the DM to 'simulate' interactions.
@@ -228,9 +228,9 @@ extern bool dm_simulated();
  *
  * This steps the target.
  *
- * @param on_cmplt Message Handler function called on completion (can be NULL)
+ * @param on_cmplt0 Message Handler function called on completion (can be NULL)
  */
-extern void dm_step(msg_handler_fn on_cmplt);
+extern void dm_step(msg_handler_fn on_cmplt0);
 
 /**
  * @brief Single-Step the Target from the specified location.
@@ -239,9 +239,9 @@ extern void dm_step(msg_handler_fn on_cmplt);
  * This steps the target after loading the PC with the specified value.
  *
  * @param pc Word value to load the PC with before stepping
- * @param on_cmplt Message Handler function called on completion (can be NULL)
+ * @param on_cmplt0 Message Handler function called on completion (can be NULL)
  */
-extern void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt);
+extern void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt0);
 
 /**
  * @brief Is the Target the SBC
@@ -261,7 +261,7 @@ extern bool dm_tgt_is_sbc();
  * 
  * To force retrieving an updated version from the DM use `dm_ver_get`.
  * 
- * @see `dm_ver_get(msg_handler_fn on_cmplt)`
+ * @see `dm_ver_get(msg_handler_fn on_cmplt0)`
  * 
  * @return const char* 
  */
@@ -272,7 +272,7 @@ extern const char* dm_ver();
  * @ingroup debugcontrol
  * 
  * This get the DM Version by making a call to the DM. When the call to
- * the DM is complete the `on_cmplt` function will be called and the message
+ * the DM is complete the `on_cmplt0` function will be called and the message
  * data `strconst` is the version retrieved.
  * 
  * To get the last version retrieved (cached - not forcing a call to the DM)
@@ -280,9 +280,9 @@ extern const char* dm_ver();
  * 
  * @see `dm_ver()`
  * 
- * @param on_cmplt Message handler to be called on complete 
+ * @param on_cmplt0 Message handler to be called on complete 
  */
-extern void dm_ver_get(msg_handler_fn on_cmplt);
+extern void dm_ver_get(msg_handler_fn on_cmplt0);
 
 /**
  * Value provider that processes Z80 register names and falls back to the

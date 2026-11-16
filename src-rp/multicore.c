@@ -70,7 +70,11 @@ bool get_core1_msg_nowait(cmt_msg_t* msg) {
     return (retrieved);
 }
 
-void post_to_core0(const cmt_msg_t* msg) {
+void post_core0(const cmt_msg_t* msg) {
+    // Do not allow Core1 Messages to be posted to Core0
+    if (msg->id >= MSG1_NOOP) {
+        board_panic("Attempting to post Core1 message %02X to Core0", msg->id);
+    }
     cmt_msg_t m; // queue_add copies the contents, so 'm' on the stack is okay.
     _copy_and_set_num_ts(&m, msg);
     uint32_t flags = save_and_disable_interrupts();
@@ -95,7 +99,11 @@ void post_to_core0(const cmt_msg_t* msg) {
     }
 }
 
-bool post_to_core0_nowait(const cmt_msg_t* msg) {
+bool post_core0_nowait(const cmt_msg_t* msg) {
+    // Do not allow Core1 Messages to be posted to Core0
+    if (msg->id >= MSG1_NOOP) {
+        board_panic("Attempting to post Core1 message %02X to Core0 (NW)", msg->id);
+    }
     cmt_msg_t m; // queue_add copies the contents, so on the stack is okay.
     _copy_and_set_num_ts(&m, msg);
     register bool posted = false;
@@ -106,7 +114,11 @@ bool post_to_core0_nowait(const cmt_msg_t* msg) {
     return (posted);
 }
 
-void post_to_core1(const cmt_msg_t* msg) {
+void post_core1(const cmt_msg_t* msg) {
+    // Do not allow Core0 Messages to be posted to Core1
+    if (msg->id < MSG_NOOP) {
+        board_panic("Attempting to post Core0 message %02X to Core1", msg->id);
+    }
     cmt_msg_t m; // queue_add copies the contents, so 'm' on the stack is okay.
     _copy_and_set_num_ts(&m, msg);
     uint32_t flags = save_and_disable_interrupts();
@@ -131,7 +143,11 @@ void post_to_core1(const cmt_msg_t* msg) {
     }
 }
 
-bool post_to_core1_nowait(const cmt_msg_t* msg) {
+bool post_core1_nowait(const cmt_msg_t* msg) {
+    // Do not allow Core0 Messages to be posted to Core1
+    if (msg->id < MSG_NOOP) {
+        board_panic("Attempting to post Core0 message %02X to Core1 (NW)", msg->id);
+    }
     cmt_msg_t m; // queue_add copies the contents, so 'm' on the stack is okay.
     _copy_and_set_num_ts(&m, msg);
     register bool posted = false;
@@ -142,26 +158,26 @@ bool post_to_core1_nowait(const cmt_msg_t* msg) {
     return (posted);
 }
 
-void runon_core0(const cmt_msg_t* msg) {
+void run_on_core0(const cmt_msg_t* msg) {
     uint8_t core_num = (uint8_t)get_core_num();
     // These checks are done separately, just to make debugging easier.
     if (core_num != 1) {
-        const char* em = "runon_core0 not called from core1";
+        const char* em = "run_on_core0 not called from core1";
         debug_trace(em);
         board_panic(em);
     }
     if (!msg->hdlr) {
-        const char* em = "runon_core0 no handler in msg";
+        const char* em = "run_on_core0 no handler in msg";
         debug_trace(em);
         board_panic(em);
     }
     if (!multicore_fifo_wready()) {
-        const char* em = "runon_core0 not multicore_fifo_wready";
+        const char* em = "run_on_core0 not multicore_fifo_wready";
         debug_trace(em);
         board_panic(em);
     }
     if (multicore_fifo_rvalid()) {
-        const char* em = "runon_core0 multicore_fifo_rvalid (data already in fifo)";
+        const char* em = "run_on_core0 multicore_fifo_rvalid (data already in fifo)";
         debug_trace(em);
         board_panic(em);
     }
@@ -170,7 +186,7 @@ void runon_core0(const cmt_msg_t* msg) {
     // Now, block on reading the core1 fifo
     const cmt_msg_t* msgR = (const cmt_msg_t *)multicore_fifo_pop_blocking_inline();
     if (msgR != msg) {
-        const char* em = "runon_core0 return value wasn't the original message";
+        const char* em = "run_on_core0 return value wasn't the original message";
         debug_trace(em);
         board_panic(em);
     }

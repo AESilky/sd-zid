@@ -82,14 +82,14 @@ extern bool get_core1_msg_nowait(cmt_msg_t* msg);
  * it is being executed the code on Core-1 making the call is held until the routine running
  * on Core-0 returns.
  * 
- * @see post_to_core0 and the macro postHWRTMsg for having a message handler executed on
+ * @see post_core0 and the macro postHWRTMsg for having a message handler executed on
  *      Core-0 in the situations that the calling routine doesn't need to, or shouldn't,
  *      be blocked.
  * @see cmt_exec_init for initializing a message with a specific handler function.
  *
  * @param msg Pointer to a message that has been initialized with a handler function to use.
  */
-extern void runon_core0(const cmt_msg_t* msg);
+extern void run_on_core0(const cmt_msg_t* msg);
 
 /**
  * @brief Start the Core 1 functionality.

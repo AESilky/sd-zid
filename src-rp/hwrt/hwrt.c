@@ -81,7 +81,7 @@ static void _handle_hwrt_test(cmt_msg_t* msg) {
     // Test `scheduled_msg_ms` error
     static int times = 1;
 
-    cmt_msg_t msg_time = { MSG_HWRT_TEST };
+    cmt_msg_t msg_time = { MSG0_TEST };
     uint64_t period = 60;
 
     msg_time.data.ts_us = now_us(); // Get the 'next' -> 'last_time' fresh
@@ -170,7 +170,7 @@ static void _hwrt_started(cmt_msg_t* msg) {
 
     cmt_msg_hdlr_add(MSG_APPS_STARTED, _handle_apps_started);
     cmt_msg_hdlr_add(MSG_PERIODIC_RT, _handle_housekeeping);
-    cmt_msg_hdlr_add(MSG_HWRT_TEST, _handle_hwrt_test);
+    cmt_msg_hdlr_add(MSG0_TEST, _handle_hwrt_test);
 
     // Starting Core-1 will run the `core1_main`.
     start_core1();
@@ -179,12 +179,12 @@ static void _hwrt_started(cmt_msg_t* msg) {
     // Done with the Hardware Runtime Startup - Let the APPs know.
     cmt_msg_t msg2;
     cmt_msg_init(&msg2, MSG_HWRT_STARTED);
-    postAPPMsg(&msg2);
+    post_core1(&msg2);
 
     // Post a TEST to ourself in case we have any tests set up.
     cmt_msg_t msg3;
-    cmt_msg_init(&msg3, MSG_HWRT_TEST);
-    postHWRTMsgDiscardable(&msg3);
+    cmt_msg_init(&msg3, MSG0_TEST);
+    post_core0_nowait(&msg3);
 }
 
 void start_hwrt() {

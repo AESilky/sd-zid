@@ -152,8 +152,10 @@ set(APP_INCLUDES
   ${CMAKE_CURRENT_LIST_DIR}/debugging/include
   ${CMAKE_CURRENT_LIST_DIR}/dc/include
   ${CMAKE_CURRENT_LIST_DIR}/hwrt/include
+  ${CMAKE_CURRENT_LIST_DIR}/lib/shell/src/include
   ${CMAKE_CURRENT_LIST_DIR}/number/include
   ${CMAKE_CURRENT_LIST_DIR}/picohlp/include
+  ${CMAKE_CURRENT_LIST_DIR}/rpm/include
 )
 
 # Our Modules (direct functionality)
@@ -299,6 +301,7 @@ add_subdirectory(picohlp)
 #
 add_subdirectory(app)
 add_subdirectory(dskops)
+add_subdirectory(rpm)
 
 #
 # External libraries
