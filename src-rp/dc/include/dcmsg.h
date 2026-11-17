@@ -27,7 +27,7 @@ extern "C" {
 #define CMSG const char* const
 
 GLOBL CMSG dcm_title MSGV("ZID - Z80 In-circuit Debugger");
-GLOBL CMSG dcm_banner MSGV(">>>             ZID - Z80 In-circuit Debugger            <<<\n>>> Hardware: Copyright 2025-26 SilkyDESIGN and CMOS1    <<<\n>>> Software: Copyright 2023-26 AESilky                  <<<\n\n");
+GLOBL CMSG dcm_banner MSGV(">>>             ZID - Z80 In-circuit Debugger            <<<\n>>> Hardware: Copyright 2025-26 SilkyDESIGN and CMOS1    <<<\n>>> Software: Copyright 2023-26 AESilky                  <<<\n DM Version: ");
 GLOBL CMSG dcm_blank    MSGV("");
 
 GLOBL CMSG dcm_regfb    MSGV("SZxHxPNC");

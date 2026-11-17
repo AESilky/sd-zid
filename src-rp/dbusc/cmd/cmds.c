@@ -33,13 +33,21 @@ static int _exec_dbc_attn(int argc, char** argv, const char* unparsed) {
     }
     bool v;
     if (argc > 1) {
-        v = bool_from_str(argv[1]);
-        attn_set_on(v);
-        const char* vstr = (v ? "ON" : "OFF");
+        const char* vstr;
+        if (strcmp("!0", argv[1]) == 0) {
+            // Force OFF
+            bc_attn_force_off();
+            vstr = "FORCED OFF";
+        }
+        else {
+            v = bool_from_str(argv[1]);
+            bc_attn_set_on(v);
+            vstr = (v ? "ON" : "OFF");
+        }
         shell_printf("Set ATTN: %s\n", vstr);
     }
     // Display the level
-    v = attn_is_on();
+    v = bc_attn_is_on();
     const char* drstr = (v ? "ON" : "OFF");
     shell_printf("ATTN is: %s\n", drstr);
 
@@ -50,8 +58,8 @@ const cmd_handler_entry_t cmds_attn_entry = {
     _exec_dbc_attn,
     2,
     ".attn",
-    "[0|1]",
-    "Show the ATTN line state. Set the ATTN line state."
+    "[0|1|!0]",
+    "Show the ATTN line state. Set the ATTN line state.\n  The '!0' parameter uses the 'FORCE OFF' method."
 };
 
 

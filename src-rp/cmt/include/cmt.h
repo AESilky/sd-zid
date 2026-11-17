@@ -195,8 +195,8 @@ extern void schedule_msg_in_ms(int32_t ms, const cmt_msg_t* msg);
  * This is the root for `scheduled_msg_cancel` and `scheduled_msg_cancel2` allowing the core
  * to also be specified.
  *
- * This is typically used to cancel a 'MSG_EXEC' that has a handler function specified,
- * as there could be multiple 'MSG_EXEC' messages scheduled, but a specific one needs
+ * This is typically used to cancel a 'MSGn_EXEC' that has a handler function specified,
+ * as there could be multiple 'MSGn_EXEC' messages scheduled, but a specific one needs
  * to be cancelled, and can also cancel a message scheduled on a different core.
  *
  * @param sched_msg_id The ID of the message that was scheduled.
@@ -232,8 +232,8 @@ static inline int32_t scheduled_msg_cancel(msg_id_t sched_msg_id) {
  * This is similar to `scheduled_msg_cancel` except that the scheduled message is also
  * checked for the specific handler.
  *
- * This is typically used to cancel a 'MSG_EXEC' that has a handler function specified,
- * as there could be multiple 'MSG_EXEC' messages scheduled, but a specific one needs
+ * This is typically used to cancel a 'MSGn_EXEC' that has a handler function specified,
+ * as there could be multiple 'MSGn_EXEC' messages scheduled, but a specific one needs
  * to be cancelled.
  *
  * @param sched_msg_id The ID of the message that was scheduled.
@@ -261,8 +261,8 @@ extern bool scheduled_msg_exists(msg_id_t sched_msg_id);
  * @ingroup cmt
  *
  * Typically, this is used to keep from adding a scheduled message if one already exists.
- * This is typically used to check for a 'MSG_EXEC' that has a handler function specified,
- * as there could be multiple 'MSG_EXEC' messages scheduled.
+ * This is typically used to check for a 'MSGn_EXEC' that has a handler function specified,
+ * as there could be multiple 'MSGn_EXEC' messages scheduled.
  *
  * @param sched_msg_id The ID of the message that was scheduled.
  * @param hdlr The handler function that was specified for the scheduled message.

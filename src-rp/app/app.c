@@ -12,6 +12,7 @@
 #include "app.h"
 #include "appops.h"
 #include "dbusc/include/dbusc.h"
+#include "dc.h"
 #include "dskops.h"
 
 #include "board.h"
@@ -83,10 +84,10 @@ int ERRORNO;    // Primarily used by the Shell and Shell Commands. Globally avai
  *
  */
 static void _do_on_char_rdy_irq() {
-    // Post MSG_TERM_CHAR_RCVD to have our app thread handle.
+    // Post MSG1_TERM_CHAR_RCVD to have our app thread handle.
     cmt_msg_t msg;
-    cmt_msg_init(&msg, MSG_TERM_CHAR_RCVD);
-    postAPPMsg(&msg);
+    cmt_msg_init(&msg, MSG1_TERM_CHAR_RCVD);
+    post_core1(&msg);
 }
 
 
@@ -105,7 +106,7 @@ static void _do_on_char_rdy_irq() {
 static void _enable_ui(void* data) {
 #ifdef SHELL_ENABLE
     // Initialize the shell
-    shell_modinit(dcm_title, dcm_banner, _do_on_char_rdy_irq);
+    shell_modinit(dcm_title, _do_on_char_rdy_irq);
     // Initialize modules that provide shell commands
     dccmds_modinit(); // Primary Application Commands
     debugcmds_modinit();
@@ -114,7 +115,7 @@ static void _enable_ui(void* data) {
     shell_start();
 #endif
     // Clear out the RED LED and turn on a GREEN one
-    led_control(LED_GREEN2);
+    b_led_control(LED_GREEN2);
 }
 
 static void _display_proc_status(void* data) {
@@ -143,7 +144,7 @@ static void _handle_housekeeping(__unused cmt_msg_t* msg) {
 }
 
 #ifdef SHELL_ENABLE
-// Handle `MSG_TERM_CHAR_RCVD` Let the Shell know that there are characters ready.
+// Handle `MSG1_TERM_CHAR_RCVD` Let the Shell know that there are characters ready.
 static void _handle_term_char_rdy(__unused cmt_msg_t* msg) {
     shell_do_input_char_ready();
 }
@@ -194,7 +195,7 @@ static void _modinit(void) {
     // Add our message handlers
     cmt_msg_hdlr_add(MSG_PERIODIC_RT, _handle_housekeeping);
 #ifdef SHELL_ENABLE
-    cmt_msg_hdlr_add(MSG_TERM_CHAR_RCVD, _handle_term_char_rdy);
+    cmt_msg_hdlr_add(MSG1_TERM_CHAR_RCVD, _handle_term_char_rdy);
 #endif
     // Initialize the App Modules
     appops_modinit();
@@ -216,6 +217,6 @@ void start_app(void) {
     // Done with Apps Startup - Let the Runtime know.
     cmt_msg_t msg;
     cmt_msg_init(&msg, MSG_APPS_STARTED);
-    postHWRTMsg(&msg);
+    post_core0(&msg);
 
 }

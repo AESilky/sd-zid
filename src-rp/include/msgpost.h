@@ -16,12 +16,6 @@ extern "C" {
 
 #include "cmt_t.h"
 
-// Define functional names for the 'Core' message queue functions (Camel-case to help flag as macros).
-#define postHWRTMsg( pmsg )                     post_to_core0( pmsg )
-#define postHWRTMsgDiscardable( pmsg )          post_to_core0_nowait( pmsg )
-#define postAPPMsg( pmsg )                      post_to_core1( pmsg )
-#define postAPPMsgDiscardable( pmsg )           post_to_core1_nowait( pmsg )
-
 /**
  * @brief Post a message to Core 0 (using the Core 0 queues).
  * @ingroup multicore
@@ -30,7 +24,7 @@ extern "C" {
  *
  * @param msg The message to post.
  */
-extern void post_to_core0(const cmt_msg_t* msg);
+extern void post_core0(const cmt_msg_t* msg);
 
 /**
  * @brief Post a message to Core 0 (using the Core 0 low-priority queue). Do not wait if it can't be posted.
@@ -43,7 +37,7 @@ extern void post_to_core0(const cmt_msg_t* msg);
  * @param msg The message to post.
  * @returns true if message was posted.
  */
-extern bool post_to_core0_nowait(const cmt_msg_t* msg);
+extern bool post_core0_nowait(const cmt_msg_t* msg);
 
 /**
  * @brief Post a message to Core 1 (using the Core 1 queues).
@@ -53,7 +47,7 @@ extern bool post_to_core0_nowait(const cmt_msg_t* msg);
  *
  * @param msg The message to post.
  */
-extern void post_to_core1(const cmt_msg_t* msg);
+extern void post_core1(const cmt_msg_t* msg);
 
 /**
  * @brief Post a message to Core 1 (using the Core 1 queue). Do not wait if it can't be posted.
@@ -66,7 +60,7 @@ extern void post_to_core1(const cmt_msg_t* msg);
  * @param msg The message to post.
  * @returns true if message was posted.
  */
-extern bool post_to_core1_nowait(const cmt_msg_t* msg);
+extern bool post_core1_nowait(const cmt_msg_t* msg);
 
 
 

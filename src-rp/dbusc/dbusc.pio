@@ -5,14 +5,16 @@
 
 ; Data Bus and Control signal monitor and data transfer.
 ;
-; REMEMBER: For a Host Read this writes to the pins.
-;           For a Host Write this reads from the pins.
+; REMEMBER: For a Host Read the data is output to the pins (CPU -> Z80).
+;           For a Host Write the data is input from the pins (Z80 -> CPU).
 ;
-.pio_version RP2040
+.pio_version RP2350
 
 .define MSEL_GPIO   12      ; Module Select Pin
 .define MSEL_OFF    1       ; Active LOW
 .define MSEL_ON     0       ; Active LOW
+
+.define BUSY_ON     0       ; BUSY (actually IOECLK-) is LOW=BUSY
 
 .define WAIT_OFF    1       ; Active LOW
 .define WAIT_ON     0       ; Active LOW
@@ -20,115 +22,233 @@
 .define LEAVE_SET   0       ; Used with WAIT-IRQ to leave the flag set
 .define THEN_CLR    1       ; Used with WAIT-IRQ to clear the flag
 
-.define PUBLIC PIO_CTRLDATA_NEEDED  0   ; CTRL data required  (CPU IRQ)
-.define PUBLIC PIO_CTRLDATA_RDY     1   ; CTRL register written (CPU IRQ)
-.define PUBLIC PIO_DATADATA_NEEDED  2   ; DATA register read an no data ready (CPU IRQ)
-.define SM_DATAOP_DONE              4
-.define PUBLIC SM_CTRLDATA          5
-.define PUBLIC SM_CTRLOP            6
-.define PUBLIC SM_DATAOP            7
+;
+; IRQ (to CPU) ASSIGNMENTS
+;
+.define PUBLIC DATA_RD_OP_CIRQ  0   ; [01] MSEL_OPMGR DATA Port RD OP (IRQ to CPU)
+.define PUBLIC DATA_WR_OP_CIRQ  1   ; [02] MSEL_OPMGR DATA Port WR OP (IRQ to CPU)
+;
+.define PUBLIC CTRL_NEEDED_CIRQ 0   ; [01] DBUS Value for CTRL Port is required (IRQ to CPU)
+.define PUBLIC CTRL_READY_CIRQ  1   ; [02] DBUS Value from CTRL Port is ready (IRQ to CPU)
+;
+; FLAGS (and Intra-SM triggers)
+;
+;  COMMON
+.define PUBLIC DBUS_DIR_OUT     6   ; [40] COMMON
+;  MSEL_OPMGR ONLY
+.define OPMGR_CONTINUE          7   ; [80] OPMGR
+.define PUBLIC PIO_SET_BUSY     5   ; [20] From CPU to MSEL_OPMGR to Set BUSY
+.define PUBLIC OPMGR_DATA_TRG   4   ; [08] OPMGR
+;  DBUS ONLY
+.define DBUS_DONE               7   ; [80] DBUS
+.define DIR_TRG                 5   ; [40] DBUS
+.define DATA_OP_TRG             4   ; [08] DBUS
+.define CTRL_IN_TRG             3   ; [20] DBUS
+.define CTRL_OUT_TRG            2   ; [10] DBUS
 
-.program db_modsel
-.side_set   1   opt ; Side-set used to control WAIT
 ;
-; Control Bus - Monitor Module Select and Read
+; IN/OUT Data Register Slot (4 exist)
+.define PUBLIC DATA_SLOT        0
+
+
 ;
-; For setting the Data Pin Directions
-; IX is initialized with 0000 0000 0000 0000 0000 0011 1111 1100 - 0x000003FC by the CPU
-; IY is initialized with 0x00000000 by the CPU
+; Monitor Module Select, Address, and Read. Trigger CTRL/DATA RD or WR.
 ;
-; 1. Waits for Module Select and Controls the WAIT- signal.
-; 2. Sets the DATA Bus direction and triggers the Ctrl/Data state machine.
-; 3. Leaves the DATA Bus set to INPUT when idle.
+; 1. Sets WAIT- on (0) and Waits for MSEL- to go true (0)
+; 5. Waits to be signalled that the transfer is done (pins read or pins set)
+; 6. Releases WAIT-
+; 7. Waits for MSEL- to go false (1)
+; 8. WRAP
 ;
-; SHOULD BE STARTED AFTER THE CtrlData SM
+; START LAST
 ;
+; --- PIO CONFIGURATION ---
+; SIDESET_PIN_BASE = GP13 (MWTRQ-) PIN_WAITRQ
+; SET_PIN          = GP15 (MOD_BUSY-) PIN_IOECLK
+;
+; Assigned to PIO1 SM0
+.program msel_opmgr
+.clock_div 4.0                      ; Run at half speed for stability
+.side_set 1 opt                     ; Side-set used to control WAIT
+.mov_status irq set PIO_SET_BUSY    ; IRQ `SET_BUSY` (5) for status check to Set MODULE_BUSY Pin
+.in 1 left                          ; Read ADDR
 PUBLIC start:
 .wrap_target
-    mov     osr,y                   side WAIT_ON 
-    out     pindirs,32                            [7]; Data Bus to input, WAIT on
-    wait    MSEL_ON gpio MSEL_GPIO                [7]; Wait for Module Select on
-    // We are selected
-    ; Look for RD/WR
-    jmp     pin,cd_start                ; RD High is Host writing, DBUS IN is correct 
-    ; RD Low, Host is reading, change the DBUS to OUT 
-    mov     osr,x
-    out     pindirs,32
-cd_start:
-    irq     SM_CTRLDATA                 ; Wake up the Ctrl/Data Select SM
-    wait    THEN_CLR irq SM_DATAOP_DONE ; Wait for Data-Op to finish
-    wait    MSEL_OFF gpio MSEL_GPIO  side WAIT_OFF [7]; WAIT off, wait for MSEL to go away
-.wrap
-
-.program db_ctrldata
-;
-; Check if the operation is for the Control Port or the Data Port
-; ADDR=0: Control Port - CPU supplies data via an interrupt signal
-; ADDR=1: Data Port - DMA supplies data
-;
-; SHOULD BE STARTED BEFORE MSEL SM and after CTRL and DATA
-;
-PUBLIC start:
-wrap_target:
-    wait    THEN_CLR irq SM_CTRLDATA
-    ; Check the ADDR pin
-    jmp     pin,data_op     ; HIGH - A1 (DATA)
-    irq     SM_CTRLOP       ; else LOW - A0 (CTRL)
-    jmp     start
+    wait    MSEL_ON gpio MSEL_GPIO side WAIT_ON [7]; WAIT ON. Wait for Module Select
+    irq     clear DBUS_DIR_OUT   [7]; Set up for Dir IN
+    ; We are selected - check which operation should we do?
+    mov     x,pins                  ; Get ADDR (used later)
+    jmp     pin,in_op               ; RD=1 is Host WR, our Data IN
+    // Direction is OUT
+    irq     set DBUS_DIR_OUT
+    irq     next DBUS_DIR_OUT
+    irq     next DIR_TRG            ; We know DIR - Let DBUS-DIR run
+    // CTRL/DATA
+    jmp     x--,data_op             ; RD:ADDR = 0:1 DATA->
+ctrl_out:
+    irq     next CTRL_OUT_TRG
+    jmp     stall_on_done
 data_op:
-    irq     SM_DATAOP
+    irq     next DATA_OP_TRG
+    irq     OPMGR_DATA_TRG
+    jmp     stall_on_done
+in_op:
+    irq     next DIR_TRG            ; We know DIR - Let DBUS-DIR run
+    // CTRL/DATA
+    jmp     x--,data_op             ; RD:ADDR = 1:1 DATA->
+op_ctrl_in:
+    irq     next CTRL_IN_TRG
+stall_on_done:
+    wait    THEN_CLR irq OPMGR_CONTINUE                 ; Wait for pins to be sampled/set
+    mov     y,status                                    ; Get 'SET BUSY' Status
+    wait    MSEL_OFF gpio MSEL_GPIO    side WAIT_OFF [7]; WAIT OFF. Stall until !MSEL (Z80 is done)
+    jmp     !y,start                   side WAIT_ON  [7]
+    set     pins, BUSY_ON                               ; Assert BUSY
+    irq     clear PIO_SET_BUSY                          ; Clear the SET_BUSY flag so it's ready for next time
 .wrap
 
-.program db_ctrl_port
+; Assigned to PIO1 SM1
+.program unxpctd_data_op
+.clock_div 1.0                      ; Run at full speed
+.mov_status irq set DBUS_DIR_OUT    ; `DBUS_DIR_OUT` (6) Set by MSEL_OPMGR
+.side_set 1 opt                     ;   Side-set used for logic-analyzer
 ;
-; CTRL Port access - CPU supplies/reads data
+; DATA Port IN/OUT - DMA reads/writes data from/to PIO-SM
 ;
-; The MSEL SM has taken care of setting the bus direction.
+; The DBUS SM has taken care of setting the bus direction.
 ;
-; SHOULD BE STARTED BEFORE CtrlData SM
-; Configured for AutoPush:8, JMP-PIN:RD-
+; SHOULD BE STARTED BEFORE DBUS SM
 ;
 PUBLIC start:
 .wrap_target
-    wait    THEN_CLR irq SM_CTRLOP               ; Wait for the CtrlData SM to wake us
-    ; Look at the READ pin.
-    jmp     pin,data_in                 ; If RD- is 1 the data xfer is in (we get the data)
+    wait    THEN_CLR irq OPMGR_DATA_TRG side 0; Wait for the DBUS SM to wake us
+    mov     x,status              side 1; WR flag into X
+    jmp     !x data_in
 data_out:
-    ; Host is reading, the CPU supplies data
-    irq     wait PIO_CTRLDATA_NEEDED    ; tell CPU we need data
-    out     pins,8                      ; put it on the bus
-    jmp     done
+    irq     wait DATA_RD_OP_CIRQ  side 0; Signal the CPU that there was a Host RD
+    jmp     start                 side 1
 data_in:
-    in      pins,8                      ; read data from the bus (auto-push)
-    irq     wait PIO_CTRLDATA_RDY       ; tell CPU we have data
-done:
-    irq     SM_DATAOP_DONE              ; Releases MOD_SEL SM
+    irq     wait DATA_WR_OP_CIRQ  side 0; Signal the CPU that there was a Host WR
+    nop                           side 1
 .wrap
 
-.program db_data_port
+
 ;
-; DATA Port access - DMA supplies/reads data
+; DBUS - Monitor Address, and Read. Trigger CTRL RD, CTRL WR, or DATA RD/WR.
 ;
-; The MSEL SM has taken care of setting the bus direction.
+; 1. Set PINS to INPUT (always IN when idle)
+; 2. Checks Address for 0 (CTRL Port) or 1 (DATA Port)
+; 3. Checks Read for 1 (Host WR, data IN) or 0 (Host RD, data OUT)
+; 4. Sets the DATA Bus direction and triggers the CTRL or DATA state machine for OUT or IN.
 ;
-; SHOULD BE STARTED BEFORE CtrlData SM
-; Configured for AutoPush:8, JMP-PIN:RD-
+; EXECCTRL_JMP_PIN = GP11 (MRD-)
+; IN_PIN_BASE      = GP10 (MA)  --> Bit 0 of 'in pins' will be MA (GP10)
+; OUT_PIN_BASE     = GP2  (Z80 Data Bus Base)
+; PINCTRL_OUT_COUNT = 8   (8-bit Data Bus)
+;
+; Assigned to PIO2 SM0
+.program op_dbus
+.clock_div 1.0                      ; Run at full speed
+.side_set 1 opt                     ;   Side-set used for logic-analyzer
+.mov_status irq set DBUS_DIR_OUT    ; `DBUS_DIR_OUT` (6) Set by MSEL_OPMGR
+.out 8                              ; 8-bits out - for Pin Direction Control (pindirs)
+PUBLIC start:
+.wrap_target
+    irq     clear DBUS_DIR_OUT                          ; Set flag to DIR IN
+    mov     pindirs,null                side 0       [7]; Data Bus to Input
+    wait    THEN_CLR irq DIR_TRG                        ; Wait for trigger
+    ; We are triggered
+    mov     x, status                   side 1          ; Move WR flag into X
+    jmp     !x,in_op                                    ; RD High is Host writing, DBUS IN is correct 
+    ; change the DBUS to OUT
+out_op:
+    mov     pindirs,~null                            [7]; Data Bus to Output
+in_op:
+stall_on_done:
+    wait    THEN_CLR irq DBUS_DONE                      ; Wait for pins to be sampled/set
+    irq     prev OPMGR_CONTINUE                         ; Let MSEL_OPMGR know we are done
+    wait    MSEL_OFF gpio MSEL_GPIO                  [7]; WAIT OFF. Stall until !MSEL (Z80 is done)
+.wrap
+
+
+; Assigned to PIO2 SM1
+.program ctrl_op_in
+.clock_div 4.0                      ; Run at half speed for stability
+.side_set 1 opt                     ;   Side-set used for logic-analyzer
+.fifo txput                         ; TXFIFO and PUT to REGISTERS
+.in 8 left
+;
+; CTRL Port IN - CPU gets data
+;
+; The DBUS SM has taken care of setting the bus direction.
+;
+; SHOULD BE STARTED BEFORE DBUS SM
 ;
 PUBLIC start:
 .wrap_target
-    wait    THEN_CLR irq SM_DATAOP               ; Wait for the CtrlData SM to wake us
-    ; Look at the READ pin.
-    jmp     pin,data_in                 ; If RD- is 1 the data xfer is in (we get the data)
+    wait    THEN_CLR irq CTRL_IN_TRG side 0 [7]; Wait for the ModSel SM to wake us
+data_in:
+    in      pins,8                side 1; read data from the bus
+    mov     rxfifo[DATA_SLOT],isr side 0; put data in register slot
+    irq     wait CTRL_READY_CIRQ  side 1; tell CPU data is available
+done:
+    irq     DBUS_DONE                   ; Releases DBUS SM
+.wrap
+
+
+; Assigned to PIO2 SM2
+.program ctrl_op_out
+.clock_div 4.0                      ; Run at half speed for stability
+.side_set 1 opt                     ;   Side-set used for logic-analyzer
+.fifo txget                         ; TXFIFO and GET from REGISTERS
+.out 8
+;
+; CTRL Port OUT - CPU puts data
+;
+; The DBUS SM has taken care of setting the bus direction.
+;
+; SHOULD BE STARTED BEFORE DBUS SM
+;
+PUBLIC start:
+.wrap_target
+    wait    THEN_CLR irq CTRL_OUT_TRG side 0; Wait for the DBUS SM to wake us
 data_out:
-    ; Host is reading. If expected DMA supplies data. If unexpected (no data ready) interrupt the CPU
-    mov     y,status                    ; get the TXFIFO EMPTY status
-    jmp     !y,drdy                     ; there is data ready =>
-    irq     wait PIO_DATADATA_NEEDED    ; tell CPU we need data
-drdy:
-    out     pins,8
+    irq     wait CTRL_NEEDED_CIRQ side 1; tell CPU that we need data
+    mov     osr,rxfifo[DATA_SLOT] side 0; get data from register slot
+    out     pins,8                side 1 [7]; read data from the bus (provide hold time)
+done:
+    irq     DBUS_DONE                   ; Releases DBUS SM
+.wrap
+
+
+; Assigned to PIO2 SM3
+.program data_op
+.clock_div 2.0                      ; Run at half speed for stability
+.side_set 1 opt                     ;   Side-set used for logic-analyzer
+.mov_status irq set DBUS_DIR_OUT    ; `DBUS_DIR_OUT` (6) Set by MSEL_OPMGR
+.fifo txrx
+.in 8 left
+.out 8 right
+;
+; DATA Port IN/OUT - DMA reads/writes data from/to PIO-SM
+;
+; The DBUS SM has taken care of setting the bus direction.
+;
+; SHOULD BE STARTED BEFORE DBUS SM
+;
+PUBLIC start:
+.wrap_target
+    wait    THEN_CLR irq DATA_OP_TRG side 0 ; Wait for the DBUS SM to wake us
+    mov     x,status                 side 1 ; WR flag into X
+    jmp     !x data_in
+data_out:
+    pull    noblock                     ; assume the DMA is much faster than the Z80 ops
+    out     pins,8                   [7]; write data to the bus
     jmp     done
 data_in:
-    in      pins,8                      ; read data from the bus (auto-push)
+    in      pins,8                      ; read data from the bus
+    push    noblock                     ; assume the DMA is much faster than the Z80 ops
 done:
-    irq     SM_DATAOP_DONE              ; Releases MOD_SEL SM
+    irq     DBUS_DONE                   ; Releases DBUS SM
 .wrap
+
