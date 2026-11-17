@@ -12,17 +12,13 @@
 DM_CMD_STAT_B	.equ	7
 DM_CMD_STAT_M	.equ	10000000b
 
-;
-; Status from DOC (CTRL port read)
-DOCREADY	.equ	0FAh		; DOC is ready
-
 
 ; ==============
 ; These are sent from the DM to the DOC when the DM initializes, a breakpoint is
 ; hit, and in response to commands sent from the DOC.
 ;
 DM_IS_SBC_M	.equ	00000001b	; added to status if running as SBC
-DMINITOK		.equ	080h		; DM has finished initialization
+DMINITOK	.equ	080h		; DM has finished initialization
 DMOPDONE	.equ	082h		; DOC requested operation complete
 DMOKCMDRD	.equ	084h		; OK, reading command
 DMCMDUK		.equ	088h		; Requested Command Unknown
@@ -30,14 +26,8 @@ DMSSDONE	.equ	08Ah		; Single-Step done
 DMBRKHIT	.equ	08Ch		; Breakpoint hit
 DMTGTGO		.equ	08Eh		; DM transitioning to Target Mode
 					; (so don't interrupt for a bit)
-DMBRT		.equ	090h		; Be Right There. Sent when ATTN requested
-					; indicating that DM is transitioning
-					; from Target to Debug and needs ATTN
-					; cleared to continue. DM will follow
-					; with DMOKCMDRD once the Target state
-					; has been taken care of.
-
-DMRSTEXEC	.equ	0C2h		; DM executed a RST instruction (ERROR)
+DMTESTDONE	.equ	0B0h		; Auto Test Done
+DMRSTEXEC	.equ	0BEh		; DM executed a RST instruction (ERROR)
 
 ; ==============
 ; DOC Commands for the DM.
@@ -61,28 +51,49 @@ DMRSTEXEC	.equ	0C2h		; DM executed a RST instruction (ERROR)
 DCCMDIND	.equ	080h
 ;;
 ;; ==============
-;; 0x Commands (other than NOP) are primarily used for informatio.
+;; 0x Commands (other than NOP) are primarily used for information, config, test.
 ;;
 
 ; --------------
-; Do Nothing, go IDLE. Don't read another command.
-; (same as DOC Ready status, to make it easy to sync up)
+; Do Nothing, Stop an existing Auto-Test, Go IDLE.
 ;
-DCNOP		.equ	DOCREADY
+DCNOP		.equ	080h
 
 ; --------------
 ; GET the firmware version
 ;
-; DC Sends to the data register:
-; 8 BYTES: YYYYMMDD
+; DM Sends to the data register:
+; 11 BYTES: YYYYMMDDVVV
 ;
 DCVER		.equ	081h
+
+; --------------
+; USE TARGET Mem/Port - Use the Target memory/ports for GET and PUT operations.
+; (the default)
+;
+DCTGTMP		.equ	082h
+
+; --------------
+; USE ZID Mem/Port - Use the ZID's memory/ports for GET and PUT operations.
+; 
+; This allows some diagnosing of the ZID's condition.
+;
+DCDBGRMP	.equ	083h
+
+; --------------
+; Run one of the AUTO-TEST routines.
+; 
+; DM Reads from the data register:
+; 1 BYTE: The TEST
+; Additional BYTES: # depends on test
+;
+DCATEST		.equ	084h
 
 ; --------------
 ; GET the complete set of registers (a different command can be used to just
 ; get a single register)
 ;
-; DC Sends to the data register:
+; DM Sends to the data register:
 ; 26 BYTES: IE/ID(bit-2),IV,(alts)F',A',C',B',E',D',L',H',
 ;	    (pri)C,B,E,D,L,H,F,A,SP[l/h],PC[l/h],IX[l/h],IY[l/h],
 ;
@@ -92,7 +103,7 @@ DCGREGALL	.equ	088h
 ; PUT the complete set of registers (a different command can be used to just
 ; put a single register)
 ;
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 26 BYTES: IE/ID(bit-2),IV,(alts)F',A',C',B',E',D',L',H',
 ;	    (pri)C,B,E,D,L,H,F,A,SP[l/h],PC[l/h],IX[l/h],IY[l/h],
 ;
@@ -101,14 +112,14 @@ DCPREGALL	.equ	089h
 ; --------------
 ; Get IE/ID(bit-2) and IV
 ;
-; DC Sends to the data register
+; DM Sends to the data register
 ; 2 BYTES: IE/ID(bit-2),IV
 DCGIEDV		.equ	08Ah
 
 ; --------------
 ; Put IE/ID(bit-2) and IV
 ;
-; DC Reads from the data register
+; DM Reads from the data register
 ; 2 BYTES: IE/ID(bit-2),IV
 DCPIEDV		.equ	08Bh
 
@@ -165,7 +176,7 @@ DCGREG		.equ	090h		; 10..1F
 ;   L : 1110
 ;   H : 1111
 ;
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 1 BYTE
 ;
 DCPREG		.equ	0A0h		; 20..2F
@@ -197,7 +208,7 @@ DCRH_M		.equ	0Fh
 ;   IX: 10
 ;   IY: 11
 ;   
-; DC Sends to the data register:
+; DM Sends to the data register:
 ; 2 BYTES (L/H)
 ;
 DCGRP		.equ	0B0h		; 30..33
@@ -209,7 +220,7 @@ DCGRP		.equ	0B0h		; 30..33
 ;   IX: 10
 ;   IY: 11
 ;   
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 2 BYTES (L/H)
 ;
 DCPRP		.equ	0B4h		; 34..37
@@ -217,61 +228,75 @@ DCPRP		.equ	0B4h		; 34..37
 ; --------------
 ; GET a region of memory (up to 256 bytes).
 ;   
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 3 BYTES: START ADDRESS (L/H), COUNT (0=256)
-; DC Sends to the data register:
+; DM Sends to the data register:
 ; n BYTES: VALUE0, VALUE1, ..., VALUEn
 ;
-DCGM		.equ	0BAh
+DCGM		.equ	0B8h
 
 ; --------------
 ; PUT a region of memory (up to 256 bytes).
 ;   
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 3 BYTES: ADDRESS (L/H), COUNT (0=256)
 ; n BYTES: VALUE0, VALUE1, ..., VALUEn
 ;
-DCPM		.equ	0BBh
+DCPM		.equ	0B9h
 
 ; --------------
 ; GET bytes from a port.
 ;   
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 3 BYTES: ADDRESS (L/H), COUNT (0=256)
-; DC Sends to the data register:
+; DM Sends to the data register:
 ; n BYTES: VALUE0, VALUE1, ..., VALUEn
 ;
-DCGP		.equ	0BCh
+DCGP		.equ	0BAh
 
 ; --------------
 ; PUT bytes to a port.
 ;   
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 3 BYTES: ADDRESS (L/H), COUNT (0=256)
 ; n BYTES: VALUE0, VALUE1, ..., VALUEn
 ;
-DCPP		.equ	0BDh
-
+DCPP		.equ	0BBh
 
 ;; ==============
 ;;
-;; 4x Commands Get the number of secondary breakpoints, and configure
-;; all the breakpoints.
+;; 5x Commands are GO, STEP.
 ;;
 
 ; --------------
-; GET the number of 'secondary' breakpoint addresses supported.
-; The ZID has a 'primary' breakpoint that supports address, data+mask, operation
-; and 1 or more 'secondary' breakpoints that share an operation, but can have
-; difference addresses.
+; GO - Run the target from the current PC.
 ;
-; DC Sends to the data register:
-; 1 BYTE: Number
-;
-DCGBRKCNT	.equ	0C0h
+DCGO		.equ	0BCh
 
 ; --------------
-; SET Break-1 parameters.
+; GO w/Registers - Run the target but read all the registers first.
+;
+; DM Reads from the data register:
+; Same as DCGREGALL
+;
+DCGOWREG	.equ	0BDh
+
+; --------------
+; STEP - Single-Step the target from the current PC.
+;
+DCSTEP		.equ	0BEh
+
+; --------------
+; STEP AT - Single-Step the target but read all the registers first.
+;
+; DM Reads from the data register:
+; Same as DCGREGALL
+;
+DCSTEPWREG	.equ	0BFh
+
+
+; --------------
+; SET Breakpoint parameters.
 ; The ZID's 'primary' breakpoint supports address, data+mask, operation.
 ; 
 ; This command completely specifies the breakpoint.
@@ -286,7 +311,7 @@ DCGBRKCNT	.equ	0C0h
 ; DATA: BYTE
 ; MASK (DATA DON'T CARE BITS): BYTE (bits: 1 is don't care)
 ;
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 5 BYTES: UA[4]|EN[3]|OP[2..0], ADDR(L/H), DATA, MASK
 ;
 DCPBRKS1	.equ	0C1h
@@ -318,7 +343,7 @@ DCBRKUA_M	.equ	00010000b	; Use Address (bit mask)
 ;	...
 ;	8E: Break-14 (the maximum supported)
 ;
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 2 BYTES: ADDR(L/H)
 ;
 DCPBRK2NA	.equ	0C2h		; 42..4E Break-2..Break-14
@@ -335,52 +360,9 @@ DCPBRK2NA	.equ	0C2h		; 42..4E Break-2..Break-14
 ; USE-ADDRESS: TRUE/FALSE (1-bit)
 ; (same value and bits as for the `DCGBRKS1` command)
 ;
-; DC Reads from the data register:
+; DM Reads from the data register:
 ; 1 BYTE: UA[4]|EN[3]|OP[2..0]
 ;
 DCPBRK2NO	.equ	0CFh
 
 
-;; ==============
-;;
-;; 5x Commands are GO, STEP, Tests and Board exorcisers.
-;;
-
-; --------------
-; GO - Run the target from the current PC.
-;
-DCGO		.equ	0D0h
-
-; --------------
-; GO w/Registers - Run the target but read all the registers first.
-;
-; DC Reads from the data register:
-; Same as DCGREGALL
-;
-DCGOWREG	.equ	0D1h
-
-; --------------
-; STEP - Single-Step the target from the current PC.
-;
-DCSTEP		.equ	0D2h
-
-; --------------
-; STEP AT - Single-Step the target but read all the registers first.
-;
-; DC Reads from the data register:
-; Same as DCGREGALL
-;
-DCSTEPWREG	.equ	0D3h
-
-; --------------
-; USE TARGET Mem/Port - Use the Target memory/ports for GET and PUT operations.
-; (the default)
-;
-DCTGTMP		.equ	0E0h
-
-; --------------
-; USE ZID Mem/Port - Use the ZID's memory/ports for GET and PUT operations.
-; 
-; This allows some diagnosing of the ZID's condition.
-;
-DCDBGRMP		.equ	0E1h
