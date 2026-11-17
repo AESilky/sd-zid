@@ -148,7 +148,7 @@ static int _exec_ls(int argc, char** argv, const char* unparsed) {
     // This must be run on Core0. Set up a message for it.
     cmt_msg_t msg;
     cmt_exec_init(&msg, _handle_ls);
-    runon_core0(&msg);
+    run_on_core0(&msg);
     retval = 0;
 _finally:
     return (retval);

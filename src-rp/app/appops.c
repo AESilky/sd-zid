@@ -11,6 +11,7 @@
 #include "board.h"
 #include "cmt.h"
 #include "dc.h"
+#include "rpm.h"
 
 // ====================================================================
 // Data Section
@@ -44,6 +45,7 @@ void appops_modinit() {
     _modinit_called = true;
 
     // Initialize other Application Operation modules.
-    dc_modinit();   // Debug Controller (OUR MAIN APP MODULE)
+    dc_modinit();   // Debug Controller (1/2 MAIN APP MODULES)
+    rpm_modinit();  // RP Module (2/2 MAIN APP MODULES)
 }
 

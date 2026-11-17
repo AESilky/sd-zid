@@ -11,7 +11,7 @@
  *
 */
 #include "rtc_support.h"
-#include "picohlp/picoutil.h"
+#include "picoutil.h"
 
 /*
  * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.

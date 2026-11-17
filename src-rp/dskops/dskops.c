@@ -140,8 +140,8 @@ static void _handle_reset_sd(cmt_msg_t* msg) {
 FRESULT dsk_reset_sd_c1() {
     // Reset the SD - called from Core-1
     cmt_msg_t msg;
-    cmt_exec_init(&msg, _handle_reset_sd);
-    runon_core0(&msg);
+    cmt_exec0_init(&msg, _handle_reset_sd);
+    run_on_core0(&msg);
     return (msg.data.fr);
 }
 

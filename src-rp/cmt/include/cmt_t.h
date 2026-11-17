@@ -28,50 +28,51 @@ extern "C" {
 // Keep the total number of messages under 256 to allow indexing into handlers.
 typedef enum MSG_ID_ {
     // ==============================================================
-    // Common messages 0x00 - 0x5F (used by both HWRT and DCS/APP)
+    // Hardware-Runtime (HWRT) messages 0x5F
     //
-    MSG_NOOP = 0x00,
+    MSG0_NOOP = 0x00,
+    MSG0_TEST,
+    MSG0_EXEC,               // Message used when specifying a handler in Core-0.
+    MSG0_ROTARY_CHG,
+    MSG0_STDIO_CHAR_READY,
+    // DBUS (Data bus and control signals)
+    MSG0_DBUS_CREAD_UNEXPECTED,
+    MSG0_DBUS_CWRITE_UNEXPECTED,
+    MSG0_DBUS_DREAD_UNEXPECTED,
+    MSG0_DBUS_DREAD_XFER_DONE,
+    MSG0_DBUS_DWRITE_UNEXPECTED,
+    MSG0_DBUS_DWRITE_XFER_DONE,
+    // Debug Monitor Communications Messages
+    MSG0_DM_STATUSRCVD,      // Status was received from the DM.
+    MSG0_DM_CMD_CMPLT,      // DM completed the command. STATE in val, CMD in vptr. Posted after status.
+    // ==============================================================
+    // Common messages 0x60 - 0xBF (used by both HWRT and DCS/APP)
+    //
+    MSG_NOOP = 0x60,
     MSG_LOOP_STARTED,
     MSG_HWRT_STARTED,
     MSG_APPS_STARTED,
     MSG_PERIODIC_RT,        // Periodic Repeating Time - Every 16ms (62.5Hz)
     MSG_CMT_SLEEP,
-    MSG_EXEC,               // General purpose message that can be used when specifying a handler.
     MSG_CONFIG_CHANGED,
     MSG_DEBUG_CHANGED,
     MSG_SW_ACTION,
     MSG_SW_DEBOUNCE,
     MSG_SW_LONGPRESS_DELAY,
-    MSG_DBUS_CTRL_READ,
-    MSG_DBUS_CTRL_WRITE,
-    MSG_DBUS_DREAD_UNEXPECTED,
-    MSG_DBUS_DREAD_XFER_DONE,
-    MSG_DBUS_DWRITE_UNEXPECTED,
-    MSG_DBUS_DWRITE_XFER_DONE,
     //
-    // ==============================================================
-    // Hardware-Runtime (HWRT) messages 0x60 - 0xBF
-    //
-    MSG_HWRT_NOOP = 0x60,
-    MSG_HWRT_TEST,
-    MSG_ROTARY_CHG,
-    MSG_STDIO_CHAR_READY,
-    // Debug Monitor Communications Messages
-    MSG_DMC_CMD_REQ,        // Request the DM run a command
     //
     // ==============================================================
     // Application functionality (APP) messages 0xC0 - 0xFF
     //
-    MSG_APP_NOOP = 0xC0,
-    MSG_APP_TEST,
-    MSG_CMD_KEY_PRESSED,
-    MSG_CMD_INIT_TERMINAL,
-    MSG_DISPLAY_MESSAGE,
-    MSG_DLG_TIMEOUT,
-    MSG_TERM_CHAR_RCVD,
+    MSG1_NOOP = 0xC0,
+    MSG1_TEST,
+    MSG1_EXEC,               // Message used when specifying a handler in Core-1.
+    MSG1_CMD_KEY_PRESSED,
+    MSG1_CMD_INIT_TERMINAL,
+    MSG1_DISPLAY_MESSAGE,
+    MSG1_DLG_TIMEOUT,
+    MSG1_TERM_CHAR_RCVD,
     //  Debug Controller/Monitor App Messages
-    MSG_DM_CMDDONE,         // DM completed the command. CMD in value8u. Posted after status.
-    MSG_DM_STATUSRCVD,      // Status was received from the DM. Status in value8u.
 } msg_id_t;
 #define MSG_ID_CNT (0x100)
 
@@ -99,7 +100,20 @@ typedef void (*msg_handler_fn)(struct CMT_MSG_* msg);
 
 #define NULL_MSG_HDLR ((msg_handler_fn)0)
 
-#include "dc/include/dmcomm_t.h"    // Debug Monitor Communications data structures
+/**
+ * @brief Structure containing a Value (int32 or uint32) and a void pointer.
+ * 
+ * This allows a value, like a status, and a pointer to be used as a
+ * message data value.
+ * 
+ */
+typedef struct valptr_ {
+    union {
+        int32_t v32;
+        uint32_t v32u;
+    } val;
+    void* vptr;
+} valptr_t;
 
 /**
  * @brief Message data.
@@ -111,16 +125,17 @@ union MSG_DATA_VALUE_ {
     bool bv;
     bool debug;
     cmt_sleep_data_t cmt_sleep;
-    dmc_cmd_req_t dmc_cmd_req;      // DM Communications Command Request
     int8_t value8;
     uint8_t value8u;
     int16_t value16;
     uint16_t value16u;
     int32_t status;
     uint32_t value32u;
+    valptr_t v32_vp;
     switch_action_data_t sw_action;
     FRESULT fr;
     char* str;
+    const char* strconst;
     uint8_t* bptr;
     void* vptr;
     uint32_t ts_ms;
@@ -154,17 +169,31 @@ typedef struct CMT_MSG_ {
 static inline void cmt_msg_init_ctrl(cmt_msg_t* msg, msg_id_t id, msg_handler_fn hdlr, bool abort);
 
 /**
- * @brief Initialize a CMT Message for 'EXEC'ing a specified handler (only).
+ * @brief Initialize a CMT Message for 'EXEC'ing a specified handler (only) on Core-0.
  * @ingroup cmt
  *
- * This is a shortcut of using a cmt_init_... method specifying MSG_EXEC as the message with
+ * This is a shortcut of using a cmt_init_... method specifying MSG0_EXEC as the message with
  * a specific handler and setting the 'abort' flag true to only run the specified handler.
  *
  * @param msg Pointer to the Message to initialize
  * @param hdlr Message handler function that will be used first
  */
-static inline void cmt_exec_init(cmt_msg_t* msg, msg_handler_fn exec_hdlr) {
-    cmt_msg_init_ctrl(msg, MSG_EXEC, exec_hdlr, true);
+static inline void cmt_exec0_init(cmt_msg_t* msg, msg_handler_fn exec_hdlr) {
+    cmt_msg_init_ctrl(msg, MSG0_EXEC, exec_hdlr, true);
+}
+
+/**
+ * @brief Initialize a CMT Message for 'EXEC'ing a specified handler (only) on Core-1.
+ * @ingroup cmt
+ *
+ * This is a shortcut of using a cmt_init_... method specifying MSG1_EXEC as the message with
+ * a specific handler and setting the 'abort' flag true to only run the specified handler.
+ *
+ * @param msg Pointer to the Message to initialize
+ * @param hdlr Message handler function that will be used first
+ */
+static inline void cmt_exec1_init(cmt_msg_t* msg, msg_handler_fn exec_hdlr) {
+    cmt_msg_init_ctrl(msg, MSG1_EXEC, exec_hdlr, true);
 }
 
 /**

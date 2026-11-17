@@ -219,6 +219,7 @@
 		"regsav",
 		"regsp",
 		"REQAD",
+		"retn",
 		"rfmr",
 		"rfsh",
 		"rmod",

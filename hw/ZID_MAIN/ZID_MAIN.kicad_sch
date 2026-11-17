@@ -7,9 +7,10 @@
 	(title_block
 		(title "Z80 In-Circuit Debugger (ZID) and SBC")
 		(date "2026-07-26")
-		(rev "PR-1.0")
+		(rev "PR-1.0 (b)")
 		(company "SilkyDESIGN / CMOS1")
 		(comment 1 "Copyright 2026 AESilky & SmM")
+		(comment 4 "ECO-01&02 In RED Text boxes near U24 and  U18")
 	)
 	(lib_symbols
 		(symbol "74xx:74HC14"
@@ -19607,6 +19608,28 @@
 		)
 		(uuid "15b7c131-8581-4bb7-aa0e-32937493823b")
 	)
+	(text_box "ECO-01: BRD-REV v1.0 has U24p1 tied to GND. S/B +5V. Bend pin up and wire to C34 (0.1uf) pin nearest U24."
+		(exclude_from_sim no)
+		(at 347.98 147.32 90)
+		(size 7.62 27.94)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+			(color 255 0 0 1)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.016 1.016)
+				(color 194 0 0 1)
+			)
+			(justify left top)
+		)
+		(uuid "25f25b4b-0111-4efa-930a-d2ceed649251")
+	)
 	(text_box "Microchip 2x05 ribbon to JST-PH 6-pin"
 		(exclude_from_sim no)
 		(at 124.46 332.74 0)
@@ -19625,6 +19648,28 @@
 			)
 		)
 		(uuid "d3a66c27-5a35-4997-8f5a-f1ba7b13aa9d")
+	)
+	(text_box "ECO-02: BRD-REV v1.0 has TP8 on U18p29. Wire IOECLK- from M1p16."
+		(exclude_from_sim no)
+		(at 7.9587 290.9799 0)
+		(size 22.86 10.16)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+			(color 255 0 0 1)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.016 1.016)
+				(color 194 0 0 1)
+			)
+			(justify left top)
+		)
+		(uuid "fb6f04fd-cb9c-484d-9fe3-10b71fad7beb")
 	)
 	(junction
 		(at 388.62 153.67)
@@ -19973,12 +20018,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "41fe7345-3f8a-401b-a15d-f10d64ba268e")
-	)
-	(junction
-		(at 340.36 173.99)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "44b0a99f-3b11-43ae-942f-83f9973f03dd")
 	)
 	(junction
 		(at 179.07 149.86)
@@ -24479,6 +24518,17 @@
 			(type default)
 		)
 		(uuid "21ecb68a-5f13-41e7-b801-3c2a4dab493a")
+	)
+	(wire
+		(pts
+			(xy 337.82 171.45) (xy 341.63 171.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+			(color 255 0 0 1)
+		)
+		(uuid "2253b562-9183-49a7-bbb8-70c7c945cf71")
 	)
 	(wire
 		(pts
@@ -30663,16 +30713,6 @@
 	)
 	(wire
 		(pts
-			(xy 340.36 171.45) (xy 340.36 173.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "90b0d67a-2740-431b-b7bf-12a0b7a2899c")
-	)
-	(wire
-		(pts
 			(xy 341.63 156.21) (xy 330.2 156.21)
 		)
 		(stroke
@@ -33451,16 +33491,6 @@
 			(type default)
 		)
 		(uuid "c55983a4-9409-42a1-9d37-ba222fbc158e")
-	)
-	(wire
-		(pts
-			(xy 341.63 171.45) (xy 340.36 171.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c580e0db-94b5-4989-90ad-6a23ee8cb05e")
 	)
 	(wire
 		(pts
@@ -36962,16 +36992,6 @@
 		)
 		(uuid "10cd976c-8e96-466e-abc3-276ee7974726")
 	)
-	(label "IO61"
-		(at 15.24 233.68 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "10f5da6a-14b6-41f8-a2da-daa0a8022e2a")
-	)
 	(label "ZWR-"
 		(at 149.86 171.45 0)
 		(effects
@@ -37273,6 +37293,16 @@
 				(hide yes)
 			)
 		)
+	)
+	(label "IOECLK-"
+		(at 15.24 233.68 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2039f03c-11e6-40c7-9afc-a923ab666455")
 	)
 	(label "MOD_SEL-"
 		(at 274.32 96.52 0)
@@ -40535,7 +40565,7 @@
 			)
 		)
 	)
-	(label "IOECLK"
+	(label "IOECLK-"
 		(at 346.71 68.58 0)
 		(effects
 			(font
@@ -53902,7 +53932,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 15.24 233.68 90)
+		(at 22.86 298.45 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -53910,7 +53940,7 @@
 		(dnp yes)
 		(uuid "71c104b7-a877-45f5-9093-a3fb11ea8c63")
 		(property "Reference" "TP8"
-			(at 11.176 233.68 90)
+			(at 18.796 298.45 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53919,7 +53949,7 @@
 			)
 		)
 		(property "Value" "TestPoint"
-			(at 11.938 231.14 90)
+			(at 19.558 295.91 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53928,7 +53958,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_THTPad_D1.0mm_Drill0.5mm"
-			(at 15.24 228.6 0)
+			(at 22.86 293.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53937,7 +53967,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 15.24 228.6 0)
+			(at 22.86 293.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53946,7 +53976,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 15.24 233.68 0)
+			(at 22.86 298.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -53955,7 +53985,7 @@
 			)
 		)
 		(property "Function" "IO1"
-			(at 15.24 233.68 90)
+			(at 22.86 298.45 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -64700,6 +64730,71 @@
 				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
 					(reference "U23")
 					(unit 2)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 337.82 171.45 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e8dc0aa3-970c-410f-9ead-aef68c2bd9d9")
+		(property "Reference" "#PWR031"
+			(at 337.82 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 337.82 167.894 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 337.82 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 337.82 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 337.82 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "960d22f2-02b2-4f3c-89fc-637e4016e414")
+		)
+		(instances
+			(project "ZID_MAIN"
+				(path "/2be47242-6db6-4d8d-b590-8c682dee013e"
+					(reference "#PWR031")
+					(unit 1)
 				)
 			)
 		)
