@@ -15,5 +15,6 @@ add_subdirectory(cmd)
 
 target_link_libraries(rpm INTERFACE
     dbusc
+    rpmcmds
     pico_stdlib
 )

@@ -49,7 +49,8 @@ const cmd_handler_entry_t cmds_dmver_entry;
 //
 // NORMAL Commands
 //
-const cmd_handler_entry_t cmd_dec_entry;
+const cmd_handler_entry_t cmds_cpu_entry;
+const cmd_handler_entry_t cmds_dec_entry;
 const cmd_handler_entry_t cmds_dasm_entry;
 const cmd_handler_entry_t cmds_disasm_entry;
 const cmd_handler_entry_t cmds_dump_entry;
@@ -62,12 +63,13 @@ const cmd_handler_entry_t cmds_ld_entry;
 const cmd_handler_entry_t cmds_load_entry;
 const cmd_handler_entry_t cmds_out_entry;
 const cmd_handler_entry_t cmds_step_entry;
-const cmd_handler_entry_t cmds_cpu_entry;
+const cmd_handler_entry_t cmds_stop_entry;
 
+struct CMD_DASM_CTX_;
 /**
  * @brief Completion Function prototype
  */
-typedef void (*cmplt_fn)(void* vp);
+typedef void (*cmplt_fn)(struct CMD_DASM_CTX_* ctx);
 
 // ====================================================================
 // Local Constants
@@ -159,6 +161,7 @@ typedef struct CMD_DASM_CTX_ {
     uint8_t bc;             // Data byte count (retrieved/left)
     int stmt_cnt;           // Number of statements left to disassemble
     cmplt_fn on_cmplt;      // Completion function
+    void* data;             // Data to pass to completion function
 } cmddasm_ctx_s;
 
 // ====================================================================
@@ -254,16 +257,14 @@ static void _disasm_ab() {
 }
 static void _disasm_cmplt() {
     if (_da_ctx.on_cmplt) {
-        _da_ctx.on_cmplt((void*)((uint32_t)_da_ctx.caddr));
+        _da_ctx.on_cmplt(&_da_ctx);
         _da_ctx.on_cmplt = NULL;
     }
-    dc_prompt_en(true);
-    shell_prompt_again();
 }
 /** Continue disassembly with data */
 static void _disasm_c_d(cmt_msg_t* msg) {
     // Continue the disassembly, now with data
-    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    volatile dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     volatile uint8_t* vbuf = ob->buf;
     uint16_t addr = _da_ctx.caddr;
     uint8_t b = *vbuf;
@@ -335,10 +336,11 @@ static void _disasm_err() {
  * @param uc Uppercase flag (true for uppercase)
  * @param on_cmplt Completion function called when complete
  */
-static void _disasm(uint16_t addr, uint16_t count, bool uc, cmplt_fn on_cmplt) {
+static void _disasm(uint16_t addr, uint16_t count, bool uc, cmplt_fn on_cmplt, void* data) {
     _da_ctx.stmt_cnt = count;
     _da_ctx.caddr = addr;
     _da_ctx.on_cmplt = on_cmplt;
+    _da_ctx.data = data;
     _da_ctx.bc = 1;     // A single byte is needed to start
     _da_ctx.ctx.status = 0; // Set the disassembly context status to 0 to start
     _disasm_c(NULL);
@@ -419,24 +421,24 @@ static uint16_t _get_addr16(const char* tkn, addr_ind_t* addr_ind) {
         addr = num_valprovider(tknp, RS_WORD, &status);
         if (status != VP_OK) {
             *addr_ind = ADDR_INVALID;
-            goto _finally;
+            goto FINALLY_;
         }
         if (*addr_ind == ADDR_INVALID) {
             *addr_ind = ADDR_ABS;
         }
-        goto _finally;
+        goto FINALLY_;
     }
     // See if it is a register pair
     const regaccess_t* rp = z80_ra_for_token(tknp);
     if (!rp || rp->sz != RS_WORD) {
         *addr_ind = ADDR_INVALID;
-        goto _finally;
+        goto FINALLY_;
     }
     addr = ((rp->getval()).v).wv;
     if (*addr_ind == ADDR_INVALID) {
         *addr_ind = ADDR_REGPAIR;
     }
-_finally:
+FINALLY_:
     return addr;
 }
 
@@ -474,11 +476,11 @@ static uint16_t _get_port_addr(const char* tkn, addr_ind_t* addr_ind) {
     else {
         addr = _get_addr16(tkn, addr_ind);
         if (*addr_ind == ADDR_INVALID)
-            goto _finally;
+            goto FINALLY_;
         if (*addr_ind == ADDR_REGPAIR || *addr_ind == ADDR_IND_WORD)
-            goto _finally;
+            goto FINALLY_;
     }
-_finally:
+FINALLY_:
     return addr;
 }
 
@@ -643,8 +645,7 @@ static void _shell_inv_dest() {
 
 static void _handle_dm_getregs(cmt_msg_t* msg) {
     SHPC(nl);
-    dcc_cpudisp();
-    shell_prompt_again();
+    dcc_cpudisp(true);
 }
 
 static void _handle_dm_putregs(cmt_msg_t* msg) {
@@ -759,9 +760,9 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
     volatile const dmc_cmd_op_t* cop = dmc_op_current();
     volatile const dmc_cmd_op_t* col = dmc_op_last();
     if (cip) {
-        shell_printf(" DM current operation: %02X\n", (uint8_t)cop->cmd);
+        shell_printf(" DM current operation: %02X  state: %02X\n", (uint8_t)cop->cmd, (uint8_t)cop->state);
     }
-    shell_printf(" DM last operation   : %02X\n", (uint8_t)col->cmd);
+    shell_printf(" DM last operation   : %02X  state: %02X\n", (uint8_t)col->cmd, (uint8_t)col->state);
     shell_putc('\n');
     return (retval);
 }
@@ -769,12 +770,11 @@ static int _exec_dm_simulate(int argc, char** argv, const char* unparsed) {
 static void _dmver_c(cmt_msg_t* msg) {
     // msg data v32_vp.val  is DMC_COS_COMPLETED|DMC_COS_CANCELLED
     //                .vptr is string value
-    shell_puts("DM Ver");
     if (msg->data.v32_vp.val.v32 == DMC_COS_COMPLETED) {
-        shell_printf(": %s\n", (const char*)msg->data.v32_vp.vptr);
+        shell_printf("DM Version: %s\n", (const char*)msg->data.v32_vp.vptr);
     }
     else {
-        shell_printf("DM Ver Get - Operation Cancelled");
+        shell_printf("DM Version Get - Operation not completed\n");
     }
     dc_prompt_en(true);
     shell_prompt_again();
@@ -787,7 +787,7 @@ static int _exec_dm_version(int argc, char** argv, const char* unparsed) {
         return (-1);
     }
     dc_prompt_en(false);
-    argv++,argc++;  // Skip the command name
+    argv++,argc--;  // Skip the command name
     if (argc > 0) {
         if (stricmp("-f", *argv) == 0) {
             dm_ver_get(_dmver_c);
@@ -799,8 +799,10 @@ static int _exec_dm_version(int argc, char** argv, const char* unparsed) {
         cmt_msg_t msg;
         msg.data.v32_vp.val.v32 = DMC_COS_COMPLETED;
         msg.data.v32_vp.vptr = (void*)ver_str;
-        _dmver_c(&msg);
+        cmt_exec1_init(&msg, _dmver_c);
+        post_core1(&msg);   // Post to our completion so it works the same as '-f'
     }
+    dc_prompt_en(false);
     return (retval);
 }
 
@@ -835,7 +837,8 @@ static int _exec_cpu(int argc, char** argv, const char* unparsed) {
         cmd_help_display(&cmds_cpu_entry, HELP_INVALID_USAGE);
         return (-1);
     }
-    dcc_cpudisp();
+    dc_prompt_en(false);
+    dcc_cpudisp(true);
     return (retval);
 }
 
@@ -844,7 +847,7 @@ static int _exec_dec(int argc, char** argv, const char* unparsed) {
     argc--; argv++; // Move past the command
     if (argc < 1 || argc > 2) {
         // We require 1 argument and can accept 2.
-        cmd_help_display(&cmd_dec_entry, HELP_INVALID_USAGE);
+        cmd_help_display(&cmds_dec_entry, HELP_INVALID_USAGE);
         return (-1);
     }
     // First argument is the destination
@@ -852,7 +855,7 @@ static int _exec_dec(int argc, char** argv, const char* unparsed) {
     if (!dest) {
         _shell_inv_dest();
         retval = -1;
-        goto _finally;
+        goto FINALLY_;
     }
     uint32_t decval = 1;
     valstatus_t status;
@@ -865,11 +868,11 @@ static int _exec_dec(int argc, char** argv, const char* unparsed) {
             if (status == VP_INV_SIZE) {
                 _shell_inv_arg(NULL, dcm_size);
                 retval = -2;
-                goto _finally;
+                goto FINALLY_;
             }
             _shell_inv_arg(NULL, NULL);
             retval = -3;
-            goto _finally;
+            goto FINALLY_;
         }
     }
     zval_t zv = dest->getval();
@@ -879,13 +882,15 @@ static int _exec_dec(int argc, char** argv, const char* unparsed) {
     dest->setval(&dval);
     num_valstr_nb(_prnbuf, dv, dval.sz, true);
     SHPF("%s: %s\n", dest->name, _prnbuf);
-_finally:
+FINALLY_:
     return (retval);
 }
 
-static void _dasm_oc(void* vp) {
+static void _dasm_oc(cmddasm_ctx_s* ctx) {
     // Disassembler passes the 'next address'
-    _dasm_addr = (uint16_t)((uint32_t)vp);
+    _dasm_addr = ctx->caddr;
+    dc_prompt_en(true);
+    shell_prompt_again();
 }
 static int _exec_dasm(int argc, char** argv, const char* unparsed) {
     int retval = 0;
@@ -905,7 +910,7 @@ static int _exec_dasm(int argc, char** argv, const char* unparsed) {
             if (status != VP_OK) {
                 _shell_inv_arg_rsn(dcm_loc);
                 retval = 1;
-                goto _finally;
+                goto FINALLY_;
             }
             addr = (uint16_t)v;
         }
@@ -918,14 +923,14 @@ static int _exec_dasm(int argc, char** argv, const char* unparsed) {
         if (status != VP_OK) {
             _shell_inv_arg_rsn(dcm_count);
             retval = 2;
-            goto _finally;
+            goto FINALLY_;
         }
         cnt = (uint16_t)v;
     }
     // Past the sources of any errors
     dc_prompt_en(false);
-    _disasm(addr, cnt, _wcfg.uc.v.bval, _dasm_oc);
-_finally:
+    _disasm(addr, cnt, _wcfg.uc.v.bval, _dasm_oc, (void*)false);
+FINALLY_:
     return retval;
 }
 
@@ -945,7 +950,7 @@ static void _dump_c(cmt_msg_t* msg) {
     //
     paddr = addr & 0xFFF0; // Start the line at a 0
     int bvpad = nbase_width(RS_BYTE) + 1;
-    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    volatile dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     volatile uint8_t* vbuf = ob->buf;
     uint8_t v;
     char abuf[17];
@@ -1018,7 +1023,7 @@ static int _exec_dump(int argc, char** argv, const char* unparsed) {
             if (status != VP_OK) {
                 _shell_inv_arg_rsn(dcm_loc);
                 retval = 1;
-                goto _finally;
+                goto FINALLY_;
             }
             addr = (uint16_t)v;
         }
@@ -1031,7 +1036,7 @@ static int _exec_dump(int argc, char** argv, const char* unparsed) {
         if (status != VP_OK) {
             _shell_inv_arg_rsn(dcm_count);
             retval = 2;
-            goto _finally;
+            goto FINALLY_;
         }
         cnt = (uint16_t)(v & ONEK_MASK);
     }
@@ -1044,7 +1049,7 @@ static int _exec_dump(int argc, char** argv, const char* unparsed) {
     _addrcnt_vals.addr = addr;
     _addrcnt_vals.cnt = cnt;
     dc_prompt_en(false);
-_finally:
+FINALLY_:
     return retval;
 }
 
@@ -1064,7 +1069,7 @@ static void _dumpa_c(cmt_msg_t* msg) {
     //
     paddr = addr & 0xFFF0; // Start the line at a 0
     int bvpad = 4;
-    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    volatile dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     volatile uint8_t* vbuf = ob->buf;
     uint8_t v;
     while (cnt > 0) {
@@ -1127,7 +1132,7 @@ static int _exec_dumpa(int argc, char** argv, const char* unparsed) {
             if (status != VP_OK) {
                 _shell_inv_arg_rsn(dcm_loc);
                 retval = 1;
-                goto _finally;
+                goto FINALLY_;
             }
             addr = (uint16_t)v;
         }
@@ -1140,7 +1145,7 @@ static int _exec_dumpa(int argc, char** argv, const char* unparsed) {
         if (status != VP_OK) {
             _shell_inv_arg_rsn(dcm_count);
             retval = 2;
-            goto _finally;
+            goto FINALLY_;
         }
         cnt = (uint16_t)(v & PAGE_MASK);
     }
@@ -1151,7 +1156,7 @@ static int _exec_dumpa(int argc, char** argv, const char* unparsed) {
     _addrcnt_vals.addr = addr;
     _addrcnt_vals.cnt = cnt;
     dc_prompt_en(false);
-_finally:
+FINALLY_:
     return retval;
 }
 
@@ -1160,7 +1165,7 @@ static void _exam_c(cmt_msg_t* msg) {
     addr_ind_t addr_ind = _addrind_vals.ind;
     uint16_t value;
     repsize_t sz;
-    uint8_t* buf = (uint8_t*)msg->data.bptr;
+    uint8_t* buf = (uint8_t*)msg->data.v32_vp.vptr;
     if (addr_ind == ADDR_IND_WORD) {
         sz = RS_WORD;
         value = (uint16_t)((buf[1] << 8) | buf[0]);
@@ -1202,7 +1207,7 @@ static int _exec_examine(int argc, char** argv, const char* unparsed) {
         num_valstr_nb(_prnbuf, value, sz, true);
         SHPF("REG %s = %s", name, _prnbuf);
         SHPC(nl);
-        goto _finally;
+        goto FINALLY_;
     }
     // It wasn't a register, try to get an address
     addr_ind_t addr_ind;
@@ -1210,7 +1215,7 @@ static int _exec_examine(int argc, char** argv, const char* unparsed) {
     if (addr_ind == ADDR_INVALID) {
         _shell_inv_arg_rsn(dcm_addr);
         retval = -2;
-        goto _finally;
+        goto FINALLY_;
     }
     if (addr_ind == ADDR_IND_WORD) {
         dc_mp_opbuf_fill(addr, WORD);
@@ -1223,10 +1228,15 @@ static int _exec_examine(int argc, char** argv, const char* unparsed) {
     _addrind_vals.addr = addr;
     _addrind_vals.ind = addr_ind;
     dc_prompt_en(false);
-_finally:
+FINALLY_:
     return (retval);
 }
 
+static void _go_c(cmt_msg_t* msg) {
+    shell_printf("%s\n", dmm_running);
+    dc_prompt_en(true);
+    shell_prompt_again();
+}
 static int _exec_go(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     argc--; argv++; // Move past the command
@@ -1243,18 +1253,19 @@ static int _exec_go(int argc, char** argv, const char* unparsed) {
             if (status == VP_INV_SIZE) {
                 _shell_inv_arg(NULL, dcm_size);
                 retval = -2;
-                goto _finally;
+                goto FINALLY_;
             }
             _shell_inv_arg(NULL, NULL);
             retval = -3;
-            goto _finally;
+            goto FINALLY_;
         }
-        dm_goat(pc, NULL);
+        dm_goat(pc, _go_c);
     }
     else {
-        dm_go(NULL);
+        dm_go(_go_c);
     }
-_finally:
+    dc_prompt_en(false);
+FINALLY_:
     return (retval);
 }
 
@@ -1263,7 +1274,7 @@ static void _in_c(cmt_msg_t* msg) {
     addr_ind_t addr_ind = _addrind_vals.ind;
     uint16_t value;
     repsize_t sz = RS_WORD; // used for address
-    uint8_t* buf = (uint8_t*)msg->data.bptr;
+    uint8_t* buf = (uint8_t*)msg->data.v32_vp.vptr;
     if (addr_ind == ADDR_UPPERB) {
         // B register was used for upper 8 address bits, print 8 bit address
         addr = lowByte(addr);
@@ -1292,7 +1303,7 @@ static int _exec_in(int argc, char** argv, const char* unparsed) {
     if (addr_ind == ADDR_INVALID) {
         _shell_inv_arg_rsn(dcm_addr);
         retval = -2;
-        goto _finally;
+        goto FINALLY_;
     }
     // Save off the addr and indicator and get the value from the DM
     _addrind_vals.addr = addr;
@@ -1300,7 +1311,7 @@ static int _exec_in(int argc, char** argv, const char* unparsed) {
     dc_mp_opbuf_fill(addr, BYTE);
     dm_port_get(BYTE, _in_c);
     dc_prompt_en(false);
-_finally:
+FINALLY_:
     return retval;
 }
 
@@ -1317,7 +1328,7 @@ static int _exec_inc(int argc, char** argv, const char* unparsed) {
     if (!dest) {
         _shell_inv_dest();
         retval = -1;
-        goto _finally;
+        goto FINALLY_;
     }
     uint32_t decval = 1;
     valstatus_t status;
@@ -1330,11 +1341,11 @@ static int _exec_inc(int argc, char** argv, const char* unparsed) {
             if (status == VP_INV_SIZE) {
                 _shell_inv_arg(NULL, dcm_size);
                 retval = -2;
-                goto _finally;
+                goto FINALLY_;
             }
             _shell_inv_arg(NULL, NULL);
             retval = -3;
-            goto _finally;
+            goto FINALLY_;
         }
     }
     zval_t zv = dest->getval();
@@ -1344,7 +1355,7 @@ static int _exec_inc(int argc, char** argv, const char* unparsed) {
     dest->setval(&dval);
     num_valstr_nb(_prnbuf, dv, dval.sz, true);
     SHPF("%s: %s\n", dest->name, _prnbuf);
-_finally:
+FINALLY_:
     return (retval);
 }
 
@@ -1375,16 +1386,16 @@ static int _exec_load(int argc, char** argv, const char* unparsed) {
             if (status == VP_INV_SIZE) {
                 _shell_inv_arg(NULL, dcm_size);
                 retval = -2;
-                goto _finally;
+                goto FINALLY_;
             }
             _shell_inv_arg(NULL, NULL);
             retval = -3;
-            goto _finally;
+            goto FINALLY_;
         }
         zval_t dval;
         __setval(&dval, srcval);
         reg->setval(&dval);
-        goto _finally;
+        goto FINALLY_;
     }
     // It wasn't a register, try to get an address
     addr_ind_t addr_ind;
@@ -1392,12 +1403,12 @@ static int _exec_load(int argc, char** argv, const char* unparsed) {
     if (addr_ind == ADDR_INVALID) {
         _shell_inv_arg_rsn(dcm_addr);
         retval = -2;
-        goto _finally;
+        goto FINALLY_;
     }
     // We have a memory address. Do they want to load bytes or words?
     sz = (addr_ind == ADDR_IND_WORD ? RS_WORD : RS_BYTE);
     argc--; argv++; // Next arg starts the values
-    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    volatile dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     uint16_t cnt = 0;
     while (argc && cnt < 256) {
         srcval = _val_provider(*argv, sz, &status);
@@ -1405,11 +1416,11 @@ static int _exec_load(int argc, char** argv, const char* unparsed) {
             if (status == VP_INV_SIZE) {
                 _shell_inv_arg_at(cnt+2, dcm_size);
                 retval = -2;
-                goto _finally;
+                goto FINALLY_;
             }
             _shell_inv_arg_at(cnt+2, NULL);
             retval = -3;
-            goto _finally;
+            goto FINALLY_;
         }
         if (sz == RS_WORD) {
             ob->buf[cnt++] = lowByte(srcval);
@@ -1422,7 +1433,7 @@ static int _exec_load(int argc, char** argv, const char* unparsed) {
     }
     dc_mp_opbuf_fill(addr, lowByte(cnt));
     dm_mem_set(cnt);
-_finally:
+FINALLY_:
     return (retval);
 }
 
@@ -1441,7 +1452,7 @@ static int _exec_out(int argc, char** argv, const char* unparsed) {
     if (addr_ind == ADDR_INVALID) {
         _shell_inv_arg_rsn(dcm_addr);
         retval = -2;
-        goto _finally;
+        goto FINALLY_;
     }
     // Save off the addr and indicator and get the values
     _addrind_vals.addr = addr;
@@ -1450,28 +1461,34 @@ static int _exec_out(int argc, char** argv, const char* unparsed) {
     uint32_t pval;
     valstatus_t status;
     uint16_t cnt = 0;
-    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
+    volatile dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     while (argc && cnt < 256) {
         pval = _val_provider(*argv, RS_BYTE, &status);
         if (status != VP_OK) {
             if (status == VP_INV_SIZE) {
                 _shell_inv_arg_at((cnt + 2), dcm_size);
                 retval = -2;
-                goto _finally;
+                goto FINALLY_;
             }
             _shell_inv_arg_at(cnt + 2, NULL);
             retval = -3;
-            goto _finally;
+            goto FINALLY_;
         }
         ob->buf[cnt++] = lowByte(pval);
         argc--; argv++; // Next arg
     }
     dc_mp_opbuf_fill(addr, lowByte(cnt));
     dm_port_put(cnt);
-_finally:
+FINALLY_:
     return (retval);
 }
 
+static void _step_c(cmt_msg_t* msg) {
+    shell_puts("\nSTEP\n");
+    // We don't expect a SS to take long,
+    // so we don't re-enable the prompt and re-prompt.
+    // SS Complete will display the CPU registers.
+}
 static int _exec_step(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     argc--; argv++; // Move past the command
@@ -1488,18 +1505,40 @@ static int _exec_step(int argc, char** argv, const char* unparsed) {
             if (status == VP_INV_SIZE) {
                 _shell_inv_arg(NULL, dcm_size);
                 retval = -2;
-                goto _finally;
+                goto FINALLY_;
             }
             _shell_inv_arg(NULL, NULL);
             retval = -3;
-            goto _finally;
+            goto FINALLY_;
         }
-        dm_stepat(pc, NULL);
+        dm_stepat(pc, _step_c);
     }
     else {
-        dm_step(NULL);
+        dm_step(_step_c);
     }
-_finally:
+    dc_prompt_en(false);
+FINALLY_:
+    return (retval);
+}
+
+static void _stop_c(cmt_msg_t* msg) {
+    shell_printf("%s\n", dmm_stopped);
+    dcc_cpudisp(true);
+}
+static int _exec_stop(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    if (argc > 1) {
+        // We don't take any arguments.
+        cmd_help_display(&cmds_stop_entry, HELP_INVALID_USAGE);
+        return (-1);
+    }
+    if (dm_get_mode() != DMM_TARGET) {
+        shell_printferr("%s\n", dcm_cmd_inappro);
+        goto FINALLY_;
+    }
+    dm_stop(_stop_c);
+    dc_prompt_en(false);
+FINALLY_:
     return (retval);
 }
 
@@ -1508,8 +1547,14 @@ _finally:
 // Public Methods
 // ====================================================================
 
-
-void dcc_cpudisp() {
+void _cpudisp_dsm_c(cmddasm_ctx_s* ctx) {
+    bool prompt_en = (bool)ctx->data;
+    if (prompt_en) {
+        dc_prompt_en(true);
+        shell_prompt_again();
+    }
+}
+void dcc_cpudisp(bool prompt_en) {
     //
     nbase_t nb = nbase_get();
     int pad = 0;
@@ -1540,7 +1585,11 @@ void dcc_cpudisp() {
     if (_wcfg.dacpu.v.bval) {
         // The PC address should be disassembled, so disable the prompt
         dc_prompt_en(false);
-        _disasm(regpc_gv(), 1, _wcfg.uc.v.bval, NULL);
+        _disasm(regpc_gv(), 1, _wcfg.uc.v.bval, _cpudisp_dsm_c, (void*)prompt_en);
+    }
+    else if (prompt_en) {
+        dc_prompt_en(true);
+        shell_prompt_again();
     }
 }
 
@@ -1612,8 +1661,8 @@ const cmd_handler_entry_t cmds_dmver_entry = {
     _exec_dm_version,
     6,
     ".dmver",
-    "[-r]",
-    "Display the DM Version.\n  -r Read from DM (don't just use stored value)"
+    "[-f]",
+    "Display the DM Version.\n  -f Force a read from DM (don't just use stored value)"
 };
 
 // -------------------------
@@ -1627,10 +1676,10 @@ const cmd_handler_entry_t cmds_cpu_entry = {
     0,
     "CPU register display"
 };
-const cmd_handler_entry_t cmd_dec_entry = {
+const cmd_handler_entry_t cmds_dec_entry = {
     _exec_dec,
     3,
-    "dec",
+    "decrement",
     "dest [val]",
     "Decrement a destination. Optionally by a value."
 };
@@ -1686,6 +1735,13 @@ const cmd_handler_entry_t cmds_go_entry = {
     "[pc]",
     "Run the target, optionally specifying a starting PC."
 };
+const cmd_handler_entry_t cmds_kill_entry = {
+    _exec_stop,
+    1,
+    "kill",
+    "\001stop",
+    0
+};
 const cmd_handler_entry_t cmds_ld_entry = {
     _exec_load,
     2,
@@ -1707,7 +1763,7 @@ const cmd_handler_entry_t cmds_in_entry = {
 const cmd_handler_entry_t cmds_inc_entry = {
     _exec_inc,
     3,
-    "inc",
+    "increment",
     "dest [val]",
     "Increment a destination. Optionally by a value."
 };
@@ -1738,6 +1794,13 @@ const cmd_handler_entry_t cmds_step_entry = {
     "[pc]",
     "Single-Step the target, optionally specifying a starting PC."
 };
+const cmd_handler_entry_t cmds_stop_entry = {
+    _exec_stop,
+    3,
+    "stop",
+    0,
+    "Stop Target execution."
+};
 
 
 
@@ -1764,7 +1827,7 @@ void dccmds_modinit() {
     cmd_register(&cmds_dmver_entry);
     //  Regular Commands
     cmd_register(&cmds_cpu_entry);
-    cmd_register(&cmd_dec_entry);
+    cmd_register(&cmds_dec_entry);
     cmd_register(&cmds_dasm_entry);
     cmd_register(&cmds_disasm_entry);
     cmd_register(&cmds_dump_entry);
@@ -1773,10 +1836,12 @@ void dccmds_modinit() {
     cmd_register(&cmds_go_entry);
     cmd_register(&cmds_in_entry);
     cmd_register(&cmds_inc_entry);
+    cmd_register(&cmds_kill_entry);
     cmd_register(&cmds_ld_entry);
     cmd_register(&cmds_load_entry);
     cmd_register(&cmds_out_entry);
     cmd_register(&cmds_step_entry);
+    cmd_register(&cmds_stop_entry);
     //
     // initialize the rest of the commands that we make available.
     //

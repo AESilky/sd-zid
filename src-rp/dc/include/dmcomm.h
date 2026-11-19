@@ -62,7 +62,7 @@ extern void dmc_op_cancel();
  * 
  * Returns true is an operation is pending or in-process
  * 
- * @return bool True is operation pending or in-process 
+ * @return bool True if operation pending or in-process 
  */
 extern bool dmc_op_inprocess();
 

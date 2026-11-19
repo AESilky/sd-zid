@@ -35,6 +35,11 @@ void rpm_led_control(uint8_t led_bits) {
     b_led_control(led_bits);   // We simply provide this API to the RPM level
 }
 
+extern uint8_t rpm_leds() {
+    return b_leds();            // We simply provide this API to the RPM level
+}
+
+
 // ====================================================================
 // Initialization Methods
 // ====================================================================

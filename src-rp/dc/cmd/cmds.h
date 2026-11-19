@@ -12,12 +12,15 @@ extern "C" {
 
 #include "num_t.h"
 
+#include <stdbool.h>
+
 /**
  * @brief Display the CPU (Z80) registers
  * @ingroup dc
  * 
+ * @param prompt_en True to enable the prompt and re-prompt. False to leave it as is.
  */
-extern void dcc_cpudisp();
+extern void dcc_cpudisp(bool prompt_en);
 
 /**
  * @brief Set the Value Provider to be used for processing command parameters
