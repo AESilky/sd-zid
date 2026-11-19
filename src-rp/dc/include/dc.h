@@ -44,7 +44,7 @@ typedef struct DM_MP_OPBUF {
  * 
  * @return const char* The banner
  */
-extern const char* dc_banner();
+extern const volatile char* dc_banner();
 
 /**
  * @brief Get the Memory/Port Operation Buffer.
@@ -60,7 +60,7 @@ extern const char* dc_banner();
  * 
  * @return dc_mb_opbuf_t pointer 
  */
-extern dm_mp_opbuf_t* dc_mp_opbuf_get();
+extern volatile dm_mp_opbuf_t* dc_mp_opbuf_get();
 
 /**
  * @brief Return the MP OpBuf filled with an address and byte count.
@@ -71,8 +71,8 @@ extern dm_mp_opbuf_t* dc_mp_opbuf_get();
  * @param addr uint16_t address
  * @param cnt uint16_t count
  */
-static inline dm_mp_opbuf_t* dc_mp_opbuf_fill(uint16_t addr, uint8_t cnt) {
-    dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
+static volatile inline dm_mp_opbuf_t* dc_mp_opbuf_fill(uint16_t addr, uint8_t cnt) {
+    volatile dm_mp_opbuf_t* ob = dc_mp_opbuf_get();
     ob->addrL = (uint8_t)(addr & 0x00FF);
     ob->addrH = (uint8_t)(addr >> 8);
     ob->cnt = cnt;
@@ -120,9 +120,17 @@ extern void dm_dbgr_mp(bool use_dbgr_mp);
  * The passed in message handler (can be NULL) is executed when the
  * operation completes.
  *
- * @param on_cmplt0 Message Handler function called on completion (can be NULL)
+ * @param on_cmplt1 Message Handler function called on completion (can be NULL)
  */
-extern void dm_getallreg(msg_handler_fn on_cmplt0);
+extern void dm_getallreg(msg_handler_fn on_cmplt1);
+
+/**
+ * @brief Get the current DM mode (typically DEBUG or TARGET, but can be ERROR)
+ * @ingroup debugcontrol
+ * 
+ * @return dmmode_t The current mode 
+ */
+extern dmmode_t dm_get_mode();
 
 /**
  * @brief Run the Target from the current PC.
@@ -130,9 +138,9 @@ extern void dm_getallreg(msg_handler_fn on_cmplt0);
  *
  * This starts the target running.
  *
- * @param on_cmplt0 Message Handler function called on completion (can be NULL)
+ * @param on_cmplt1 Message Handler function called on completion (can be NULL)
  */
-extern void dm_go(msg_handler_fn on_cmplt0);
+extern void dm_go(msg_handler_fn on_cmplt1);
 
 /**
  * @brief Run the Target from the specified location.
@@ -141,9 +149,9 @@ extern void dm_go(msg_handler_fn on_cmplt0);
  * This starts the target running after loading the PC with the specified value.
  *
  * @param pc Word value to load the PC with before running
- * @param on_cmplt0 Message Handler function called on completion (can be NULL)
+ * @param on_cmplt1 Message Handler function called on completion (can be NULL)
  */
-extern void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt0);
+extern void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt1);
 
 /**
  * @brief Get a region of target memory.
@@ -152,9 +160,9 @@ extern void dm_goat(zregWv_t pc, msg_handler_fn on_cmplt0);
  * The dc_mp_opbuf must contain the address and byte count (0=256).
  * 
  * @param cnt The number of bytes to get (1 to 256)
- * @param on_cmplt0 Message Handler function called on completion. Pointer to buffer in msg.data.bptr
+ * @param on_cmplt1 Message Handler function called on completion. Pointer to buffer in msg.data.bptr
  */
-extern void dm_mem_get(uint16_t cnt, msg_handler_fn on_cmplt0);
+extern void dm_mem_get(uint16_t cnt, msg_handler_fn on_cmplt1);
 
 /**
  * @brief Set a region of target memory.
@@ -173,10 +181,10 @@ extern void dm_mem_set(uint16_t cnt);
  * The dc_mp_opbuf must contain the address and byte count (0=256).
  * 
  * @param cnt The number of bytes to get (1 to 256)
- * @param on_cmplt0 Message Handler function called on completion. Value in msg.data.value8u
+ * @param on_cmplt1 Message Handler function called on completion. Value in msg.data.value8u
  * @return True=read request was accepted False=read not accepted
  */
-extern void dm_port_get(uint16_t cnt, msg_handler_fn on_cmplt0);
+extern void dm_port_get(uint16_t cnt, msg_handler_fn on_cmplt1);
 
 /**
  * @brief Put byte values out to a target port (I/O).
@@ -198,9 +206,9 @@ extern void dm_port_put(uint16_t cnt);
  * The passed in message handler (can be NULL) is executed when the
  * operation completes.
  *
- * @param on_cmplt0 Message Handler function called on completion (can be NULL)
+ * @param on_cmplt1 Message Handler function called on completion (can be NULL)
  */
-extern void dm_putallreg(msg_handler_fn on_cmplt0);
+extern void dm_putallreg(msg_handler_fn on_cmplt1);
 
 /**
  * @brief Set the communications with the DM to 'simulate' interactions.
@@ -228,9 +236,9 @@ extern bool dm_simulated();
  *
  * This steps the target.
  *
- * @param on_cmplt0 Message Handler function called on completion (can be NULL)
+ * @param on_cmplt1 Message Handler function called on completion (can be NULL)
  */
-extern void dm_step(msg_handler_fn on_cmplt0);
+extern void dm_step(msg_handler_fn on_cmplt1);
 
 /**
  * @brief Single-Step the Target from the specified location.
@@ -239,10 +247,19 @@ extern void dm_step(msg_handler_fn on_cmplt0);
  * This steps the target after loading the PC with the specified value.
  *
  * @param pc Word value to load the PC with before stepping
- * @param on_cmplt0 Message Handler function called on completion (can be NULL)
+ * @param on_cmplt1 Message Handler function called on completion (can be NULL)
  */
-extern void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt0);
+extern void dm_stepat(zregWv_t pc, msg_handler_fn on_cmplt1);
 
+/**
+ * @brief Stop execution of the Target
+ * @ingroup debugcontrol
+ * 
+ * This stops execution of the Target system and prints the CPU.
+ * 
+ * @param on_cmplt1 Message Handler function called on completion (can be NULL)
+ */
+extern void dm_stop(msg_handler_fn on_cmplt1);
 /**
  * @brief Is the Target the SBC
  * @ingroup debugcontrol
@@ -261,7 +278,7 @@ extern bool dm_tgt_is_sbc();
  * 
  * To force retrieving an updated version from the DM use `dm_ver_get`.
  * 
- * @see `dm_ver_get(msg_handler_fn on_cmplt0)`
+ * @see `dm_ver_get(msg_handler_fn on_cmplt1)`
  * 
  * @return const char* 
  */
@@ -272,7 +289,7 @@ extern const char* dm_ver();
  * @ingroup debugcontrol
  * 
  * This get the DM Version by making a call to the DM. When the call to
- * the DM is complete the `on_cmplt0` function will be called and the message
+ * the DM is complete the `on_cmplt1` function will be called and the message
  * data `strconst` is the version retrieved.
  * 
  * To get the last version retrieved (cached - not forcing a call to the DM)
@@ -280,9 +297,9 @@ extern const char* dm_ver();
  * 
  * @see `dm_ver()`
  * 
- * @param on_cmplt0 Message handler to be called on complete 
+ * @param on_cmplt1 Message handler to be called on complete 
  */
-extern void dm_ver_get(msg_handler_fn on_cmplt0);
+extern void dm_ver_get(msg_handler_fn on_cmplt1);
 
 /**
  * Value provider that processes Z80 register names and falls back to the

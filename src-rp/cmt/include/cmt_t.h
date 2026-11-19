@@ -36,11 +36,7 @@ typedef enum MSG_ID_ {
     MSG0_ROTARY_CHG,
     MSG0_STDIO_CHAR_READY,
     // DBUS (Data bus and control signals)
-    MSG0_DBUS_CREAD_UNEXPECTED,
-    MSG0_DBUS_CWRITE_UNEXPECTED,
-    MSG0_DBUS_DREAD_UNEXPECTED,
     MSG0_DBUS_DREAD_XFER_DONE,
-    MSG0_DBUS_DWRITE_UNEXPECTED,
     MSG0_DBUS_DWRITE_XFER_DONE,
     // Debug Monitor Communications Messages
     MSG0_DM_STATUSRCVD,      // Status was received from the DM.
@@ -73,6 +69,10 @@ typedef enum MSG_ID_ {
     MSG1_DLG_TIMEOUT,
     MSG1_TERM_CHAR_RCVD,
     //  Debug Controller/Monitor App Messages
+    MSG1_DBUS_CREAD_UNEXPECTED,     // Only used to print status (no HW interaction)
+    MSG1_DBUS_CWRITE_UNEXPECTED,    // Only used to print status (no HW interaction)
+    MSG1_DBUS_DREAD_UNEXPECTED,     // Only used to print status (no HW interaction)
+    MSG1_DBUS_DWRITE_UNEXPECTED,    // Only used to print status (no HW interaction)
 } msg_id_t;
 #define MSG_ID_CNT (0x100)
 

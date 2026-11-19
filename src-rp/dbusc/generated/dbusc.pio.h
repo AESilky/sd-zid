@@ -78,7 +78,6 @@ static inline pio_sm_config msel_opmgr_program_get_default_config(uint offset) {
     sm_config_set_in_shift(&c, 0, 0, 32);
     sm_config_set_sideset(&c, 2, true, false);
     sm_config_set_mov_status(&c, STATUS_IRQ_SET, 5);
-    sm_config_set_clkdiv_int_frac(&c, 4, 0);
     return c;
 }
 #endif
@@ -209,7 +208,6 @@ static inline pio_sm_config ctrl_op_in_program_get_default_config(uint offset) {
     sm_config_set_in_shift(&c, 0, 0, 32);
     sm_config_set_sideset(&c, 2, true, false);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TXPUT);
-    sm_config_set_clkdiv_int_frac(&c, 4, 0);
     return c;
 }
 #endif
@@ -252,7 +250,6 @@ static inline pio_sm_config ctrl_op_out_program_get_default_config(uint offset) 
     sm_config_set_out_shift(&c, 1, 0, 32);
     sm_config_set_sideset(&c, 2, true, false);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TXGET);
-    sm_config_set_clkdiv_int_frac(&c, 4, 0);
     return c;
 }
 #endif
@@ -301,7 +298,6 @@ static inline pio_sm_config data_op_program_get_default_config(uint offset) {
     sm_config_set_out_shift(&c, 1, 0, 32);
     sm_config_set_sideset(&c, 2, true, false);
     sm_config_set_mov_status(&c, STATUS_IRQ_SET, 6);
-    sm_config_set_clkdiv_int_frac(&c, 2, 0);
     return c;
 }
 #endif

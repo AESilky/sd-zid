@@ -68,7 +68,7 @@
 ;
 ; Assigned to PIO1 SM0
 .program msel_opmgr
-.clock_div 4.0                      ; Run at half speed for stability
+.clock_div 1.0                      ; Run at full speed
 .side_set 1 opt                     ; Side-set used to control WAIT
 .mov_status irq set PIO_SET_BUSY    ; IRQ `SET_BUSY` (5) for status check to Set MODULE_BUSY Pin
 .in 1 left                          ; Read ADDR
@@ -173,7 +173,7 @@ stall_on_done:
 
 ; Assigned to PIO2 SM1
 .program ctrl_op_in
-.clock_div 4.0                      ; Run at half speed for stability
+.clock_div 1.0                      ; Run at full speed
 .side_set 1 opt                     ;   Side-set used for logic-analyzer
 .fifo txput                         ; TXFIFO and PUT to REGISTERS
 .in 8 left
@@ -198,7 +198,7 @@ done:
 
 ; Assigned to PIO2 SM2
 .program ctrl_op_out
-.clock_div 4.0                      ; Run at half speed for stability
+.clock_div 1.0                      ; Run at full speed
 .side_set 1 opt                     ;   Side-set used for logic-analyzer
 .fifo txget                         ; TXFIFO and GET from REGISTERS
 .out 8
@@ -223,7 +223,7 @@ done:
 
 ; Assigned to PIO2 SM3
 .program data_op
-.clock_div 2.0                      ; Run at half speed for stability
+.clock_div 1.0                      ; Run at full speed
 .side_set 1 opt                     ;   Side-set used for logic-analyzer
 .mov_status irq set DBUS_DIR_OUT    ; `DBUS_DIR_OUT` (6) Set by MSEL_OPMGR
 .fifo txrx

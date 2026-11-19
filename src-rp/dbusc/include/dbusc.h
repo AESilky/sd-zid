@@ -302,20 +302,36 @@ extern uint8_t bc_ctrl_last_write();
 
 
 #define LED_RED 0x08
+#define LED_RED_M (~LED_RED)
 #define LED_YELLOW1 0x10
+#define LED_YELLOW1_M (~LED_YELLOW1)
 #define LED_YELLOW2 0x20
+#define LED_YELLOW2_M (~LED_YELLOW2)
 #define LED_GREEN1 0x40
+#define LED_GREEN1_M (~LED_GREEN1)
 #define LED_GREEN2 0x80
+#define LED_GREEN2_M (~LED_GREEN2)
+#define LED_BITS (LED_GREEN2 | LED_GREEN1 | LED_YELLOW2 | LED_YELLOW1 | LED_RED)
+
 /**
  * @brief Turn LEDs ON/OFF
  * @ingroup ioport
  * 
  * LED values are OR'ed together and written to the I/O Port.
- * The RED LED is ON with a value of 0, while the others are ON with a value of 1.
  * 
  * @param leds OR'ed values for the LEDs 
  */
 extern void b_led_control(uint8_t leds);
+
+/**
+ * @brief Get the current state of the LEDs
+ * @ingroup ioport
+ * 
+ * Bit values of the current LED state.
+ * 
+ * @return uint8_t 
+ */
+extern uint8_t b_leds();
 
 /**
  * @brief Print the status of the four PIO State Machines that control the Data Bus.

@@ -208,6 +208,12 @@ bool cmt_message_loops_running() {
 
 void cmt_msg_hdlr_add(msg_id_t id, msg_handler_fn hdlr) {
     uint corenum = get_core_num();
+    if (corenum == 0 && id >= MSG1_NOOP) {
+        board_panic("Registering Core-1 message on Core-0: %02X", id);
+    }
+    if (corenum == 1 && id < MSG_NOOP) {
+        board_panic("Registering Core-0 message on Core-1: %02X", id);
+    }
     cmt_msg_hdlr_add_for_core(id, hdlr, corenum);
 }
 

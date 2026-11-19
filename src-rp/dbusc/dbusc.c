@@ -163,7 +163,7 @@ static void _eop_write(uint8_t v);
 // Core-0 Execution Functions (guarantee execution on Core-1)
 // ====================================================================
 
-static void mh_irq_set_enabled_c0(cmt_msg_t* msg) {
+static void _irq_set_enabled_c0(cmt_msg_t* msg) {
     // msg data uses v32_vp for num and enable
     valptr_t v_vp = msg->data.v32_vp;
     uint num = (uint)v_vp.val.v32u;
@@ -178,7 +178,7 @@ static void irq_set_enabled_c0(uint num, bool enable) {
         cmt_msg_t msg;
         msg.data.v32_vp.val.v32u = (uint32_t)num;
         msg.data.v32_vp.vptr = (void*)enable;
-        cmt_exec0_init(&msg, mh_irq_set_enabled_c0);
+        cmt_exec0_init(&msg, _irq_set_enabled_c0);
         run_on_core0(&msg);
     }
 }
@@ -200,38 +200,41 @@ static void irq_set_enabled_c0(uint num, bool enable) {
  * @param msg Nothing important in the message.
  */
 static void _handle_housekeeping(cmt_msg_t* msg) {
-    uint32_t now = now_ms();
-    if (_ucrd_cnt > 0 && now - _ucrd_msg_ts > 1000) {
-        cmt_msg_t msg;
-        _ucrd_msg_ts = now;
-        cmt_msg_init(&msg, MSG0_DBUS_CREAD_UNEXPECTED);
-        msg.data.value32u = _ucrd_cnt;
-        post_core0(&msg);
-        _ucrd_cnt = 0;
-    }
-    if (_ucwr_cnt > 0 && now - _ucwr_msg_ts > 1000) {
-        cmt_msg_t msg;
-        _ucwr_msg_ts = now;
-        cmt_msg_init(&msg, MSG0_DBUS_CWRITE_UNEXPECTED);
-        msg.data.value32u = _ucwr_cnt;
-        post_core0(&msg);
-        _ucwr_cnt = 0;
-    }
-    if (_udrd_cnt > 0 && now - _udrd_msg_ts > 1000) {
-        cmt_msg_t msg;
-        _udrd_msg_ts = now;
-        cmt_msg_init(&msg, MSG0_DBUS_DREAD_UNEXPECTED);
-        msg.data.value32u = _udrd_cnt;
-        post_core0(&msg);
-        _udrd_cnt = 0;
-    }
-    if (_udwr_cnt > 0 && now - _udwr_msg_ts > 1000) {
-        cmt_msg_t msg;
-        _udwr_msg_ts = now;
-        cmt_msg_init(&msg, MSG0_DBUS_DWRITE_UNEXPECTED);
-        msg.data.value32u = _udwr_cnt;
-        post_core0(&msg);
-        _udwr_cnt = 0;
+    static unsigned int cnt;
+    if (cnt++ % 7 == 0) {
+        uint32_t now = now_ms();
+        if (_ucrd_cnt > 0 && now - _ucrd_msg_ts > 1000) {
+            cmt_msg_t msg;
+            _ucrd_msg_ts = now;
+            cmt_msg_init(&msg, MSG1_DBUS_CREAD_UNEXPECTED);
+            msg.data.value32u = _ucrd_cnt;
+            post_core1(&msg);
+            _ucrd_cnt = 0;
+        }
+        if (_ucwr_cnt > 0 && now - _ucwr_msg_ts > 1000) {
+            cmt_msg_t msg;
+            _ucwr_msg_ts = now;
+            cmt_msg_init(&msg, MSG1_DBUS_CWRITE_UNEXPECTED);
+            msg.data.value32u = _ucwr_cnt;
+            post_core1(&msg);
+            _ucwr_cnt = 0;
+        }
+        if (_udrd_cnt > 0 && now - _udrd_msg_ts > 1000) {
+            cmt_msg_t msg;
+            _udrd_msg_ts = now;
+            cmt_msg_init(&msg, MSG1_DBUS_DREAD_UNEXPECTED);
+            msg.data.value32u = _udrd_cnt;
+            post_core1(&msg);
+            _udrd_cnt = 0;
+        }
+        if (_udwr_cnt > 0 && now - _udwr_msg_ts > 1000) {
+            cmt_msg_t msg;
+            _udwr_msg_ts = now;
+            cmt_msg_init(&msg, MSG1_DBUS_DWRITE_UNEXPECTED);
+            msg.data.value32u = _udwr_cnt;
+            post_core1(&msg);
+            _udwr_cnt = 0;
+        }
     }
 }
 
@@ -264,12 +267,12 @@ static void _irq_pio_tx_drain_hdlr(void) {
         //
         // Post a 'Done' message
         //
-        if (_dma_dsnddone_msg != MSG0_DBUS_DREAD_UNEXPECTED) {
+        if (_dma_dsnddone_msg != MSG1_DBUS_DREAD_UNEXPECTED) {
             cmt_msg_t msg;
             // indicate it was a RD by the Host
             cmt_msg_init(&msg, _dma_dsnddone_msg);
             post_core0(&msg);
-            _dma_dsnddone_msg = MSG0_DBUS_DREAD_UNEXPECTED;
+            _dma_dsnddone_msg = MSG1_DBUS_DREAD_UNEXPECTED;
         }
         // Indicate that we no longer expect DATA Port operations
         _data_op_expected(false);
@@ -309,11 +312,11 @@ void _irq_dma_pio() {
         //
         // Post a 'Done' message
         //
-        if (_dma_drcvdone_msg != MSG0_DBUS_DWRITE_UNEXPECTED) {
+        if (_dma_drcvdone_msg != MSG1_DBUS_DWRITE_UNEXPECTED) {
             // indicate it was a WR by the Host
             cmt_msg_init(&msg, _dma_drcvdone_msg);
             post_core0(&msg);
-            _dma_drcvdone_msg = MSG0_DBUS_DWRITE_UNEXPECTED;
+            _dma_drcvdone_msg = MSG1_DBUS_DWRITE_UNEXPECTED;
         }
         else {
             // We aren't expecting a Write.
@@ -1121,8 +1124,14 @@ void b_status_print() {
 void b_led_control(uint8_t leds) {
     // Assure that only the LED bits are being controlled and OR in the bottom bits
     //  The RED LED is ON=0:OFF=1, so flip the value given to us
-    uint8_t ledv = (((leds ^ LED_RED) & 0xf8) | (_eop_val & IO_CTRL_M));
+    uint8_t ledv = (((leds ^ LED_RED) & LED_BITS) | (_eop_val & IO_CTRL_M));
     _eop_write(ledv);
+}
+
+uint8_t b_leds() {
+    uint8_t bits = _eop_val & ~IO_CTRL_M;
+    uint8_t led_bits = bits ^ LED_RED;
+    return led_bits;
 }
 
 // ====================================================================
@@ -1228,8 +1237,8 @@ int dbusc_modinit() {
     PIOBLK_DBUS->irq = 0xFF;
 
     // No Data READs or WRITEs expected at this time
-    _dma_dsnddone_msg = MSG0_DBUS_DREAD_UNEXPECTED;
-    _dma_drcvdone_msg = MSG0_DBUS_DWRITE_UNEXPECTED;
+    _dma_dsnddone_msg = MSG1_DBUS_DREAD_UNEXPECTED;
+    _dma_drcvdone_msg = MSG1_DBUS_DWRITE_UNEXPECTED;
     // Set up for interrupts generated by the PIOs
     //  CTRL Port and DATA Port Unexpected
     irq_set_exclusive_handler(SYSIRQ_PIO_CTRL_OP, _irq_ctrl_op_hdlr);

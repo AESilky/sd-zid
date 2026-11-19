@@ -47,12 +47,13 @@ GLOBL CMSG dcm_tgtsbc   MSGV("SBC");
 /* Common Command Messages */
 
 GLOBL CMSG dcm_done MSGV("DONE");
-GLOBL CMSG dcm_invalid_arg MSGV("Invalid argument");
 GLOBL CMSG dcm_addr MSGV("address");
+GLOBL CMSG dcm_cmd_inappro MSGV("Command inappropriate");
 GLOBL CMSG dcm_count MSGV("count");
-GLOBL CMSG dcm_loc MSGV("location");
+GLOBL CMSG dcm_invalid_arg MSGV("Invalid argument");
 GLOBL CMSG dcm_invalid_argtm MSGV("Too many arguments");
 GLOBL CMSG dcm_invalid_dest MSGV("Invalid destination");
+GLOBL CMSG dcm_loc MSGV("location");
 GLOBL CMSG dcm_mem_get_err MSGV("Error getting target memory");
 GLOBL CMSG dcm_pc MSGV("PC");
 GLOBL CMSG dcm_size MSGV("size");
@@ -61,7 +62,9 @@ GLOBL CMSG dcm_size MSGV("size");
 /* Debug Monitor Messages */
 
 GLOBL CMSG dmm_break_hit MSGV("BREAK");
+GLOBL CMSG dmm_running MSGV("RUNNING");
 GLOBL CMSG dmm_ss_done MSGV("STEP");
+GLOBL CMSG dmm_stopped MSGV("STOPPED");
 GLOBL CMSG dmm_cmd_unknown MSGV("DM received unknown command");
 GLOBL CMSG dmm_fatal_error MSGV("!!!Debug Monitor fatal error !!!");
 GLOBL CMSG dmm_status_error MSGV("!!!Invalid status received from Debug Monitor!!!");

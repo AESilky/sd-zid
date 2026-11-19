@@ -80,24 +80,23 @@ static void _handle_attn_off_fs(cmt_msg_t* msg) {
 
 static void _handle_cmd_done(cmt_msg_t* msg) {
     // Nothing important in the message
-    dmc_cmd_op_state_t state_was = _cmd_op->state;
-    if (state_was != DMC_COS_CANCELLED) {
+    if (_cmd_op->state != DMC_COS_CANCELLED) {
         _cmd_op->state = DMC_COS_COMPLETED;
-        cmt_msg_t msg;
-        msg.data.v32_vp.val.v32u = state_was;
-        msg.data.v32_vp.vptr = (void*)_cmd_op->cmd;
-        if (_cmd_op->on_cmplt0) {
-            // Exec a specific handler
-            cmt_exec0_init(&msg, _cmd_op->on_cmplt0);
-            post_core0(&msg);
-        }
-        else {
-            // Post for a general handler
-            cmt_msg_init(&msg, MSG0_DM_CMD_CMPLT);
-            post_core0(&msg);
-        }
-        _cmd_archive();
     }
+    cmt_msg_t msg_cd;
+    msg_cd.data.v32_vp.val.v32u = _cmd_op->state;
+    msg_cd.data.v32_vp.vptr = (void*)_cmd_op->cmd;
+    if (_cmd_op->on_cmplt0) {
+        // Exec a specific handler
+        cmt_exec0_init(&msg_cd, _cmd_op->on_cmplt0);
+        post_core0(&msg_cd);
+    }
+    else {
+        // Post for a general handler
+        cmt_msg_init(&msg_cd, MSG0_DM_CMD_CMPLT);
+        post_core0(&msg_cd);
+    }
+    _cmd_archive();
     _cmd_op->state = DMC_COS_UNINITIALIZED; // Set it as 'uninitialized' so it doesn't get used
 }
 
@@ -124,9 +123,6 @@ static void _handle_dbus_xfer_done(cmt_msg_t* msg) {
  * The function prototype is:
  * bool ctrlrd_irq_fn(uint8_t* d)
  * 
- * When the DM wakes up and finishes its initialization it sends DMIDLE (80)
- * repetitively until we respond with DOCREADY (FA).
- *
  * This is executed as an IRQ Handler, so make is quick! (no printing)
  * 
  * There is SPECIAL CASE HANDLING for a cancelled operation. If the 
@@ -158,12 +154,15 @@ static ctrl_hdlr_action_t _ctrl_wr_hdlr(uint8_t v) {
         // Debug Monitor sent a status
         handled = CHA_WRITE_HANDLED;
         _dm_alive = true;
-        // IDLE, READING COMMAND, and COMMAND DONE include the SBC status bit
-        if (v == DMIDLE || v == DMOKCMDRD || v == DMOPDONE) {
-            _tgt_is_sbc = ((v & DMSTATSBC_M) != 0); // Assure that it's a BOOL
-        }
         // Mask the SBC bit out (other status values might include it - those three are guaranteed to)
         dm_stat_val_t dms = (dm_stat_val_t)(v & ~DMSTATSBC_M);
+        // IDLE, READING COMMAND, and COMMAND DONE include the SBC status bit
+        if (dms == DMIDLE || dms == DMOKCMDRD || dms == DMOPDONE) {
+            _tgt_is_sbc = ((v & DMSTATSBC_M) != 0); // Assure that it's a BOOL
+        }
+        if (dms == DMOKCMDRD) {
+            handled = CHA_WRITE_HANDLED_CLR_ATTN;
+        }
         if (dms == DMOPDONE) {
             // Indicate that ATTN needs to be cleared at the end of this OP
             handled = CHA_WRITE_HANDLED_CLR_ATTN;
@@ -177,6 +176,9 @@ static ctrl_hdlr_action_t _ctrl_wr_hdlr(uint8_t v) {
         else if (dms == DMTGTGO) { // DM it going into Target Mode (GO or Single-Step)
             // Indicate that ATTN needs to be cleared at the end of this OP
             handled = CHA_WRITE_HANDLED_CLR_ATTN;
+            // For GO and SS - treat this status as 'complete' since BRKHIT and SSDONE
+            // are handled differently from other command complete operations
+            cmddone = true;
         }
         else if (dms == DMBRKHIT || dms == DMSSDONE) {
             // Break Hit or Single-Step Done,

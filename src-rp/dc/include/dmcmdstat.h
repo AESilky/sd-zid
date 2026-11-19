@@ -18,7 +18,8 @@ typedef enum DM_STATUS_VAL_ {
     DMBRKHIT    = 0x8C,     // Breakpoint hit
     DMTGTGO     = 0x8E,     // DM transitioning to Target Mode (GO or SS)
                             //  (don't interrupt for a bit)
-    DMTESTDONE  = 0xB6,     // DM Auto-Test complete (RUN is 86)
+    DMTESTDONE  = 0xB4,     // DM Auto-Test complete (RUN is 84)
+    DMTESTERR   = 0xB5,     // DM Auto-Test Failed (Get Error Info is 85)
     DMRSTEXEC   = 0xBE,     // DM executed a RST instruction (ERROR)
 } dm_stat_val_t;
 #define DMSTATSBC_M 0x01    //  Bit added to status if target is SBC
@@ -40,6 +41,7 @@ typedef enum DM_CMDS_ {
     DMDBGRMP        = 0x83, // Use the Debugger's memory/ports for Get/Put operations
     //
     DMATEST         = 0x84, // Auto Test
+    DMATERR         = 0x85, // Auto Test Error Info
     //
     DMPBRKPNTS      = 0x85, // Breakpoint Configure
     DMBRKPEN        = 0x86, // Breakpoint Enable/Disable

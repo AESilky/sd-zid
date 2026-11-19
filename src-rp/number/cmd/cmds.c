@@ -106,7 +106,7 @@ _err:
 
 static const cmd_handler_entry_t _cmd_dec_entry = {
     _exec_dec,
-    3,
+    4,
     "decimal",
     "hexval1 [hexval2] [hexvaln...]]",
     "Convert hex value(s) to decimal.\n",
