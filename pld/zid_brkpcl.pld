@@ -274,8 +274,8 @@ srpc.ck = pc_latch;
 
 /*  SR PC                           */
 
-databus     =  SRPCH_RD & SRPCH     /* Read the Special Reset PC HIGH value                     */
-             # SRPCL_RD & SRPCL     /* Read the Special Reset PC LOW value                      */
+databus     =  (SRPCH_RD & SRPCH)     /* Read the Special Reset PC HIGH value                     */
+             # (SRPCL_RD & SRPCL)     /* Read the Special Reset PC LOW value                      */
             ;
 
 /* Enable data bits for PC Read HIGH/LOW    */

@@ -19,8 +19,8 @@ Property Atmel {TMS_pullup = ON};
 
 
 /* !!! PUT HERE TO BE OBVIOUS !!! */
-$DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
-/*$DEFINE ZFOP        'h'CF   /* but, when using ZED a RST is forced, as ZED initializes on Reset */
+/*$DEFINE ZFOP        'h'00   /* Normally a NOP is forced */
+$DEFINE ZFOP        'h'CF   /* but, when using ZED a RST is forced, as ZED initializes on Reset */
 
 /**
  * ZID (Z80 In-circuit Debugger) Main Logic
@@ -263,9 +263,10 @@ PIN 22 = !sbcmode;      /* We are running as an SBC   (Board-Jumpers)   */
 PIN 31 = !tgt_only;     /* Target System should run immediately (no Debug init) (Board-SW)  */
 PIN 10 = tgt_now;       /* Target-Go counter has reached terminal count */
 PIN 85 = attn;          /* Request from RP2350 Module for attention     */
-    /* ECO 0002 - IOECLK to keep MOD_SEL from occurring during RP2350 EXP-Port update   */
-    /*  PIN 29 was TP8                                                                     */
-PIN 29 = !ioeclk;       /* RP2350 Module Expansion CLK (HIGH when IDLE) */
+    /* ECO 0002 - IOECLK (MODBUSY-) to keep MOD_SEL from occurring      */
+    /* during RP2350 EXP-Port update                                    */
+    /*  PIN 29 was TP8                                                  */
+PIN 29 = !mod_busy;     /* RP2350 Module IOECLK (HIGH=IDLE, LOW=BUSY)   */
 PIN 24 = !mwtrq;        /* Wait Request from RP2350 Module              */
 /* */
 PIN 13 = b1_aeq;        /* Address match for breakpoint 1               */
@@ -330,6 +331,9 @@ PIN 16  = mem_op;       /* Memory Op (excluding zrfsh), used to clock OP counter
 /* */
 PIN 20  = !pc_latch;    /* Latch enable for the external PC Save register   */
 PIN 67  = sync;         /* Break condition detected - SYNC signal on board  */
+/* DEBUGGING */
+pin 79  = zsprst1;
+pin 80  = zsprst2;
 
 /************************************************************************/
 /* Internal Nodes, Registers and Intermediate Variable Definitions      */
@@ -512,6 +516,11 @@ $DEFINE MOD_IO      (sbc_io & ioaddr:'b'xxx1111x & (zwr # zrd))
 /* Logic                                                                */
 /************************************************************************/
 
+/** Debugging Signals */
+zsprst1         = zsprst1_R;
+zsprst2         = zsprst2_R;
+
+
 /** Boot/Reboot Reset or Reset Request */
 mrst_req        = brd_rst # rst_req_R;
 rstSM0.ar       = !mrst_req;
@@ -531,17 +540,17 @@ lrst_R.d        =  (rstSM1 & rstSM2)
 
 
 /** Z80 Reset signal -and- Z80 Special-Reset generation */
-/* Special Reset Request        */
+/* Special Reset Request */
 zsr_req_R.ck    = tgtmode_R                 /* Running the target and not Target Only, and...           */
-                & ((sngl_step_R & zrfsh)     /* Want a single IF (refresh indicates end of IF)           */
+                & ((sngl_step_R & zrfsh)    /* Want a single IF (refresh indicates end of IF)           */
                  # ((hbrk_dtctd_R # sbrk_dtctd_R) & !sync_only_R) /* Break condition detected           */
                  #  attn                    /* RP-Module wants attention                                */
                 );
 zsr_req_R.d     = ON;
 zsr_req_R.ar    = !tgtmode_R & !rfmr_;
-/* Special Reset Generation (feeds into zrst_R below)    */
-/*  ZRST must be true on rising edge of M1-T2 only (see Zilog patent) */
-zsprst1_R.ck    = rfmr_;               /* Accept request at end of refresh */
+/* Special Reset Generation (feeds into zrst_R below)                           */
+/*  ZRST must be true on rising edge of M1-T2 only (see Zilog patent)           */
+zsprst1_R.ck    = rfmr_;                    /* Accept request at end of refresh */
 zsprst1_R.d     = zsr_req_R & !dbi_if2_R;
 zsprst1_R.ar    = zrst_clk;
 /* */
@@ -550,10 +559,10 @@ zsprst2_R.d     = !zm1 & (zsprst1_R # zsprst2_R);
 /* */
 /* Z80 Reset */
 zrst_R.ck       = !cpu_clk;
-zrst_R.d        = lrst_R                /* Reset to local Z80 is the full reset                     */
-                 # (zm1 & zsprst2_R);    /*  or special reset                                        */
+zrst_R.d        = lrst_R                /* Reset to local Z80 is the full reset                         */
+                 # (zm1 & zsprst2_R);   /*  or special reset                                            */
 /* */
-zrst_clk        = zrst_R & cpu_clk;     /* Z80 Reset and Clock - used by multiple nodes for reset   */
+zrst_clk        = zrst_R & cpu_clk;     /* Z80 Reset and Clock - used by multiple nodes for reset       */
 /* Z80 Force Operation during the Special Reset */
 zop_force.ck    = !cpu_clk;
 zop_force.d     = (zsprst2_R & zm1) # zop_force;
@@ -667,7 +676,11 @@ so_done_R.ck  = !zmreq & !ziorq;
 so_done_R.d   = tgtmode_R;
 so_done_R.ar  = !tgtmode_R;
 /* */
-tdbus_en    = tgtmode_R & !zop_force;   /* Enable the Target Data Bus unless forcing an operation.  */
+tdbus_en    = tgtmode_R         /* Enable the Target Data Bus unless forcing an operation.          */
+             & !zop_force       /* or any of the SBC on board functions.                            */
+             & !rom_sel
+             & !ram_sel
+             & !sbc_io;
 /* */
 tdbus_in    = (!zback & (zm1 # zrd))    /* Data Bus direction is IN for M1 (IF or INTACK) or RD.    */
              # (zback & zwr);           /* or WR from Bus Master to on-board devices                */
@@ -681,9 +694,9 @@ tcbus_fen   = !zback            /* Not during Z80 BusAck                        
 
 
 /** RP Module Busy and I/O Decode */
-mod_busy_R.as   = ioeclk;       /* As soon as IOECLK goes true the Module can't be disturbed        */
-mod_busy_R.d    = !ioeclk;
-mod_busy_R.ck   = zm1;          /* Give the Module some time to recover                             */
+mod_busy_R.as   = mod_busy;     /* As soon as IOECLK goes true the Module can't be disturbed        */
+mod_busy_R.d    = mod_busy;
+mod_busy_R.ck   = cpu_clk;      /* Give the Module some time to recover                             */
 
 mod_sel         = MOD_IO & !mod_busy_R; /* 1E/1F: RP Mod CTRL/DATA, but not when it's busy          */
 

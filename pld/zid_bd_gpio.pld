@@ -66,6 +66,7 @@ PIN [28,27,34,30,2,43,42,44] = [gp7..0]; /* GP Input[7..4] Output[3..0] */
 
 PIN  8 = brk_deq;           /* Break Data Equal (or Don't-Care)         */
 PIN 19 = tgt_now;           /* TGT_GO Counter has reached terminal count*/
+PIN 18 = tnow;              /* DEBUGGING output on TP22
 
 /************************************************************************/
 /* Internal Nodes, Registers and Intermediate Variable Definitions      */
@@ -164,10 +165,12 @@ tgc0.t      = ON;
 tgc1.t      = tgc0;
 tgc2.t      = tgc0 & tgc1;
 tgc3.t      = tgc0 & tgc1 & tgc2;
-tgc.ck      = mem_op;
+tgc.ck      = !mem_op;
 tgc.ce      = tgc_en;
 tgc.ar      = tgtmode # lrst;
 tgt_now     = tgc:'b'1111;
+/* For DEBUGGING */
+tnow = tgt_now;
 
 /** SBC General Purpose Output Bits */
 GPOUT_BITS.d     = GPOUT_DATA;
